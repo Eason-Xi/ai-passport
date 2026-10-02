@@ -1,22 +1,30 @@
 // main/yz_strings.h —— 界面上所有非 ASCII 文字都集中在这里（另有生成的 yz_catalog_data.c）。
 //
+// 帖名、简介、拓本来源、单字出处等随字帖变化的文字在 tools/yz_catalog.json 里。
 // tools/gen_yz_fonts.py 从本文件与 tools/yz_catalog.json 收集字符生成中文字体子集；
 // 在其他源文件里写中文字面量会被 `gen_yz_fonts.py check` 拒绝。改动本文件后需重新生成字体。
 #pragma once
 
 // ---- 主页 ----
-#define YZ_STR_APP_TITLE        "多宝塔碑"
-#define YZ_STR_APP_TITLE_V      "多\n宝\n塔\n碑"
 #define YZ_STR_AUTHOR           "唐 · 颜真卿 书"
 #define YZ_STR_SEAL             "鲁公"
 #define YZ_STR_HOME_CONTINUE    "继续临帖"
 #define YZ_STR_HOME_CATALOG     "目录选字"
 #define YZ_STR_HOME_FAVORITES   "我的收藏"
+#define YZ_STR_HOME_LIBRARY     "字帖目录"
 #define YZ_STR_HOME_ABOUT       "碑帖简介"
 #define YZ_STR_HOME_SETTINGS    "设置"
 #define YZ_STR_HOME_CONT_FMT    "「%s」%u/%u"
 #define YZ_STR_HOME_FAV_FMT     "%u 字"
+#define YZ_STR_HOME_LIB_FMT     "%u 本"
 #define YZ_STR_HOME_STATS_FMT   "已临 %lu 遍 · %lu 分钟"
+
+// ---- 字帖目录 ----
+#define YZ_STR_LIB_TITLE        "字帖目录"
+#define YZ_STR_LIB_META_FMT     "%s · %u字"
+#define YZ_STR_LIB_DONE_FMT     "已临 %u 字"
+#define YZ_STR_LIB_OPEN         "当前"
+#define YZ_STR_LIB_HINT         "确定打开 · 长按确定返回"
 
 // ---- 目录 ----
 #define YZ_STR_FAV_TAB          "收藏"
@@ -34,9 +42,6 @@
 #define YZ_STR_CARD_FOCUS       "笔法"
 #define YZ_STR_CARD_STRUCT      "结构"
 #define YZ_STR_CARD_SOURCE      "出处"
-#define YZ_STR_SOURCE_FMT       "宋拓本 第%u开 · %s页"
-#define YZ_STR_SIDE_RIGHT       "右"
-#define YZ_STR_SIDE_LEFT        "左"
 
 #define YZ_STR_STRUCT_SINGLE    "独体字"
 #define YZ_STR_STRUCT_LR        "左右结构"
@@ -75,22 +80,13 @@
 #define YZ_STR_ON               "开"
 #define YZ_STR_OFF              "关"
 #define YZ_STR_PERCENT_FMT      "%u%%"
-#define YZ_STR_RESET_ASK        "清除"
+#define YZ_STR_RESET_ASK        "本帖"
 #define YZ_STR_RESET_CONFIRM    "再按确定"
 #define YZ_STR_SET_HINT         "确定切换 · 长按确定返回"
 
 // ---- 简介（每行不超过 13 个全角字，显式换行：LVGL 不做中文避头尾）----
+// 第 1 页（简介）与第 5 页（拓本来源）的正文来自当前字帖：YZ_BOOKS[b].intro / source_text。
 #define YZ_STR_ABOUT_TITLE_1    "碑帖简介"
-#define YZ_STR_ABOUT_BODY_1 \
-    "全称《大唐西京千福寺\n" \
-    "多宝佛塔感应碑》。\n" \
-    "唐天宝十一载（752）立，\n" \
-    "岑勋撰文，颜真卿书丹，\n" \
-    "徐浩题额，今藏西安碑林。\n" \
-    "\n" \
-    "颜真卿时年四十四岁，\n" \
-    "结字严密，端庄秀丽，\n" \
-    "是初学颜体的经典范本。"
 #define YZ_STR_ABOUT_TITLE_2    "颜体要诀"
 #define YZ_STR_ABOUT_BODY_2 \
     "横轻竖重：\n" \
@@ -142,16 +138,6 @@
     "切换取值\n" \
     "唤醒屏幕"
 #define YZ_STR_ABOUT_TITLE_5    "拓本来源"
-#define YZ_STR_ABOUT_BODY_5 \
-    "宋拓《多宝佛塔碑》册，\n" \
-    "台北故宫博物院藏\n" \
-    "（故帖000019），\n" \
-    "经维基共享资源以\n" \
-    "公有领域发布。\n" \
-    "\n" \
-    "选取 188 字，逐字裁切，\n" \
-    "保留石花与笔意，\n" \
-    "未作描修。"
 #define YZ_STR_PAGE_FMT         "%u/%u"
 
 // ---- 笔法要点（顺序同 yz_focus_t；两行，每行不超过 13 个全角字）----

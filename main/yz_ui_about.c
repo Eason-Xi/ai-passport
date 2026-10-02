@@ -1,4 +1,4 @@
-// main/yz_ui_about.c —— 碑帖简介：五页（简介、颜体要诀、临帖按键、目录与主页、拓本来源）。
+// main/yz_ui_about.c —— 碑帖简介：五页（本帖简介、颜体要诀、临帖按键、目录与主页、本帖拓本来源）。
 // 按键两页是左右两栏：左栏按键、右栏功能，两栏行高相同，逐行对齐。
 #include "yz_ui_internal.h"
 
@@ -11,8 +11,9 @@
 static const char *const TITLES[YZ_ABOUT_PAGES] = {
     YZ_STR_ABOUT_TITLE_1, YZ_STR_ABOUT_TITLE_2, YZ_STR_ABOUT_TITLE_3, YZ_STR_ABOUT_TITLE_4, YZ_STR_ABOUT_TITLE_5,
 };
+// 第 1、5 页正文随字帖变化（YZ_BOOKS[b].intro / source_text），这里留空。
 static const char *const BODIES[YZ_ABOUT_PAGES] = {
-    YZ_STR_ABOUT_BODY_1, YZ_STR_ABOUT_BODY_2, YZ_STR_ABOUT_BODY_3, YZ_STR_ABOUT_BODY_4, YZ_STR_ABOUT_BODY_5,
+    NULL, YZ_STR_ABOUT_BODY_2, YZ_STR_ABOUT_BODY_3, YZ_STR_ABOUT_BODY_4, NULL,
 };
 static const char *const RIGHT[YZ_ABOUT_PAGES] = {
     NULL, NULL, YZ_STR_ABOUT_BODY_3R, YZ_STR_ABOUT_BODY_4R, NULL,
@@ -26,7 +27,9 @@ static lv_obj_t *s_page;
 static void update(const yz_book_t *book) {
     const uint8_t p = book->about_page < YZ_ABOUT_PAGES ? book->about_page : 0;
     lv_label_set_text_static(s_title, TITLES[p]);
-    lv_label_set_text_static(s_body, BODIES[p]);
+    const yz_book_info_t *info = &YZ_BOOKS[book->prog.book];
+    const char *body = BODIES[p] ? BODIES[p] : (p == 0 ? info->intro : info->source_text);
+    lv_label_set_text_static(s_body, body);
     if (RIGHT[p]) {
         lv_obj_set_width(s_body, LEFT_W);
         lv_obj_set_style_text_color(s_body, lv_color_hex(YZ_C_INK_SOFT), 0);

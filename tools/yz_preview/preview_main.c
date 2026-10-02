@@ -140,21 +140,32 @@ static int check_layout(void) {
         snprintf(buf, sizeof buf, "struct[%zu]", i);
         bad += text_fits(buf, TIPS[i], &yz_zh14, YZ_CARD_TEXT_W, YZ_CARD_LINE_SPACE);
     }
-    bad += text_fits("about1", YZ_STR_ABOUT_BODY_1, &yz_zh14, 194, 4);
     bad += text_fits("about2", YZ_STR_ABOUT_BODY_2, &yz_zh14, 194, 4);
     bad += text_fits("about3", YZ_STR_ABOUT_BODY_3, &yz_zh14, 118, 4);
     bad += text_fits("about3r", YZ_STR_ABOUT_BODY_3R, &yz_zh14, 76, 4);
     bad += text_fits("about4", YZ_STR_ABOUT_BODY_4, &yz_zh14, 118, 4);
     bad += text_fits("about4r", YZ_STR_ABOUT_BODY_4R, &yz_zh14, 76, 4);
-    bad += text_fits("about5", YZ_STR_ABOUT_BODY_5, &yz_zh14, 194, 4);
+    for (int k = 0; k < YZ_BOOK_COUNT; k++) {
+        const yz_book_info_t *info = &YZ_BOOKS[k];
+        bad += text_fits(info->name, info->intro, &yz_zh14, 194, 4);          // 简介第 1 页
+        bad += text_fits(info->name, info->source_text, &yz_zh14, 194, 4);    // 简介第 5 页
+        snprintf(buf, sizeof buf, YZ_STR_LIB_META_FMT, info->era, (unsigned)info->entry_count);
+        bad += text_fits(info->name, buf, &yz_zh14, 196, 0);                  // 字帖目录
+        // 简介两页正文最多 11 行，避免压到页码。
+        int lines = 1;
+        for (const char *c = info->intro; *c; c++) lines += *c == '\n';
+        if (lines > 11) {
+            printf("LAYOUT %s intro has %d lines\n", info->name, lines);
+            bad++;
+        }
+    }
     for (int i = 0; i < YZ_ENTRY_COUNT; i++) {
         const yz_entry_t *e = &YZ_ENTRIES[i];
         snprintf(buf, sizeof buf, YZ_STR_PHRASE_FMT, e->phrase);
         bad += text_fits(e->phrase, buf, &yz_zh14, 196, 0);                 // 临帖页底部
         snprintf(buf, sizeof buf, YZ_STR_PREVIEW_PHRASE_FMT, e->phrase);
         bad += text_fits(e->phrase, buf, &yz_zh14, 120, 0);                 // 目录预览
-        snprintf(buf, sizeof buf, YZ_STR_SOURCE_FMT, (unsigned)e->page, e->side ? YZ_STR_SIDE_LEFT : YZ_STR_SIDE_RIGHT);
-        bad += text_fits(buf, buf, &yz_zh14, YZ_CARD_TEXT_W, 0);            // 笔法卡出处
+        bad += text_fits(e->source, e->source, &yz_zh14, YZ_CARD_TEXT_W, 0); // 笔法卡出处
     }
     printf("LAYOUT problems=%d\n", bad);
     return bad;
@@ -217,10 +228,10 @@ int main(int argc, char **argv) {
     capture("01_home_new");
 
     // 有进度的主页：若干字已临、两个收藏，停在“左右”卷。
-    for (int i = 0; i < 40; i++) b.prog.count[(i * 7) % YZ_ENTRY_COUNT] = (uint8_t)(1 + i % 4);
-    b.prog.sessions = 86;
-    b.prog.seconds = 86 * 60;
-    b.prog.current = 74;   // 法
+    for (int i = 0; i < 40; i++) b.prog.count[(i * 7) % YZ_BOOKS[0].entry_count] = (uint8_t)(1 + i % 4);
+    b.prog.sessions[0] = 86;
+    b.prog.seconds[0] = 86 * 60;
+    b.prog.current[0] = 74;   // 法
     b.prog.fav[74 / 8] |= (uint8_t)(1u << (74 % 8));
     b.prog.fav[57 / 8] |= (uint8_t)(1u << (57 % 8));
     yz_ui_set_battery(12);
@@ -264,7 +275,7 @@ int main(int argc, char **argv) {
     clear_toast();
     tick(23 * 1000);
     capture("10_practice_trace_jiu_timer");
-    // 计时结束：自动翻到下一字并继续计时，提示条报总遍数。
+    // 计时结束：自动翻到下一字并继续计时，提示条报本帖总遍数。
     tick(40 * 1000);
     capture("11_practice_timer_done");
     key(YZ_BTN_DOWN, YZ_EV_LONG);
@@ -280,8 +291,8 @@ int main(int argc, char **argv) {
     key(YZ_BTN_OK, YZ_EV_CLICK);
     capture("13_practice_yong_card");
     key(YZ_BTN_OK, YZ_EV_CLICK);
-    // 最后一个字往后翻：首尾相接回到第一个字。
-    while (yz_book_entry(&b) != YZ_ENTRY_COUNT - 1) key(YZ_BTN_UP, YZ_EV_CLICK);
+    // 往前翻过本帖第一个字：首尾相接到本帖最后一个字。
+    while (yz_book_entry(&b) != YZ_BOOKS[0].entry_count - 1) key(YZ_BTN_UP, YZ_EV_CLICK);
     capture("14_practice_last");
 
     // 收藏页签（有收藏）与空收藏。
@@ -291,7 +302,7 @@ int main(int argc, char **argv) {
     home_open(YZ_HOME_FAVORITES);
     capture("16_catalog_fav_empty");
 
-    // 简介四页。
+    // 简介五页（多宝塔碑）。
     home_open(YZ_HOME_ABOUT);
     capture("17_about_1");
     key(YZ_BTN_DOWN, YZ_EV_CLICK);
@@ -313,14 +324,66 @@ int main(int argc, char **argv) {
     key(YZ_BTN_OK, YZ_EV_CLICK);
     capture("22_settings_confirm_reset");
 
-    // 逐字检查：每个字的临帖页都渲染一次，确保没有字形包解码失败或界面断言。
+    // 逐字检查：多宝塔碑每个字的临帖页都渲染一次。
     home_open(YZ_HOME_CATALOG);
     key(YZ_BTN_OK, YZ_EV_CLICK);
-    for (int i = 0; i < YZ_ENTRY_COUNT; i++) {
+    for (int i = 0; i < YZ_BOOKS[0].entry_count; i++) {
         key(YZ_BTN_DOWN, YZ_EV_CLICK);
         settle();
     }
     capture("23_practice_after_full_loop");
+
+    // 字帖目录：当前是多宝塔碑；选到颜勤礼碑；打开后回到它的主页。
+    home_open(YZ_HOME_LIBRARY);
+    capture("24_library_duobao");
+    key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("25_library_qinli");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    capture("26_home_qinli");
+
+    // 颜勤礼碑：目录、临帖、笔法卡、描红、简介、来源。
+    home_open(YZ_HOME_CATALOG);
+    capture("27_catalog_qinli_title");
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    for (int i = 0; i < 7; i++) key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
+    capture("28_catalog_qinli_lr_scrolled");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    clear_toast();
+    capture("29_practice_qinli");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    capture("30_practice_qinli_card");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    key(YZ_BTN_UP, YZ_EV_DOUBLE);                 // 描红
+    key(YZ_BTN_UP, YZ_EV_DOUBLE);
+    key(YZ_BTN_UP, YZ_EV_LONG);                   // 米字格
+    clear_toast();
+    key(YZ_BTN_DOWN, YZ_EV_DOUBLE);               // 记一遍
+    clear_toast();
+    capture("31_practice_qinli_marked");
+    home_open(YZ_HOME_ABOUT);
+    capture("32_about_qinli_1");
+    for (int i = 0; i < 4; i++) key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("33_about_qinli_5");
+    home();
+    capture("34_home_qinli_progress");
+
+    // 逐字检查：颜勤礼碑每个字。
+    home_open(YZ_HOME_CATALOG);
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    for (int i = 0; i < YZ_BOOKS[1].entry_count; i++) {
+        key(YZ_BTN_DOWN, YZ_EV_CLICK);
+        settle();
+    }
+    capture("35_practice_qinli_after_full_loop");
+
+    // 回到字帖目录：颜勤礼碑标“当前”，选回多宝塔碑后长按返回（不换帖）。
+    home_open(YZ_HOME_LIBRARY);
+    key(YZ_BTN_UP, YZ_EV_CLICK);
+    capture("36_library_back_to_duobao");
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    capture("37_home_still_qinli");
 
     printf("PEAK used=%zu of %u\n", s_peak, (unsigned)LV_MEM_SIZE);
     free(pack_data);

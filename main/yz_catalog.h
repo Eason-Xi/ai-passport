@@ -1,13 +1,13 @@
-// main/yz_catalog.h —— 《多宝塔碑》字帖字目：章节与单字的文字资料（纯数据，无 ESP-IDF / LVGL 依赖）。
+// main/yz_catalog.h —— 字帖字目：字帖、章节与单字的文字资料（纯数据，无 ESP-IDF / LVGL 依赖）。
 //
-// 数据由 tools/gen_yz_assets.py 依据 tools/yz_catalog.json 生成到 yz_catalog_data.c；
-// 字形包 assets/images/yz_glyphs.bin 中第 i 个字形对应 YZ_ENTRIES[i]。
+// 数据由 tools/gen_yz_assets.py 依据 tools/yz_catalog.json 生成到 yz_catalog_data.c 与
+// yz_catalog_size.h。所有字帖的字依次排成一个全局序列：字形包 assets/images/yz_glyphs.bin
+// 中第 i 个字形对应 YZ_ENTRIES[i]；每本字帖占其中连续一段，章节也按字帖依次排列。
 #pragma once
 
 #include <stdint.h>
 
-#define YZ_CHAPTER_COUNT 6
-#define YZ_ENTRY_COUNT 188
+#include "yz_catalog_size.h"
 
 // 结构类型：决定“结构要点”文字。
 typedef enum {
@@ -35,8 +35,21 @@ typedef enum {
 } yz_focus_t;
 
 typedef struct {
+    const char *name;           // 帖名（四字）
+    const char *name_v;         // 竖排帖名（每字一行）
+    const char *era;            // 立碑年代
+    const char *intro;          // 简介正文（显式换行）
+    const char *source_text;    // 拓本来源正文（显式换行）
+    uint16_t emblem;            // 题签字：字帖目录里代表这本帖的字（全局下标）
+    uint16_t first_chapter;     // 第一个章节在 YZ_CHAPTERS 中的下标
+    uint16_t chapter_count;
+    uint16_t first_entry;       // 第一个字在 YZ_ENTRIES 中的下标
+    uint16_t entry_count;
+} yz_book_info_t;
+
+typedef struct {
     const char *name;       // 章节名（两字）
-    uint16_t first;         // 第一个字在 YZ_ENTRIES 中的下标
+    uint16_t first;         // 第一个字在 YZ_ENTRIES 中的下标（全局）
     uint16_t count;
 } yz_chapter_t;
 
@@ -45,14 +58,15 @@ typedef struct {
     const char *trad;       // 碑上原字（繁体 / 异体）
     const char *pinyin;     // 带声调拼音
     const char *phrase;     // 碑文语境（繁体原文，含本字）
+    const char *source;     // 拓本出处（册、页）
     uint8_t structure;      // yz_struct_t
     uint8_t focus;          // yz_focus_t
-    uint8_t page;           // 宋拓本第几开（1 起）
-    uint8_t side;           // 0 = 右页，1 = 左页
 } yz_entry_t;
 
+extern const yz_book_info_t YZ_BOOKS[YZ_BOOK_COUNT];
 extern const yz_chapter_t YZ_CHAPTERS[YZ_CHAPTER_COUNT];
 extern const yz_entry_t YZ_ENTRIES[YZ_ENTRY_COUNT];
 
-// 单字所属章节（越界返回 -1）。
+// 单字所属的全局章节下标 / 字帖下标（越界返回 -1）。
 int yz_catalog_chapter_of(int entry);
+int yz_catalog_book_of(int entry);

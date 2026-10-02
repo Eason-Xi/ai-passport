@@ -54,23 +54,34 @@ class CommittedAssetsTest(unittest.TestCase):
 
     def test_catalog_entries(self):
         cat = json.loads(assets.CATALOG_JSON.read_text(encoding="utf-8"))
-        keys = [c["key"] for c in cat["chapters"]]
-        self.assertEqual(len(cat["entries"]), 188)
+        self.assertEqual([b["key"] for b in cat["books"]], ["duobao", "qinli"])
+        self.assertEqual([len(b["entries"]) for b in cat["books"]], [188, 224])
         seen = set()
-        for e in cat["entries"]:
-            self.assertIn(e["chapter"], keys)
-            self.assertIn(e["trad"], e["phrase"])
-            self.assertIn(e["struct"], assets.STRUCT_CODES)
-            self.assertIn(e["focus"], assets.FOCUS_CODES)
-            x0, y0, x1, y1 = e["box"]
-            self.assertTrue(x0 < x1 and y0 < y1)
-            source = (e["page"], tuple(e["box"]))
-            self.assertNotIn(source, seen, "同一处拓本被裁切了两次")
-            seen.add(source)
-        # 章节内的字不重复（不同章节可以收同一个字的不同写法，例如“千”）。
-        for key in keys:
-            chars = [e["trad"] for e in cat["entries"] if e["chapter"] == key]
-            self.assertEqual(len(chars), len(set(chars)), key)
+        for book in cat["books"]:
+            keys = [c["key"] for c in book["chapters"]]
+            self.assertIn(book["emblem"], [e["trad"] for e in book["entries"]])
+            for e in book["entries"]:
+                self.assertIn(e["chapter"], keys)
+                self.assertIn(e["trad"], e["phrase"])
+                self.assertIn(e["src"], cat["sources"])
+                self.assertIn(e["struct"], assets.STRUCT_CODES)
+                self.assertIn(e["focus"], assets.FOCUS_CODES)
+                x0, y0, x1, y1 = e["box"]
+                self.assertTrue(x0 < x1 and y0 < y1)
+                source = (e["src"], e["page"], tuple(e["box"]))
+                self.assertNotIn(source, seen, "同一处拓本被裁切了两次")
+                seen.add(source)
+            # 同一本帖的同一章节内不重复收字（不同章节可以收同一个字的不同写法，例如“千”）。
+            for key in keys:
+                chars = [e["trad"] for e in book["entries"] if e["chapter"] == key]
+                self.assertEqual(len(chars), len(set(chars)), (book["key"], key))
+
+    def test_existing_book_glyphs_keep_their_order(self):
+        # 新字帖只能追加在末尾：旧存档里的字下标（进度、收藏）依赖第一本字帖的顺序不变。
+        manifest = json.loads(assets.GLYPH_MANIFEST.read_text(encoding="utf-8"))
+        books = [g["book"] for g in manifest["glyphs"]]
+        self.assertEqual(books, sorted(books, key=["duobao", "qinli"].index))
+        self.assertEqual(books.count("duobao"), 188)
 
 
 class FontTest(unittest.TestCase):
@@ -79,12 +90,16 @@ class FontTest(unittest.TestCase):
 
     def test_text_fonts_cover_catalog(self):
         cat = json.loads(assets.CATALOG_JSON.read_text(encoding="utf-8"))
-        needed = {ord(ch) for e in cat["entries"] for k in ("simp", "trad", "pinyin", "phrase") for ch in e[k]}
+        entries = assets.all_entries(cat)
+        needed = {ord(ch) for e in entries for k in ("simp", "trad", "pinyin", "phrase", "source") for ch in e[k]}
+        needed |= {ord(ch) for b in cat["books"] for k in ("name", "era", "intro", "source_text")
+                   for ch in b[k] if ch != "\n"}
         for name in ("yz_zh14", "yz_zh18", "yz_zh24"):
             covered = fonts.parse_font_codepoints(fonts.FONT_DIR / f"{name}.c")
             self.assertTrue(needed <= covered, name)
         big = fonts.parse_font_codepoints(fonts.FONT_DIR / "yz_zh32.c")
-        self.assertTrue({ord(e["simp"]) for e in cat["entries"]} <= big)
+        self.assertTrue({ord(e["simp"]) for e in entries} <= big)
+        self.assertTrue({ord(ch) for b in cat["books"] for ch in b["name"]} <= big)
 
     def test_known_missing_glyph_is_absent(self):
         # 负例：U+9F98（龘）不在任何界面文字里，保证覆盖检查不会无条件通过。

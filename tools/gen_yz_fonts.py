@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """颜真卿字帖（多宝塔碑）字体子集的生成与校验。
 
-字符集来源：main/yz_strings.h 的字符串字面量 + tools/yz_catalog.json 的字目文字 + 可打印 ASCII。
+字符集来源：main/yz_strings.h 的字符串字面量 + tools/yz_catalog.json 中显示的文字 + 可打印 ASCII。
 yz_strings.h 是唯一允许写非 ASCII 字符串字面量的手写文件（日志专用文件除外，见 LOG_ONLY）。
 
   generate  用 lv_font_conv 1.5.3 从 Source Han Sans SC 生成 assets/fonts/yz_zh*.c，
@@ -33,15 +33,14 @@ GLYPH_HEADER = ROOT / "main" / "yz_font_glyphs.h"
 MANIFEST = FONT_DIR / "yz_fonts.manifest.json"
 CONVERTER_VERSION = "1.5.3"
 
-# 名称、字号、bpp、字符集。text = 界面文字 + 字目（简体 / 繁体 / 拼音 / 碑文）；
-# big = 32 px 大字：字目的简体与繁体单字、应用标题、数字。
+# 名称、字号、bpp、字符集。text = 界面文字 + 字目 JSON 中显示的全部文字；
+# big = 32 px 大字：各帖帖名、字目的简体与繁体单字、数字。
 SPECS = [
     ("yz_zh14", 14, 4, "text"),
     ("yz_zh18", 18, 4, "text"),
     ("yz_zh24", 24, 4, "text"),
     ("yz_zh32", 32, 4, "big"),
 ]
-BIG_STRINGS = ("YZ_STR_APP_TITLE",)
 
 # 只写日志、不参与显示的文件：允许中文日志字面量。
 # yz_catalog_data.c 是生成的字目表，其文字来自 yz_catalog.json，同样计入字符集。
@@ -120,30 +119,32 @@ def c_string_literals(text: str) -> list[str]:
 # 字符集
 # ---------------------------------------------------------------------------
 
+def catalog_strings() -> list[str]:
+    """字目 JSON 里会显示在屏幕上的全部文字：帖名、年代、简介、来源、章节名与每个字的资料。"""
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    out = []
+    for book in catalog["books"]:
+        out += [book[k] for k in ("name", "name_v", "era", "intro", "source_text")]
+        out += [c["name"] for c in book["chapters"]]
+        for entry in book["entries"]:
+            out += [entry[k] for k in ("simp", "trad", "pinyin", "phrase", "source")]
+    return out
+
+
 def text_charset() -> list[int]:
     points = set(range(0x20, 0x7F))
-    for literal in c_string_literals(STRINGS.read_text(encoding="utf-8")):
+    for literal in c_string_literals(STRINGS.read_text(encoding="utf-8")) + catalog_strings():
         points.update(ord(ch) for ch in literal if ord(ch) >= 0x20)
-    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    for chapter in catalog["chapters"]:
-        points.update(ord(ch) for ch in chapter["name"])
-    for entry in catalog["entries"]:
-        for key in ("simp", "trad", "pinyin", "phrase"):
-            points.update(ord(ch) for ch in entry[key])
     return sorted(points)
 
 
 def big_charset() -> list[int]:
     points = set(ord(ch) for ch in "0123456789/ ")
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    for entry in catalog["entries"]:
-        points.update(ord(ch) for ch in entry["simp"] + entry["trad"])
-    header = STRINGS.read_text(encoding="utf-8")
-    for name in BIG_STRINGS:
-        m = re.search(rf'#define\s+{name}\s+"((?:[^"\\]|\\.)*)"', header)
-        if not m:
-            raise SystemExit(f"yz_strings.h 缺少 {name}")
-        points.update(ord(ch) for ch in _decode_c_string(m.group(1)))
+    for book in catalog["books"]:
+        points.update(ord(ch) for ch in book["name"])
+        for entry in book["entries"]:
+            points.update(ord(ch) for ch in entry["simp"] + entry["trad"])
     return sorted(points)
 
 

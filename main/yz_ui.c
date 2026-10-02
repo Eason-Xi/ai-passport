@@ -107,8 +107,9 @@ const char *yz_ui_focus_tip(uint8_t focus) {
     return TIPS[focus < YZ_FOCUS_COUNT ? focus : 0];
 }
 
-const char *yz_ui_tab_name(uint8_t tab) {
-    return tab < YZ_CHAPTER_COUNT ? YZ_CHAPTERS[tab].name : YZ_STR_FAV_TAB;
+const char *yz_ui_tab_name(const yz_book_t *book, uint8_t tab) {
+    const yz_book_info_t *info = &YZ_BOOKS[book->prog.book];
+    return tab < info->chapter_count ? YZ_CHAPTERS[info->first_chapter + tab].name : YZ_STR_FAV_TAB;
 }
 
 // ---------------------------------------------------------------- 电量
@@ -186,7 +187,8 @@ void yz_ui_toast(const yz_book_t *book) {
     case YZ_TOAST_TIMER_OFF: lv_label_set_text_static(s_toast_text, YZ_STR_TOAST_TIMER_OFF); break;
     case YZ_TOAST_TIMER_DONE: {
         // 自动翻页时当前字已经换成下一个：提示里报的是刚完成的总遍数。
-        lv_label_set_text_fmt(s_toast_text, YZ_STR_TOAST_DONE_FMT, (unsigned)book->prog.sessions);
+        lv_label_set_text_fmt(s_toast_text, YZ_STR_TOAST_DONE_FMT,
+                              (unsigned)book->prog.sessions[book->prog.book]);
         break;
     }
     case YZ_TOAST_MARKED: lv_label_set_text_fmt(s_toast_text, YZ_STR_TOAST_MARK_FMT, count); break;
@@ -218,7 +220,8 @@ static void toast_create(void) {
 
 static int glyph_entry_for(const yz_book_t *book) {
     switch (book->screen) {
-    case YZ_SCR_HOME: return book->prog.current;
+    case YZ_SCR_HOME: return book->prog.current[book->prog.book];
+    case YZ_SCR_LIBRARY: return YZ_BOOKS[book->lib_sel].emblem;
     case YZ_SCR_CATALOG:
     case YZ_SCR_PRACTICE: return yz_book_entry(book);
     default: return -1;
@@ -247,6 +250,7 @@ static const yz_page_t *page_for(yz_screen_t screen) {
     case YZ_SCR_PRACTICE: return &YZ_PAGE_PRACTICE;
     case YZ_SCR_ABOUT: return &YZ_PAGE_ABOUT;
     case YZ_SCR_SETTINGS: return &YZ_PAGE_SETTINGS;
+    case YZ_SCR_LIBRARY: return &YZ_PAGE_LIBRARY;
     case YZ_SCR_HOME:
     default: return &YZ_PAGE_HOME;
     }

@@ -1,3602 +1,7926 @@
 {
- "chapters": [
-  {
-   "key": "title",
-   "name": "篇首"
+ "sources": {
+  "duobao": {
+   "title": "宋拓多寶佛塔碑 冊（台北故宫博物院 故帖000019）",
+   "url": "https://commons.wikimedia.org/wiki/File:NPM-%E6%95%85%E5%B8%96000019_%E5%AE%8B%E6%8B%93%E5%A4%9A%E5%AF%B6%E4%BD%9B%E5%A1%94%E7%A2%91_%E5%86%8A.pdf",
+   "license": "Public domain (Wikimedia Commons)",
+   "sha256": "3b231dbb95ef0ac871e07a0162a0c8587f16ef9d3cbee26df98483e26dd02069"
   },
-  {
-   "key": "num",
-   "name": "数目"
+  "qinli_1": {
+   "title": "初拓顏勤禮碑 上（SSID 12999612）",
+   "url": "https://commons.wikimedia.org/wiki/File:SSID-12999612_%E5%88%9D%E6%8B%93%E9%A1%8F%E5%8B%A4%E7%A6%AE%E7%A2%91_%E4%B8%8A.pdf",
+   "license": "Public domain (Wikimedia Commons)",
+   "sha256": "9f21152bc0bec69e863d1ceb634d9531d30f9ffb1c30923c271ec9946d428683"
   },
-  {
-   "key": "single",
-   "name": "独体"
-  },
-  {
-   "key": "lr",
-   "name": "左右"
-  },
-  {
-   "key": "tb",
-   "name": "上下"
-  },
-  {
-   "key": "en",
-   "name": "包围"
+  "qinli_2": {
+   "title": "初拓顏勤禮碑 下（SSID 12999613）",
+   "url": "https://commons.wikimedia.org/wiki/File:SSID-12999613_%E5%88%9D%E6%8B%93%E9%A1%8F%E5%8B%A4%E7%A6%AE%E7%A2%91_%E4%B8%8B.pdf",
+   "license": "Public domain (Wikimedia Commons)",
+   "sha256": "6c976f9cd7866649dfe4544aa15c95c51a3212e7596d3631f802efd6d9d7fd37"
   }
- ],
- "entries": [
-  {
-   "chapter": "title",
-   "trad": "大",
-   "simp": "大",
-   "pinyin": "dà",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "大唐西京",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2288,
-    356,
-    2432,
-    498
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "唐",
-   "simp": "唐",
-   "pinyin": "táng",
-   "struct": "EN",
-   "focus": "P",
-   "phrase": "大唐西京",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2290,
-    509,
-    2418,
-    659
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "西",
-   "simp": "西",
-   "pinyin": "xī",
-   "struct": "D",
-   "focus": "Z",
-   "phrase": "住西京龍興寺",
-   "page": 2,
-   "side": "右",
-   "box": [
-    1810,
-    1185,
-    1926,
-    1288
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "京",
-   "simp": "京",
-   "pinyin": "jīng",
-   "struct": "TB",
-   "focus": "D",
-   "phrase": "西京龍興寺",
-   "page": 2,
-   "side": "右",
-   "box": [
-    1811,
-    1325,
-    1932,
-    1478
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "千",
-   "simp": "千",
-   "pinyin": "qiān",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "千福寺",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2303,
-    998,
-    2433,
-    1134
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "福",
-   "simp": "福",
-   "pinyin": "fú",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "千福寺",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2300,
-    1162,
-    2444,
-    1298
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "寺",
-   "simp": "寺",
-   "pinyin": "sì",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "千福寺",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2297,
-    1321,
-    2431,
-    1460
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "多",
-   "simp": "多",
-   "pinyin": "duō",
-   "struct": "TB",
-   "focus": "P",
-   "phrase": "多寶塔品",
-   "page": 2,
-   "side": "左",
-   "box": [
-    752,
-    374,
-    854,
-    512
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "寶",
-   "simp": "宝",
-   "pinyin": "bǎo",
-   "struct": "TB",
-   "focus": "B",
-   "phrase": "多寶佛塔",
-   "page": 0,
-   "side": "左",
-   "box": [
-    735,
-    640,
-    846,
-    805
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "佛",
-   "simp": "佛",
-   "pinyin": "fó",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "多寶佛塔",
-   "page": 0,
-   "side": "左",
-   "box": [
-    731,
-    818,
-    857,
-    955
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "塔",
-   "simp": "塔",
-   "pinyin": "tǎ",
-   "struct": "LR",
-   "focus": "H",
-   "phrase": "多寶佛塔",
-   "page": 0,
-   "side": "左",
-   "box": [
-    721,
-    987,
-    880,
-    1114
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "感",
-   "simp": "感",
-   "pinyin": "gǎn",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "所感舍利",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1055,
-    487,
-    1214,
-    647
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "應",
-   "simp": "应",
-   "pinyin": "yìng",
-   "struct": "EN",
-   "focus": "D",
-   "phrase": "受持靈應",
-   "page": 11,
-   "side": "右",
-   "box": [
-    1947,
-    1482,
-    2085,
-    1627
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "碑",
-   "simp": "碑",
-   "pinyin": "bēi",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "感應碑文",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2136,
-    1014,
-    2271,
-    1143
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "文",
-   "simp": "文",
-   "pinyin": "wén",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "感應碑文",
-   "page": 0,
-   "side": "右",
-   "box": [
-    2144,
-    1181,
-    2277,
-    1307
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "顏",
-   "simp": "颜",
-   "pinyin": "yán",
-   "struct": "LR",
-   "focus": "P",
-   "phrase": "顏真卿書",
-   "page": 0,
-   "side": "右",
-   "box": [
-    1620,
-    676,
-    1773,
-    826
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "真",
-   "simp": "真",
-   "pinyin": "zhēn",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "顏真卿書",
-   "page": 0,
-   "side": "右",
-   "box": [
-    1632,
-    844,
-    1772,
-    988
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "卿",
-   "simp": "卿",
-   "pinyin": "qīng",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "顏真卿書",
-   "page": 0,
-   "side": "右",
-   "box": [
-    1631,
-    1000,
-    1783,
-    1162
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "title",
-   "trad": "書",
-   "simp": "书",
-   "pinyin": "shū",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "尚書武部",
-   "page": 0,
-   "side": "右",
-   "box": [
-    1793,
-    833,
-    1934,
-    997
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "一",
-   "simp": "一",
-   "pinyin": "yī",
-   "struct": "D",
-   "focus": "H",
-   "phrase": "一志晝夜",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2280,
-    389,
-    2408,
-    438
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "二",
-   "simp": "二",
-   "pinyin": "èr",
-   "struct": "D",
-   "focus": "H",
-   "phrase": "春秋二時",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1776,
-    707,
-    1914,
-    792
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "三",
-   "simp": "三",
-   "pinyin": "sān",
-   "struct": "D",
-   "focus": "H",
-   "phrase": "自三載",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1957,
-    1492,
-    2095,
-    1598
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "四",
-   "simp": "四",
-   "pinyin": "sì",
-   "struct": "EN",
-   "focus": "Z",
-   "phrase": "大德四十九人",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1800,
-    1826,
-    1925,
-    1943
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "五",
-   "simp": "五",
-   "pinyin": "wǔ",
-   "struct": "D",
-   "focus": "Z",
-   "phrase": "錢五十萬",
-   "page": 6,
-   "side": "右",
-   "box": [
-    1776,
-    702,
-    1944,
-    820
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "六",
-   "simp": "六",
-   "pinyin": "liù",
-   "struct": "D",
-   "focus": "D",
-   "phrase": "至六載",
-   "page": 9,
-   "side": "左",
-   "box": [
-    892,
-    523,
-    1031,
-    617
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "七",
-   "simp": "七",
-   "pinyin": "qī",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "三千七十粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1065,
-    1493,
-    1188,
-    1582
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "八",
-   "simp": "八",
-   "pinyin": "bā",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "一百八粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    753,
-    1185,
-    877,
-    1266
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "九",
-   "simp": "九",
-   "pinyin": "jiǔ",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "四十九人",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1623,
-    535,
-    1762,
-    631
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "十",
-   "simp": "十",
-   "pinyin": "shí",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "四十九人",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1626,
-    360,
-    1754,
-    494
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "百",
-   "simp": "百",
-   "pinyin": "bǎi",
-   "struct": "TB",
-   "focus": "Z",
-   "phrase": "一百八粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    747,
-    1009,
-    864,
-    1126
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "千",
-   "simp": "千",
-   "pinyin": "qiān",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "三千七十粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1066,
-    1306,
-    1182,
-    1438
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "num",
-   "trad": "萬",
-   "simp": "万",
-   "pinyin": "wàn",
-   "struct": "TB",
-   "focus": "F",
-   "phrase": "錢五十萬",
-   "page": 6,
-   "side": "右",
-   "box": [
-    1797,
-    1003,
-    1933,
-    1148
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "人",
-   "simp": "人",
-   "pinyin": "rén",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "廣平人也",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2101,
-    1039,
-    2264,
-    1137
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "入",
-   "simp": "入",
-   "pinyin": "rù",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "如入禪定",
-   "page": 2,
-   "side": "左",
-   "box": [
-    736,
-    1830,
-    883,
-    1929
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "天",
-   "simp": "天",
-   "pinyin": "tiān",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "眾聞天樂",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1239,
-    1009,
-    1373,
-    1141
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "夫",
-   "simp": "夫",
-   "pinyin": "fū",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "朝散大夫",
-   "page": 0,
-   "side": "左",
-   "box": [
-    1222,
-    522,
-    1371,
-    672
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "上",
-   "simp": "上",
-   "pinyin": "shàng",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "筆鋒上",
-   "page": 9,
-   "side": "左",
-   "box": [
-    609,
-    1020,
-    710,
-    1120
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "下",
-   "simp": "下",
-   "pinyin": "xià",
-   "struct": "D",
-   "focus": "D",
-   "phrase": "塔下誦持",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2276,
-    1150,
-    2403,
-    1269
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "中",
-   "simp": "中",
-   "pinyin": "zhōng",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "勅中使",
-   "page": 7,
-   "side": "右",
-   "box": [
-    2152,
-    1641,
-    2258,
-    1772
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "王",
-   "simp": "王",
-   "pinyin": "wáng",
-   "struct": "D",
-   "focus": "H",
-   "phrase": "許王瓘",
-   "page": 3,
-   "side": "右",
-   "box": [
-    1652,
-    1017,
-    1765,
-    1126
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "日",
-   "simp": "日",
-   "pinyin": "rì",
-   "struct": "D",
-   "focus": "Z",
-   "phrase": "七月十三日",
-   "page": 5,
-   "side": "左",
-   "box": [
-    593,
-    1357,
-    665,
-    1456
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "月",
-   "simp": "月",
-   "pinyin": "yuè",
-   "struct": "D",
-   "focus": "P",
-   "phrase": "七月十三日",
-   "page": 5,
-   "side": "左",
-   "box": [
-    580,
-    853,
-    670,
-    998
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "目",
-   "simp": "目",
-   "pinyin": "mù",
-   "struct": "D",
-   "focus": "Z",
-   "phrase": "宛在目前",
-   "page": 2,
-   "side": "左",
-   "box": [
-    591,
-    1661,
-    676,
-    1781
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "山",
-   "simp": "山",
-   "pinyin": "shān",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "詣寶山",
-   "page": 2,
-   "side": "左",
-   "box": [
-    1088,
-    1160,
-    1214,
-    1253
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "水",
-   "simp": "水",
-   "pinyin": "shuǐ",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "水發源",
-   "page": 4,
-   "side": "右",
-   "box": [
-    2296,
-    364,
-    2432,
-    492
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "木",
-   "simp": "木",
-   "pinyin": "mù",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "創構材木",
-   "page": 5,
-   "side": "左",
-   "box": [
-    891,
-    1350,
-    1029,
-    1495
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "心",
-   "simp": "心",
-   "pinyin": "xīn",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "身心泊然",
-   "page": 2,
-   "side": "左",
-   "box": [
-    731,
-    1196,
-    867,
-    1280
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "力",
-   "simp": "力",
-   "pinyin": "lì",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "十力弘建",
-   "page": 0,
-   "side": "左",
-   "box": [
-    580,
-    1331,
-    692,
-    1462
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "又",
-   "simp": "又",
-   "pinyin": "yòu",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "又見寶塔",
-   "page": 4,
-   "side": "右",
-   "box": [
-    2135,
-    1484,
-    2265,
-    1593
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "及",
-   "simp": "及",
-   "pinyin": "jí",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "王瓘及居士",
-   "page": 3,
-   "side": "右",
-   "box": [
-    1651,
-    1339,
-    1788,
-    1467
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "久",
-   "simp": "久",
-   "pinyin": "jiǔ",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "久之乃滅",
-   "page": 4,
-   "side": "右",
-   "box": [
-    1948,
-    1155,
-    2101,
-    1265
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "乃",
-   "simp": "乃",
-   "pinyin": "nǎi",
-   "struct": "D",
-   "focus": "Z",
-   "phrase": "久之乃滅",
-   "page": 4,
-   "side": "右",
-   "box": [
-    1949,
-    1465,
-    2074,
-    1606
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "也",
-   "simp": "也",
-   "pinyin": "yě",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "秘藏也",
-   "page": 0,
-   "side": "左",
-   "box": [
-    719,
-    350,
-    864,
-    441
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "子",
-   "simp": "子",
-   "pinyin": "zǐ",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "窮子之疾走",
-   "page": 2,
-   "side": "左",
-   "box": [
-    1233,
-    1653,
-    1368,
-    1799
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "女",
-   "simp": "女",
-   "pinyin": "nǚ",
-   "struct": "D",
-   "focus": "P",
-   "phrase": "信女普意",
-   "page": 3,
-   "side": "左",
-   "box": [
-    1228,
-    685,
-    1391,
-    796
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "生",
-   "simp": "生",
-   "pinyin": "shēng",
-   "struct": "D",
-   "focus": "H",
-   "phrase": "是生龍象",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1640,
-    876,
-    1756,
-    997
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "方",
-   "simp": "方",
-   "pinyin": "fāng",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "中有方舟",
-   "page": 4,
-   "side": "右",
-   "box": [
-    2118,
-    1170,
-    2254,
-    1299
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "永",
-   "simp": "永",
-   "pinyin": "yǒng",
-   "struct": "D",
-   "focus": "Y",
-   "phrase": "漢明永平",
-   "page": 6,
-   "side": "左",
-   "box": [
-    1067,
-    1476,
-    1217,
-    1628
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "不",
-   "simp": "不",
-   "pinyin": "bù",
-   "struct": "D",
-   "focus": "D",
-   "phrase": "一食不出",
-   "page": 3,
-   "side": "右",
-   "box": [
-    1981,
-    1815,
-    2110,
-    1935
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "而",
-   "simp": "而",
-   "pinyin": "ér",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "天而不違",
-   "page": 6,
-   "side": "左",
-   "box": [
-    1221,
-    524,
-    1353,
-    642
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "至",
-   "simp": "至",
-   "pinyin": "zhì",
-   "struct": "D",
-   "focus": "H",
-   "phrase": "至天寶元載",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1051,
-    1655,
-    1193,
-    1787
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "求",
-   "simp": "求",
-   "pinyin": "qiú",
-   "struct": "D",
-   "focus": "D",
-   "phrase": "求諸寶坊",
-   "page": 6,
-   "side": "右",
-   "box": [
-    2294,
-    997,
-    2445,
-    1141
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "事",
-   "simp": "事",
-   "pinyin": "shì",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "總僧事",
-   "page": 7,
-   "side": "右",
-   "box": [
-    1650,
-    696,
-    1763,
-    852
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "年",
-   "simp": "年",
-   "pinyin": "nián",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "年甫七歲",
-   "page": 1,
-   "side": "左",
-   "box": [
-    561,
-    1008,
-    698,
-    1145
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "身",
-   "simp": "身",
-   "pinyin": "shēn",
-   "struct": "D",
-   "focus": "P",
-   "phrase": "沒身不替",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1964,
-    824,
-    2068,
-    982
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "自",
-   "simp": "自",
-   "pinyin": "zì",
-   "struct": "D",
-   "focus": "S",
-   "phrase": "自三載",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1976,
-    1315,
-    2056,
-    1441
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "金",
-   "simp": "金",
-   "pinyin": "jīn",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "法号楚金",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2285,
-    1810,
-    2448,
-    1945
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "東",
-   "simp": "东",
-   "pinyin": "dōng",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "東海徐浩",
-   "page": 0,
-   "side": "左",
-   "box": [
-    1059,
-    533,
-    1209,
-    702
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "果",
-   "simp": "果",
-   "pinyin": "guǒ",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "義成因果",
-   "page": 11,
-   "side": "左",
-   "box": [
-    889,
-    1486,
-    1014,
-    1619
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "母",
-   "simp": "母",
-   "pinyin": "mǔ",
-   "struct": "D",
-   "focus": "Z",
-   "phrase": "母高氏",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1950,
-    1514,
-    2103,
-    1644
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "氏",
-   "simp": "氏",
-   "pinyin": "shì",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "母高氏",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1950,
-    1820,
-    2105,
-    1952
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "乘",
-   "simp": "乘",
-   "pinyin": "shèng",
-   "struct": "D",
-   "focus": "N",
-   "phrase": "三乘教門",
-   "page": 15,
-   "side": "右",
-   "box": [
-    1641,
-    1300,
-    1781,
-    1452
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "象",
-   "simp": "象",
-   "pinyin": "xiàng",
-   "struct": "D",
-   "focus": "P",
-   "phrase": "是生龍象",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1639,
-    1182,
-    1766,
-    1323
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "single",
-   "trad": "我",
-   "simp": "我",
-   "pinyin": "wǒ",
-   "struct": "D",
-   "focus": "G",
-   "phrase": "我能竭誠",
-   "page": 5,
-   "side": "右",
-   "box": [
-    1950,
-    1655,
-    2101,
-    1800
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "法",
-   "simp": "法",
-   "pinyin": "fǎ",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "行法華三昧",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1635,
-    1005,
-    1767,
-    1137
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "師",
-   "simp": "师",
-   "pinyin": "shī",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "有禪師",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2291,
-    1163,
-    2435,
-    1299
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "禪",
-   "simp": "禅",
-   "pinyin": "chán",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "有禪師",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2276,
-    1003,
-    2431,
-    1157
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "陽",
-   "simp": "阳",
-   "pinyin": "yáng",
-   "struct": "LR",
-   "focus": "Z",
-   "phrase": "南陽",
-   "page": 0,
-   "side": "右",
-   "box": [
-    1962,
-    688,
-    2099,
-    845
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "明",
-   "simp": "明",
-   "pinyin": "míng",
-   "struct": "LR",
-   "focus": "P",
-   "phrase": "漢明永平",
-   "page": 6,
-   "side": "左",
-   "box": [
-    1057,
-    1326,
-    1194,
-    1462
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "時",
-   "simp": "时",
-   "pinyin": "shí",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "春秋二時",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1786,
-    840,
-    1925,
-    980
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "相",
-   "simp": "相",
-   "pinyin": "xiàng",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "聖凡相半",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1061,
-    1340,
-    1198,
-    1465
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "利",
-   "simp": "利",
-   "pinyin": "lì",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "所感舍利",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1051,
-    825,
-    1184,
-    965
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "能",
-   "simp": "能",
-   "pinyin": "néng",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "我能竭誠",
-   "page": 5,
-   "side": "右",
-   "box": [
-    1939,
-    1806,
-    2091,
-    1943
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "經",
-   "simp": "经",
-   "pinyin": "jīng",
-   "struct": "LR",
-   "focus": "Z",
-   "phrase": "經聲遞續",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2108,
-    1007,
-    2239,
-    1119
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "誦",
-   "simp": "诵",
-   "pinyin": "sòng",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "塔下誦持",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2267,
-    1300,
-    2414,
-    1439
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "持",
-   "simp": "持",
-   "pinyin": "chí",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "誦持法華",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2257,
-    1452,
-    2422,
-    1591
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "行",
-   "simp": "行",
-   "pinyin": "xíng",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "同行大德",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1786,
-    1320,
-    1927,
-    1459
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "德",
-   "simp": "德",
-   "pinyin": "dé",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "同行大德",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1793,
-    1633,
-    1937,
-    1785
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "鏡",
-   "simp": "镜",
-   "pinyin": "jìng",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "照圓鏡",
-   "page": 15,
-   "side": "右",
-   "box": [
-    2120,
-    1454,
-    2284,
-    1599
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "海",
-   "simp": "海",
-   "pinyin": "hǎi",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "海之波濤",
-   "page": 1,
-   "side": "左",
-   "box": [
-    567,
-    371,
-    709,
-    504
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "流",
-   "simp": "流",
-   "pinyin": "liú",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "流注千福",
-   "page": 4,
-   "side": "右",
-   "box": [
-    2296,
-    1164,
-    2436,
-    1283
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "清",
-   "simp": "清",
-   "pinyin": "qīng",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "千福清澄",
-   "page": 4,
-   "side": "右",
-   "box": [
-    2292,
-    1792,
-    2423,
-    1941
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "淨",
-   "simp": "净",
-   "pinyin": "jìng",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "寺內淨人",
-   "page": 4,
-   "side": "右",
-   "box": [
-    1794,
-    1466,
-    1929,
-    1619
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "深",
-   "simp": "深",
-   "pinyin": "shēn",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "感深悲生",
-   "page": 3,
-   "side": "右",
-   "box": [
-    2138,
-    1155,
-    2286,
-    1299
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "動",
-   "simp": "动",
-   "pinyin": "dòng",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "圓體自動",
-   "page": 10,
-   "side": "右",
-   "box": [
-    2287,
-    1310,
-    2442,
-    1451
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "功",
-   "simp": "功",
-   "pinyin": "gōng",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "度財功百",
-   "page": 7,
-   "side": "右",
-   "box": [
-    2296,
-    1659,
-    2435,
-    1776
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "現",
-   "simp": "现",
-   "pinyin": "xiàn",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "證經之踊現",
-   "page": 0,
-   "side": "左",
-   "box": [
-    749,
-    1830,
-    878,
-    1941
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "就",
-   "simp": "就",
-   "pinyin": "jiù",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "塔事將就",
-   "page": 7,
-   "side": "左",
-   "box": [
-    735,
-    1320,
-    878,
-    1461
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "輪",
-   "simp": "轮",
-   "pinyin": "lún",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "肇安相輪",
-   "page": 5,
-   "side": "左",
-   "box": [
-    704,
-    375,
-    873,
-    508
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "輝",
-   "simp": "辉",
-   "pinyin": "huī",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "日月之光輝",
-   "page": 7,
-   "side": "左",
-   "box": [
-    906,
-    1797,
-    1045,
-    1942
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "知",
-   "simp": "知",
-   "pinyin": "zhī",
-   "struct": "LR",
-   "focus": "P",
-   "phrase": "則知精一",
-   "page": 6,
-   "side": "右",
-   "box": [
-    1624,
-    878,
-    1779,
-    982
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "程",
-   "simp": "程",
-   "pinyin": "chéng",
-   "struct": "LR",
-   "focus": "H",
-   "phrase": "姓程",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2110,
-    514,
-    2256,
-    647
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "姓",
-   "simp": "姓",
-   "pinyin": "xìng",
-   "struct": "LR",
-   "focus": "P",
-   "phrase": "姓程",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2105,
-    353,
-    2258,
-    481
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "信",
-   "simp": "信",
-   "pinyin": "xìn",
-   "struct": "LR",
-   "focus": "P",
-   "phrase": "祖父並信",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2126,
-    1835,
-    2261,
-    1956
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "祖",
-   "simp": "祖",
-   "pinyin": "zǔ",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "祖父並信",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2116,
-    1347,
-    2267,
-    1478
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "歸",
-   "simp": "归",
-   "pinyin": "guī",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "慶歸法胤",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1958,
-    1022,
-    2114,
-    1181
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "絕",
-   "simp": "绝",
-   "pinyin": "jué",
-   "struct": "LR",
-   "focus": "Z",
-   "phrase": "絕於葷茹",
-   "page": 1,
-   "side": "左",
-   "box": [
-    1059,
-    1020,
-    1208,
-    1134
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "於",
-   "simp": "于",
-   "pinyin": "yú",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "絕於葷茹",
-   "page": 1,
-   "side": "左",
-   "box": [
-    1053,
-    1167,
-    1197,
-    1288
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "樹",
-   "simp": "树",
-   "pinyin": "shù",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "道樹萌牙",
-   "page": 1,
-   "side": "左",
-   "box": [
-    883,
-    1158,
-    1021,
-    1300
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "池",
-   "simp": "池",
-   "pinyin": "chí",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "禪池",
-   "page": 1,
-   "side": "左",
-   "box": [
-    725,
-    1190,
-    862,
-    1287
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "誠",
-   "simp": "诚",
-   "pinyin": "chéng",
-   "struct": "LR",
-   "focus": "N",
-   "phrase": "我能竭誠",
-   "page": 5,
-   "side": "右",
-   "box": [
-    1777,
-    515,
-    1946,
-    652
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "鋒",
-   "simp": "锋",
-   "pinyin": "fēng",
-   "struct": "LR",
-   "focus": "N",
-   "phrase": "筆鋒上",
-   "page": 9,
-   "side": "左",
-   "box": [
-    575,
-    840,
-    718,
-    992
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "粒",
-   "simp": "粒",
-   "pinyin": "lì",
-   "struct": "LR",
-   "focus": "H",
-   "phrase": "一百八粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    738,
-    1317,
-    869,
-    1457
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "欲",
-   "simp": "欲",
-   "pinyin": "yù",
-   "struct": "LR",
-   "focus": "N",
-   "phrase": "欲葬舍利",
-   "page": 9,
-   "side": "左",
-   "box": [
-    919,
-    831,
-    1028,
-    940
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "場",
-   "simp": "场",
-   "pinyin": "chǎng",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "前後道場",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1230,
-    1787,
-    1368,
-    1936
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "後",
-   "simp": "后",
-   "pinyin": "hòu",
-   "struct": "LR",
-   "focus": "N",
-   "phrase": "前後道場",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1221,
-    1467,
-    1378,
-    1623
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "恒",
-   "simp": "恒",
-   "pinyin": "héng",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "許為恒式",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1227,
-    999,
-    1368,
-    1140
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "許",
-   "simp": "许",
-   "pinyin": "xǔ",
-   "struct": "LR",
-   "focus": "S",
-   "phrase": "恩旨許為恒式",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1228,
-    669,
-    1367,
-    812
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "秋",
-   "simp": "秋",
-   "pinyin": "qiū",
-   "struct": "LR",
-   "focus": "D",
-   "phrase": "春秋二時",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1777,
-    530,
-    1935,
-    652
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "煙",
-   "simp": "烟",
-   "pinyin": "yān",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "香煙不斷",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2112,
-    525,
-    2248,
-    637
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "斷",
-   "simp": "断",
-   "pinyin": "duàn",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "香煙不斷",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2113,
-    828,
-    2254,
-    971
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "得",
-   "simp": "得",
-   "pinyin": "dé",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "聯得一十九粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    586,
-    1322,
-    705,
-    1465
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "體",
-   "simp": "体",
-   "pinyin": "tǐ",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "圓體自動",
-   "page": 10,
-   "side": "右",
-   "box": [
-    2292,
-    991,
-    2432,
-    1132
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "觀",
-   "simp": "观",
-   "pinyin": "guān",
-   "struct": "LR",
-   "focus": "F",
-   "phrase": "觀身了空",
-   "page": 10,
-   "side": "右",
-   "box": [
-    2143,
-    1152,
-    2292,
-    1298
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "部",
-   "simp": "部",
-   "pinyin": "bù",
-   "struct": "LR",
-   "focus": "G",
-   "phrase": "法華經一部",
-   "page": 10,
-   "side": "右",
-   "box": [
-    1978,
-    1758,
-    2110,
-    1931
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "lr",
-   "trad": "陳",
-   "simp": "陈",
-   "pinyin": "chén",
-   "struct": "LR",
-   "focus": "N",
-   "phrase": "初陳乃昭",
-   "page": 18,
-   "side": "右",
-   "box": [
-    1955,
-    1325,
-    2102,
-    1479
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "華",
-   "simp": "华",
-   "pinyin": "huá",
-   "struct": "TB",
-   "focus": "S",
-   "phrase": "行法華三昧",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1613,
-    1146,
-    1771,
-    1316
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "意",
-   "simp": "意",
-   "pinyin": "yì",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "信女普意",
-   "page": 3,
-   "side": "左",
-   "box": [
-    1236,
-    997,
-    1368,
-    1146
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "普",
-   "simp": "普",
-   "pinyin": "pǔ",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "信女普意",
-   "page": 3,
-   "side": "左",
-   "box": [
-    1233,
-    831,
-    1383,
-    971
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "雲",
-   "simp": "云",
-   "pinyin": "yún",
-   "struct": "TB",
-   "focus": "D",
-   "phrase": "動雲龍之氣象",
-   "page": 7,
-   "side": "左",
-   "box": [
-    1043,
-    1128,
-    1196,
-    1296
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "雪",
-   "simp": "雪",
-   "pinyin": "xuě",
-   "struct": "TB",
-   "focus": "D",
-   "phrase": "冰雪之姿",
-   "page": 16,
-   "side": "右",
-   "box": [
-    2109,
-    517,
-    2257,
-    660
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "香",
-   "simp": "香",
-   "pinyin": "xiāng",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "香煙不斷",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2128,
-    347,
-    2240,
-    481
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "忽",
-   "simp": "忽",
-   "pinyin": "hū",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "忽見寶塔",
-   "page": 2,
-   "side": "左",
-   "box": [
-    567,
-    686,
-    715,
-    845
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "念",
-   "simp": "念",
-   "pinyin": "niàn",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "開玄關於一念",
-   "page": 15,
-   "side": "右",
-   "box": [
-    2133,
-    977,
-    2288,
-    1123
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "思",
-   "simp": "思",
-   "pinyin": "sī",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "趙思偘",
-   "page": 6,
-   "side": "右",
-   "box": [
-    2292,
-    698,
-    2415,
-    813
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "聖",
-   "simp": "圣",
-   "pinyin": "shèng",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "聖凡相半",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1069,
-    1007,
-    1193,
-    1152
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "慈",
-   "simp": "慈",
-   "pinyin": "cí",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "慈航",
-   "page": 4,
-   "side": "左",
-   "box": [
-    930,
-    362,
-    1049,
-    500
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "慧",
-   "simp": "慧",
-   "pinyin": "huì",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "定慧為文質",
-   "page": 17,
-   "side": "右",
-   "box": [
-    2292,
-    511,
-    2415,
-    673
-   ],
-   "cell": 175,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "崇",
-   "simp": "崇",
-   "pinyin": "chóng",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "居士趙崇",
-   "page": 3,
-   "side": "左",
-   "box": [
-    1251,
-    349,
-    1376,
-    500
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "莫",
-   "simp": "莫",
-   "pinyin": "mò",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "莫不圓體",
-   "page": 10,
-   "side": "右",
-   "box": [
-    2293,
-    501,
-    2426,
-    649
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "菩",
-   "simp": "菩",
-   "pinyin": "pú",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "菩薩戒",
-   "page": 10,
-   "side": "右",
-   "box": [
-    1794,
-    360,
-    1931,
-    507
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "晝",
-   "simp": "昼",
-   "pinyin": "zhòu",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "一志晝夜",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2276,
-    643,
-    2408,
-    793
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "志",
-   "simp": "志",
-   "pinyin": "zhì",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "一志晝夜",
-   "page": 9,
-   "side": "右",
-   "box": [
-    2282,
-    501,
-    2406,
-    628
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "恩",
-   "simp": "恩",
-   "pinyin": "ēn",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "尋奉恩旨",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1232,
-    346,
-    1364,
-    487
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "舍",
-   "simp": "舍",
-   "pinyin": "shè",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "所感舍利",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1064,
-    663,
-    1204,
-    799
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "春",
-   "simp": "春",
-   "pinyin": "chūn",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "春秋二時",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1791,
-    357,
-    1926,
-    500
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "集",
-   "simp": "集",
-   "pinyin": "jí",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "集同行大德",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1786,
-    999,
-    1924,
-    1146
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "替",
-   "simp": "替",
-   "pinyin": "tì",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "沒身不替",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1946,
-    1143,
-    2081,
-    1302
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "常",
-   "simp": "常",
-   "pinyin": "cháng",
-   "struct": "TB",
-   "focus": "S",
-   "phrase": "炯以為常",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1943,
-    512,
-    2076,
-    668
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "異",
-   "simp": "异",
-   "pinyin": "yì",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "咸嗅異香",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1203,
-    1646,
-    1365,
-    1791
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "喜",
-   "simp": "喜",
-   "pinyin": "xǐ",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "喜歎之音",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1062,
-    369,
-    1197,
-    506
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "音",
-   "simp": "音",
-   "pinyin": "yīn",
-   "struct": "TB",
-   "focus": "D",
-   "phrase": "喜歎之音",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1051,
-    840,
-    1200,
-    991
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "安",
-   "simp": "安",
-   "pinyin": "ān",
-   "struct": "TB",
-   "focus": "B",
-   "phrase": "肇安相輪",
-   "page": 5,
-   "side": "左",
-   "box": [
-    879,
-    1676,
-    1046,
-    1804
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "家",
-   "simp": "家",
-   "pinyin": "jiā",
-   "struct": "TB",
-   "focus": "B",
-   "phrase": "自誓出家",
-   "page": 2,
-   "side": "右",
-   "box": [
-    2290,
-    1154,
-    2434,
-    1309
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "宿",
-   "simp": "宿",
-   "pinyin": "sù",
-   "struct": "TB",
-   "focus": "B",
-   "phrase": "宿命潛悟",
-   "page": 2,
-   "side": "右",
-   "box": [
-    2121,
-    998,
-    2250,
-    1137
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "空",
-   "simp": "空",
-   "pinyin": "kōng",
-   "struct": "TB",
-   "focus": "B",
-   "phrase": "觀身了空",
-   "page": 10,
-   "side": "右",
-   "box": [
-    2147,
-    1644,
-    2263,
-    1776
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "尊",
-   "simp": "尊",
-   "pinyin": "zūn",
-   "struct": "TB",
-   "focus": "F",
-   "phrase": "二尊分座",
-   "page": 13,
-   "side": "左",
-   "box": [
-    730,
-    832,
-    874,
-    999
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "英",
-   "simp": "英",
-   "pinyin": "yīng",
-   "struct": "TB",
-   "focus": "N",
-   "phrase": "選朝英",
-   "page": 13,
-   "side": "左",
-   "box": [
-    892,
-    353,
-    1033,
-    491
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "若",
-   "simp": "若",
-   "pinyin": "ruò",
-   "struct": "TB",
-   "focus": "P",
-   "phrase": "若注瓶水",
-   "page": 2,
-   "side": "右",
-   "box": [
-    1952,
-    1319,
-    2116,
-    1473
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "首",
-   "simp": "首",
-   "pinyin": "shǒu",
-   "struct": "TB",
-   "focus": "D",
-   "phrase": "善来稽首",
-   "page": 3,
-   "side": "左",
-   "box": [
-    1223,
-    1635,
-    1358,
-    1779
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "善",
-   "simp": "善",
-   "pinyin": "shàn",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "善来稽首",
-   "page": 3,
-   "side": "左",
-   "box": [
-    1222,
-    1160,
-    1369,
-    1301
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "盡",
-   "simp": "尽",
-   "pinyin": "jìn",
-   "struct": "TB",
-   "focus": "D",
-   "phrase": "眾盡瞻覩",
-   "page": 8,
-   "side": "右",
-   "box": [
-    2128,
-    995,
-    2252,
-    1147
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "悲",
-   "simp": "悲",
-   "pinyin": "bēi",
-   "struct": "TB",
-   "focus": "G",
-   "phrase": "感深悲生",
-   "page": 3,
-   "side": "右",
-   "box": [
-    2148,
-    1322,
-    2268,
-    1460
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "tb",
-   "trad": "業",
-   "simp": "业",
-   "pinyin": "yè",
-   "struct": "TB",
-   "focus": "H",
-   "phrase": "業淨感深",
-   "page": 3,
-   "side": "右",
-   "box": [
-    2112,
-    675,
-    2268,
-    829
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "道",
-   "simp": "道",
-   "pinyin": "dào",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "行道眾聞",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1232,
-    522,
-    1361,
-    658
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "遠",
-   "simp": "远",
-   "pinyin": "yuǎn",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "去水不遠",
-   "page": 8,
-   "side": "左",
-   "box": [
-    737,
-    1145,
-    886,
-    1295
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "進",
-   "simp": "进",
-   "pinyin": "jìn",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "進具之年",
-   "page": 2,
-   "side": "右",
-   "box": [
-    1619,
-    1019,
-    1767,
-    1157
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "過",
-   "simp": "过",
-   "pinyin": "guò",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "已過半",
-   "page": 16,
-   "side": "右",
-   "box": [
-    1797,
-    1638,
-    1952,
-    1778
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "遊",
-   "simp": "游",
-   "pinyin": "yóu",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "童遊道樹",
-   "page": 1,
-   "side": "左",
-   "box": [
-    889,
-    834,
-    1039,
-    977
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "通",
-   "simp": "通",
-   "pinyin": "tōng",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "佛心感通",
-   "page": 5,
-   "side": "左",
-   "box": [
-    725,
-    1668,
-    871,
-    1817
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "遍",
-   "simp": "遍",
-   "pinyin": "biàn",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "遍滿空界",
-   "page": 3,
-   "side": "右",
-   "box": [
-    2298,
-    999,
-    2429,
-    1139
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "遺",
-   "simp": "遗",
-   "pinyin": "yí",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "持不遺",
-   "page": 2,
-   "side": "右",
-   "box": [
-    1944,
-    1137,
-    2115,
-    1317
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "造",
-   "simp": "造",
-   "pinyin": "zào",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "兼造自身",
-   "page": 10,
-   "side": "左",
-   "box": [
-    1220,
-    965,
-    1372,
-    1131
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "廣",
-   "simp": "广",
-   "pinyin": "guǎng",
-   "struct": "EN",
-   "focus": "P",
-   "phrase": "廣平人也",
-   "page": 1,
-   "side": "右",
-   "box": [
-    2116,
-    674,
-    2246,
-    819
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "度",
-   "simp": "度",
-   "pinyin": "dù",
-   "struct": "EN",
-   "focus": "P",
-   "phrase": "庀徒度財",
-   "page": 7,
-   "side": "右",
-   "box": [
-    2273,
-    1326,
-    2438,
-    1479
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "慶",
-   "simp": "庆",
-   "pinyin": "qìng",
-   "struct": "EN",
-   "focus": "P",
-   "phrase": "慶歸法胤",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1946,
-    855,
-    2102,
-    1012
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "庭",
-   "simp": "庭",
-   "pinyin": "tíng",
-   "struct": "EN",
-   "focus": "W",
-   "phrase": "出戶庭",
-   "page": 3,
-   "side": "右",
-   "box": [
-    1792,
-    670,
-    1948,
-    819
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "座",
-   "simp": "座",
-   "pinyin": "zuò",
-   "struct": "EN",
-   "focus": "P",
-   "phrase": "進具之年昇座",
-   "page": 2,
-   "side": "右",
-   "box": [
-    1638,
-    1824,
-    1768,
-    1949
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "圓",
-   "simp": "圆",
-   "pinyin": "yuán",
-   "struct": "EN",
-   "focus": "Z",
-   "phrase": "莫不圓體",
-   "page": 10,
-   "side": "右",
-   "box": [
-    2300,
-    833,
-    2418,
-    971
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "因",
-   "simp": "因",
-   "pinyin": "yīn",
-   "struct": "EN",
-   "focus": "Z",
-   "phrase": "尔後因靜夜",
-   "page": 2,
-   "side": "左",
-   "box": [
-    921,
-    1013,
-    1026,
-    1136
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "同",
-   "simp": "同",
-   "pinyin": "tóng",
-   "struct": "EN",
-   "focus": "G",
-   "phrase": "集同行",
-   "page": 9,
-   "side": "右",
-   "box": [
-    1802,
-    1170,
-    1913,
-    1303
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "門",
-   "simp": "门",
-   "pinyin": "mén",
-   "struct": "EN",
-   "focus": "G",
-   "phrase": "著釋門",
-   "page": 1,
-   "side": "右",
-   "box": [
-    1964,
-    704,
-    2080,
-    846
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "開",
-   "simp": "开",
-   "pinyin": "kāi",
-   "struct": "EN",
-   "focus": "G",
-   "phrase": "開於法性",
-   "page": 4,
-   "side": "左",
-   "box": [
-    1073,
-    672,
-    1195,
-    827
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "聞",
-   "simp": "闻",
-   "pinyin": "wén",
-   "struct": "EN",
-   "focus": "G",
-   "phrase": "眾聞天樂",
-   "page": 5,
-   "side": "左",
-   "box": [
-    1228,
-    838,
-    1355,
-    994
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "內",
-   "simp": "内",
-   "pinyin": "nèi",
-   "struct": "EN",
-   "focus": "G",
-   "phrase": "寺內淨人",
-   "page": 4,
-   "side": "右",
-   "box": [
-    1802,
-    1320,
-    1919,
-    1449
-   ],
-   "cell": 173,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "凡",
-   "simp": "凡",
-   "pinyin": "fán",
-   "struct": "EN",
-   "focus": "G",
-   "phrase": "凡三千七十粒",
-   "page": 9,
-   "side": "左",
-   "box": [
-    1076,
-    1005,
-    1206,
-    1115
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "函",
-   "simp": "函",
-   "pinyin": "hán",
-   "struct": "EN",
-   "focus": "Z",
-   "phrase": "以石函",
-   "page": 10,
-   "side": "左",
-   "box": [
-    1231,
-    664,
-    1360,
-    788
-   ],
-   "cell": 174,
-   "bg_thr": 110
-  },
-  {
-   "chapter": "en",
-   "trad": "匹",
-   "simp": "匹",
-   "pinyin": "pǐ",
-   "struct": "EN",
-   "focus": "Z",
-   "phrase": "絹千匹",
-   "page": 6,
-   "side": "右",
-   "box": [
-    1811,
-    1508,
-    1921,
-    1601
-   ],
-   "cell": 174,
-   "bg_thr": 110
+ },
+ "books": [
+  {
+   "key": "duobao",
+   "name": "多宝塔碑",
+   "name_v": "多\n宝\n塔\n碑",
+   "era": "唐天宝十一载（752）",
+   "emblem": "寶",
+   "intro": "全称《大唐西京千福寺\n多宝佛塔感应碑》。\n唐天宝十一载（752）立，\n岑勋撰文，颜真卿书丹，\n徐浩题额，今藏西安碑林。\n\n颜真卿时年四十四岁，\n结字严密，端庄秀丽，\n是初学颜体的经典范本。",
+   "source_text": "宋拓《多宝佛塔碑》册，\n台北故宫博物院藏\n（故帖000019），\n经维基共享资源以\n公有领域发布。\n\n选取 188 字，逐字裁切，\n保留石花与笔意，\n未作描修。",
+   "chapters": [
+    {
+     "key": "title",
+     "name": "篇首"
+    },
+    {
+     "key": "num",
+     "name": "数目"
+    },
+    {
+     "key": "single",
+     "name": "独体"
+    },
+    {
+     "key": "lr",
+     "name": "左右"
+    },
+    {
+     "key": "tb",
+     "name": "上下"
+    },
+    {
+     "key": "en",
+     "name": "包围"
+    }
+   ],
+   "entries": [
+    {
+     "chapter": "title",
+     "trad": "大",
+     "simp": "大",
+     "pinyin": "dà",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "大唐西京",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2288,
+      356,
+      2432,
+      498
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "唐",
+     "simp": "唐",
+     "pinyin": "táng",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "大唐西京",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2290,
+      509,
+      2418,
+      659
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "西",
+     "simp": "西",
+     "pinyin": "xī",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "住西京龍興寺",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1810,
+      1185,
+      1926,
+      1288
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "title",
+     "trad": "京",
+     "simp": "京",
+     "pinyin": "jīng",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "西京龍興寺",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1811,
+      1325,
+      1932,
+      1478
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "title",
+     "trad": "千",
+     "simp": "千",
+     "pinyin": "qiān",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "千福寺",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2303,
+      998,
+      2433,
+      1134
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "福",
+     "simp": "福",
+     "pinyin": "fú",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "千福寺",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2300,
+      1162,
+      2444,
+      1298
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "寺",
+     "simp": "寺",
+     "pinyin": "sì",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "千福寺",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2297,
+      1321,
+      2431,
+      1460
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "多",
+     "simp": "多",
+     "pinyin": "duō",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "多寶塔品",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      752,
+      374,
+      854,
+      512
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "title",
+     "trad": "寶",
+     "simp": "宝",
+     "pinyin": "bǎo",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "多寶佛塔",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      735,
+      640,
+      846,
+      805
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "佛",
+     "simp": "佛",
+     "pinyin": "fó",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "多寶佛塔",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      731,
+      818,
+      857,
+      955
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "塔",
+     "simp": "塔",
+     "pinyin": "tǎ",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "多寶佛塔",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      721,
+      987,
+      880,
+      1114
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "感",
+     "simp": "感",
+     "pinyin": "gǎn",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "所感舍利",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1055,
+      487,
+      1214,
+      647
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "應",
+     "simp": "应",
+     "pinyin": "yìng",
+     "struct": "EN",
+     "focus": "D",
+     "phrase": "受持靈應",
+     "source": "宋拓本 第12开 · 右页",
+     "src": "duobao",
+     "page": 11,
+     "box": [
+      1947,
+      1482,
+      2085,
+      1627
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "碑",
+     "simp": "碑",
+     "pinyin": "bēi",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "感應碑文",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2136,
+      1014,
+      2271,
+      1143
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "文",
+     "simp": "文",
+     "pinyin": "wén",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "感應碑文",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      2144,
+      1181,
+      2277,
+      1307
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "顏",
+     "simp": "颜",
+     "pinyin": "yán",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "顏真卿書",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1620,
+      676,
+      1773,
+      826
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "真",
+     "simp": "真",
+     "pinyin": "zhēn",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "顏真卿書",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1632,
+      844,
+      1772,
+      988
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "卿",
+     "simp": "卿",
+     "pinyin": "qīng",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "顏真卿書",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1631,
+      1000,
+      1783,
+      1162
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "title",
+     "trad": "書",
+     "simp": "书",
+     "pinyin": "shū",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "尚書武部",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1793,
+      833,
+      1934,
+      997
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "一",
+     "simp": "一",
+     "pinyin": "yī",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "一志晝夜",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2280,
+      389,
+      2408,
+      438
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "二",
+     "simp": "二",
+     "pinyin": "èr",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "春秋二時",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1776,
+      707,
+      1914,
+      792
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "三",
+     "simp": "三",
+     "pinyin": "sān",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "自三載",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1957,
+      1492,
+      2095,
+      1598
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "四",
+     "simp": "四",
+     "pinyin": "sì",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "大德四十九人",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1800,
+      1826,
+      1925,
+      1943
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "五",
+     "simp": "五",
+     "pinyin": "wǔ",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "錢五十萬",
+     "source": "宋拓本 第7开 · 右页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1776,
+      702,
+      1944,
+      820
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "六",
+     "simp": "六",
+     "pinyin": "liù",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "至六載",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      892,
+      523,
+      1031,
+      617
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "七",
+     "simp": "七",
+     "pinyin": "qī",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "三千七十粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1065,
+      1493,
+      1188,
+      1582
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "八",
+     "simp": "八",
+     "pinyin": "bā",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "一百八粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      753,
+      1185,
+      877,
+      1266
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "九",
+     "simp": "九",
+     "pinyin": "jiǔ",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "四十九人",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1623,
+      535,
+      1762,
+      631
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "十",
+     "simp": "十",
+     "pinyin": "shí",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "四十九人",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1626,
+      360,
+      1754,
+      494
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "百",
+     "simp": "百",
+     "pinyin": "bǎi",
+     "struct": "TB",
+     "focus": "Z",
+     "phrase": "一百八粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      747,
+      1009,
+      864,
+      1126
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "千",
+     "simp": "千",
+     "pinyin": "qiān",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "三千七十粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1066,
+      1306,
+      1182,
+      1438
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "num",
+     "trad": "萬",
+     "simp": "万",
+     "pinyin": "wàn",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "錢五十萬",
+     "source": "宋拓本 第7开 · 右页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1797,
+      1003,
+      1933,
+      1148
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "人",
+     "simp": "人",
+     "pinyin": "rén",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "廣平人也",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2101,
+      1039,
+      2264,
+      1137
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "入",
+     "simp": "入",
+     "pinyin": "rù",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "如入禪定",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      736,
+      1830,
+      883,
+      1929
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "天",
+     "simp": "天",
+     "pinyin": "tiān",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "眾聞天樂",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1239,
+      1009,
+      1373,
+      1141
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "夫",
+     "simp": "夫",
+     "pinyin": "fū",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "朝散大夫",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1222,
+      522,
+      1371,
+      672
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "上",
+     "simp": "上",
+     "pinyin": "shàng",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "筆鋒上",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      609,
+      1020,
+      710,
+      1120
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "下",
+     "simp": "下",
+     "pinyin": "xià",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "塔下誦持",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2276,
+      1150,
+      2403,
+      1269
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "中",
+     "simp": "中",
+     "pinyin": "zhōng",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "勅中使",
+     "source": "宋拓本 第8开 · 右页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      2152,
+      1641,
+      2258,
+      1772
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "王",
+     "simp": "王",
+     "pinyin": "wáng",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "許王瓘",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1652,
+      1017,
+      1765,
+      1126
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "日",
+     "simp": "日",
+     "pinyin": "rì",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "七月十三日",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      593,
+      1357,
+      665,
+      1456
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "月",
+     "simp": "月",
+     "pinyin": "yuè",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "七月十三日",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      580,
+      853,
+      670,
+      998
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "目",
+     "simp": "目",
+     "pinyin": "mù",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "宛在目前",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      591,
+      1661,
+      676,
+      1781
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "山",
+     "simp": "山",
+     "pinyin": "shān",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "詣寶山",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1088,
+      1160,
+      1214,
+      1253
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "水",
+     "simp": "水",
+     "pinyin": "shuǐ",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "水發源",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      2296,
+      364,
+      2432,
+      492
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "木",
+     "simp": "木",
+     "pinyin": "mù",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "創構材木",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      891,
+      1350,
+      1029,
+      1495
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "心",
+     "simp": "心",
+     "pinyin": "xīn",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "身心泊然",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      731,
+      1196,
+      867,
+      1280
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "力",
+     "simp": "力",
+     "pinyin": "lì",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "十力弘建",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      580,
+      1331,
+      692,
+      1462
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "又",
+     "simp": "又",
+     "pinyin": "yòu",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "又見寶塔",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      2135,
+      1484,
+      2265,
+      1593
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "及",
+     "simp": "及",
+     "pinyin": "jí",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "王瓘及居士",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1651,
+      1339,
+      1788,
+      1467
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "久",
+     "simp": "久",
+     "pinyin": "jiǔ",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "久之乃滅",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      1948,
+      1155,
+      2101,
+      1265
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "乃",
+     "simp": "乃",
+     "pinyin": "nǎi",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "久之乃滅",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      1949,
+      1465,
+      2074,
+      1606
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "也",
+     "simp": "也",
+     "pinyin": "yě",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "秘藏也",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      719,
+      350,
+      864,
+      441
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "子",
+     "simp": "子",
+     "pinyin": "zǐ",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "窮子之疾走",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1233,
+      1653,
+      1368,
+      1799
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "女",
+     "simp": "女",
+     "pinyin": "nǚ",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "信女普意",
+     "source": "宋拓本 第4开 · 左页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1228,
+      685,
+      1391,
+      796
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "生",
+     "simp": "生",
+     "pinyin": "shēng",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "是生龍象",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1640,
+      876,
+      1756,
+      997
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "方",
+     "simp": "方",
+     "pinyin": "fāng",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "中有方舟",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      2118,
+      1170,
+      2254,
+      1299
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "永",
+     "simp": "永",
+     "pinyin": "yǒng",
+     "struct": "D",
+     "focus": "Y",
+     "phrase": "漢明永平",
+     "source": "宋拓本 第7开 · 左页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1067,
+      1476,
+      1217,
+      1628
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "不",
+     "simp": "不",
+     "pinyin": "bù",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "一食不出",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1981,
+      1815,
+      2110,
+      1935
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "而",
+     "simp": "而",
+     "pinyin": "ér",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "天而不違",
+     "source": "宋拓本 第7开 · 左页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1221,
+      524,
+      1353,
+      642
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "至",
+     "simp": "至",
+     "pinyin": "zhì",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "至天寶元載",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1051,
+      1655,
+      1193,
+      1787
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "求",
+     "simp": "求",
+     "pinyin": "qiú",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "求諸寶坊",
+     "source": "宋拓本 第7开 · 右页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      2294,
+      997,
+      2445,
+      1141
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "事",
+     "simp": "事",
+     "pinyin": "shì",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "總僧事",
+     "source": "宋拓本 第8开 · 右页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      1650,
+      696,
+      1763,
+      852
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "年",
+     "simp": "年",
+     "pinyin": "nián",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "年甫七歲",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      561,
+      1008,
+      698,
+      1145
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "身",
+     "simp": "身",
+     "pinyin": "shēn",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "沒身不替",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1964,
+      824,
+      2068,
+      982
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "自",
+     "simp": "自",
+     "pinyin": "zì",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "自三載",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1976,
+      1315,
+      2056,
+      1441
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "金",
+     "simp": "金",
+     "pinyin": "jīn",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "法号楚金",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2285,
+      1810,
+      2448,
+      1945
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "東",
+     "simp": "东",
+     "pinyin": "dōng",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "東海徐浩",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1059,
+      533,
+      1209,
+      702
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "果",
+     "simp": "果",
+     "pinyin": "guǒ",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "義成因果",
+     "source": "宋拓本 第12开 · 左页",
+     "src": "duobao",
+     "page": 11,
+     "box": [
+      889,
+      1486,
+      1014,
+      1619
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "母",
+     "simp": "母",
+     "pinyin": "mǔ",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "母高氏",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1950,
+      1514,
+      2103,
+      1644
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "氏",
+     "simp": "氏",
+     "pinyin": "shì",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "母高氏",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1950,
+      1820,
+      2105,
+      1952
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "乘",
+     "simp": "乘",
+     "pinyin": "shèng",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "三乘教門",
+     "source": "宋拓本 第16开 · 右页",
+     "src": "duobao",
+     "page": 15,
+     "box": [
+      1641,
+      1300,
+      1781,
+      1452
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "single",
+     "trad": "象",
+     "simp": "象",
+     "pinyin": "xiàng",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "是生龍象",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1639,
+      1182,
+      1766,
+      1323
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "single",
+     "trad": "我",
+     "simp": "我",
+     "pinyin": "wǒ",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "我能竭誠",
+     "source": "宋拓本 第6开 · 右页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1950,
+      1655,
+      2101,
+      1800
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "法",
+     "simp": "法",
+     "pinyin": "fǎ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "行法華三昧",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1635,
+      1005,
+      1767,
+      1137
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "師",
+     "simp": "师",
+     "pinyin": "shī",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "有禪師",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2291,
+      1163,
+      2435,
+      1299
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "禪",
+     "simp": "禅",
+     "pinyin": "chán",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "有禪師",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2276,
+      1003,
+      2431,
+      1157
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "陽",
+     "simp": "阳",
+     "pinyin": "yáng",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "南陽",
+     "source": "宋拓本 第1开 · 右页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      1962,
+      688,
+      2099,
+      845
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "明",
+     "simp": "明",
+     "pinyin": "míng",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "漢明永平",
+     "source": "宋拓本 第7开 · 左页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1057,
+      1326,
+      1194,
+      1462
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "時",
+     "simp": "时",
+     "pinyin": "shí",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "春秋二時",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1786,
+      840,
+      1925,
+      980
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "相",
+     "simp": "相",
+     "pinyin": "xiàng",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "聖凡相半",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1061,
+      1340,
+      1198,
+      1465
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "利",
+     "simp": "利",
+     "pinyin": "lì",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "所感舍利",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1051,
+      825,
+      1184,
+      965
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "能",
+     "simp": "能",
+     "pinyin": "néng",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "我能竭誠",
+     "source": "宋拓本 第6开 · 右页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1939,
+      1806,
+      2091,
+      1943
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "經",
+     "simp": "经",
+     "pinyin": "jīng",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "經聲遞續",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2108,
+      1007,
+      2239,
+      1119
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "誦",
+     "simp": "诵",
+     "pinyin": "sòng",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "塔下誦持",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2267,
+      1300,
+      2414,
+      1439
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "持",
+     "simp": "持",
+     "pinyin": "chí",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "誦持法華",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2257,
+      1452,
+      2422,
+      1591
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "行",
+     "simp": "行",
+     "pinyin": "xíng",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "同行大德",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1786,
+      1320,
+      1927,
+      1459
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "德",
+     "simp": "德",
+     "pinyin": "dé",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "同行大德",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1793,
+      1633,
+      1937,
+      1785
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "鏡",
+     "simp": "镜",
+     "pinyin": "jìng",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "照圓鏡",
+     "source": "宋拓本 第16开 · 右页",
+     "src": "duobao",
+     "page": 15,
+     "box": [
+      2120,
+      1454,
+      2284,
+      1599
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "海",
+     "simp": "海",
+     "pinyin": "hǎi",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "海之波濤",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      567,
+      371,
+      709,
+      504
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "流",
+     "simp": "流",
+     "pinyin": "liú",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "流注千福",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      2296,
+      1164,
+      2436,
+      1283
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "清",
+     "simp": "清",
+     "pinyin": "qīng",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "千福清澄",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      2292,
+      1792,
+      2423,
+      1941
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "淨",
+     "simp": "净",
+     "pinyin": "jìng",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "寺內淨人",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      1794,
+      1466,
+      1929,
+      1619
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "深",
+     "simp": "深",
+     "pinyin": "shēn",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "感深悲生",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      2138,
+      1155,
+      2286,
+      1299
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "動",
+     "simp": "动",
+     "pinyin": "dòng",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "圓體自動",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      2287,
+      1310,
+      2442,
+      1451
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "功",
+     "simp": "功",
+     "pinyin": "gōng",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "度財功百",
+     "source": "宋拓本 第8开 · 右页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      2296,
+      1659,
+      2435,
+      1776
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "現",
+     "simp": "现",
+     "pinyin": "xiàn",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "證經之踊現",
+     "source": "宋拓本 第1开 · 左页",
+     "src": "duobao",
+     "page": 0,
+     "box": [
+      749,
+      1830,
+      878,
+      1941
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "就",
+     "simp": "就",
+     "pinyin": "jiù",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "塔事將就",
+     "source": "宋拓本 第8开 · 左页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      735,
+      1320,
+      878,
+      1461
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "輪",
+     "simp": "轮",
+     "pinyin": "lún",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "肇安相輪",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      704,
+      375,
+      873,
+      508
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "輝",
+     "simp": "辉",
+     "pinyin": "huī",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "日月之光輝",
+     "source": "宋拓本 第8开 · 左页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      906,
+      1797,
+      1045,
+      1942
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "知",
+     "simp": "知",
+     "pinyin": "zhī",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "則知精一",
+     "source": "宋拓本 第7开 · 右页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1624,
+      878,
+      1779,
+      982
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "程",
+     "simp": "程",
+     "pinyin": "chéng",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "姓程",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2110,
+      514,
+      2256,
+      647
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "姓",
+     "simp": "姓",
+     "pinyin": "xìng",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "姓程",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2105,
+      353,
+      2258,
+      481
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "信",
+     "simp": "信",
+     "pinyin": "xìn",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "祖父並信",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2126,
+      1835,
+      2261,
+      1956
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "祖",
+     "simp": "祖",
+     "pinyin": "zǔ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "祖父並信",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2116,
+      1347,
+      2267,
+      1478
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "歸",
+     "simp": "归",
+     "pinyin": "guī",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "慶歸法胤",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1958,
+      1022,
+      2114,
+      1181
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "絕",
+     "simp": "绝",
+     "pinyin": "jué",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "絕於葷茹",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1059,
+      1020,
+      1208,
+      1134
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "於",
+     "simp": "于",
+     "pinyin": "yú",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "絕於葷茹",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1053,
+      1167,
+      1197,
+      1288
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "樹",
+     "simp": "树",
+     "pinyin": "shù",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "道樹萌牙",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      883,
+      1158,
+      1021,
+      1300
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "池",
+     "simp": "池",
+     "pinyin": "chí",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "禪池",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      725,
+      1190,
+      862,
+      1287
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "誠",
+     "simp": "诚",
+     "pinyin": "chéng",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "我能竭誠",
+     "source": "宋拓本 第6开 · 右页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1777,
+      515,
+      1946,
+      652
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "lr",
+     "trad": "鋒",
+     "simp": "锋",
+     "pinyin": "fēng",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "筆鋒上",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      575,
+      840,
+      718,
+      992
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "粒",
+     "simp": "粒",
+     "pinyin": "lì",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "一百八粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      738,
+      1317,
+      869,
+      1457
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "欲",
+     "simp": "欲",
+     "pinyin": "yù",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "欲葬舍利",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      919,
+      831,
+      1028,
+      940
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "場",
+     "simp": "场",
+     "pinyin": "chǎng",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "前後道場",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1230,
+      1787,
+      1368,
+      1936
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "後",
+     "simp": "后",
+     "pinyin": "hòu",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "前後道場",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1221,
+      1467,
+      1378,
+      1623
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "恒",
+     "simp": "恒",
+     "pinyin": "héng",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "許為恒式",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1227,
+      999,
+      1368,
+      1140
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "許",
+     "simp": "许",
+     "pinyin": "xǔ",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "恩旨許為恒式",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1228,
+      669,
+      1367,
+      812
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "秋",
+     "simp": "秋",
+     "pinyin": "qiū",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "春秋二時",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1777,
+      530,
+      1935,
+      652
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "煙",
+     "simp": "烟",
+     "pinyin": "yān",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "香煙不斷",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2112,
+      525,
+      2248,
+      637
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "斷",
+     "simp": "断",
+     "pinyin": "duàn",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "香煙不斷",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2113,
+      828,
+      2254,
+      971
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "得",
+     "simp": "得",
+     "pinyin": "dé",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "聯得一十九粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      586,
+      1322,
+      705,
+      1465
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "體",
+     "simp": "体",
+     "pinyin": "tǐ",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "圓體自動",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      2292,
+      991,
+      2432,
+      1132
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "觀",
+     "simp": "观",
+     "pinyin": "guān",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "觀身了空",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      2143,
+      1152,
+      2292,
+      1298
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "部",
+     "simp": "部",
+     "pinyin": "bù",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "法華經一部",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      1978,
+      1758,
+      2110,
+      1931
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "lr",
+     "trad": "陳",
+     "simp": "陈",
+     "pinyin": "chén",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "初陳乃昭",
+     "source": "宋拓本 第19开 · 右页",
+     "src": "duobao",
+     "page": 18,
+     "box": [
+      1955,
+      1325,
+      2102,
+      1479
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "華",
+     "simp": "华",
+     "pinyin": "huá",
+     "struct": "TB",
+     "focus": "S",
+     "phrase": "行法華三昧",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1613,
+      1146,
+      1771,
+      1316
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "意",
+     "simp": "意",
+     "pinyin": "yì",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "信女普意",
+     "source": "宋拓本 第4开 · 左页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1236,
+      997,
+      1368,
+      1146
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "普",
+     "simp": "普",
+     "pinyin": "pǔ",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "信女普意",
+     "source": "宋拓本 第4开 · 左页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1233,
+      831,
+      1383,
+      971
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "雲",
+     "simp": "云",
+     "pinyin": "yún",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "動雲龍之氣象",
+     "source": "宋拓本 第8开 · 左页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      1043,
+      1128,
+      1196,
+      1296
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "雪",
+     "simp": "雪",
+     "pinyin": "xuě",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "冰雪之姿",
+     "source": "宋拓本 第17开 · 右页",
+     "src": "duobao",
+     "page": 16,
+     "box": [
+      2109,
+      517,
+      2257,
+      660
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "香",
+     "simp": "香",
+     "pinyin": "xiāng",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "香煙不斷",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2128,
+      347,
+      2240,
+      481
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "忽",
+     "simp": "忽",
+     "pinyin": "hū",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "忽見寶塔",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      567,
+      686,
+      715,
+      845
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "念",
+     "simp": "念",
+     "pinyin": "niàn",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "開玄關於一念",
+     "source": "宋拓本 第16开 · 右页",
+     "src": "duobao",
+     "page": 15,
+     "box": [
+      2133,
+      977,
+      2288,
+      1123
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "思",
+     "simp": "思",
+     "pinyin": "sī",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "趙思偘",
+     "source": "宋拓本 第7开 · 右页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      2292,
+      698,
+      2415,
+      813
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "聖",
+     "simp": "圣",
+     "pinyin": "shèng",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "聖凡相半",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1069,
+      1007,
+      1193,
+      1152
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "慈",
+     "simp": "慈",
+     "pinyin": "cí",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "慈航",
+     "source": "宋拓本 第5开 · 左页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      930,
+      362,
+      1049,
+      500
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "慧",
+     "simp": "慧",
+     "pinyin": "huì",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "定慧為文質",
+     "source": "宋拓本 第18开 · 右页",
+     "src": "duobao",
+     "page": 17,
+     "box": [
+      2292,
+      511,
+      2415,
+      673
+     ],
+     "cell": 175
+    },
+    {
+     "chapter": "tb",
+     "trad": "崇",
+     "simp": "崇",
+     "pinyin": "chóng",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "居士趙崇",
+     "source": "宋拓本 第4开 · 左页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1251,
+      349,
+      1376,
+      500
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "莫",
+     "simp": "莫",
+     "pinyin": "mò",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "莫不圓體",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      2293,
+      501,
+      2426,
+      649
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "菩",
+     "simp": "菩",
+     "pinyin": "pú",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "菩薩戒",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      1794,
+      360,
+      1931,
+      507
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "晝",
+     "simp": "昼",
+     "pinyin": "zhòu",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "一志晝夜",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2276,
+      643,
+      2408,
+      793
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "志",
+     "simp": "志",
+     "pinyin": "zhì",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "一志晝夜",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      2282,
+      501,
+      2406,
+      628
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "恩",
+     "simp": "恩",
+     "pinyin": "ēn",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "尋奉恩旨",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1232,
+      346,
+      1364,
+      487
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "舍",
+     "simp": "舍",
+     "pinyin": "shè",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "所感舍利",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1064,
+      663,
+      1204,
+      799
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "春",
+     "simp": "春",
+     "pinyin": "chūn",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "春秋二時",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1791,
+      357,
+      1926,
+      500
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "集",
+     "simp": "集",
+     "pinyin": "jí",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "集同行大德",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1786,
+      999,
+      1924,
+      1146
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "替",
+     "simp": "替",
+     "pinyin": "tì",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "沒身不替",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1946,
+      1143,
+      2081,
+      1302
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "常",
+     "simp": "常",
+     "pinyin": "cháng",
+     "struct": "TB",
+     "focus": "S",
+     "phrase": "炯以為常",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1943,
+      512,
+      2076,
+      668
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "異",
+     "simp": "异",
+     "pinyin": "yì",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "咸嗅異香",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1203,
+      1646,
+      1365,
+      1791
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "喜",
+     "simp": "喜",
+     "pinyin": "xǐ",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "喜歎之音",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1062,
+      369,
+      1197,
+      506
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "音",
+     "simp": "音",
+     "pinyin": "yīn",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "喜歎之音",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1051,
+      840,
+      1200,
+      991
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "安",
+     "simp": "安",
+     "pinyin": "ān",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "肇安相輪",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      879,
+      1676,
+      1046,
+      1804
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "家",
+     "simp": "家",
+     "pinyin": "jiā",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "自誓出家",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      2290,
+      1154,
+      2434,
+      1309
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "宿",
+     "simp": "宿",
+     "pinyin": "sù",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "宿命潛悟",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      2121,
+      998,
+      2250,
+      1137
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "空",
+     "simp": "空",
+     "pinyin": "kōng",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "觀身了空",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      2147,
+      1644,
+      2263,
+      1776
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "尊",
+     "simp": "尊",
+     "pinyin": "zūn",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "二尊分座",
+     "source": "宋拓本 第14开 · 左页",
+     "src": "duobao",
+     "page": 13,
+     "box": [
+      730,
+      832,
+      874,
+      999
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "英",
+     "simp": "英",
+     "pinyin": "yīng",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "選朝英",
+     "source": "宋拓本 第14开 · 左页",
+     "src": "duobao",
+     "page": 13,
+     "box": [
+      892,
+      353,
+      1033,
+      491
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "若",
+     "simp": "若",
+     "pinyin": "ruò",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "若注瓶水",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1952,
+      1319,
+      2116,
+      1473
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "首",
+     "simp": "首",
+     "pinyin": "shǒu",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "善来稽首",
+     "source": "宋拓本 第4开 · 左页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1223,
+      1635,
+      1358,
+      1779
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "善",
+     "simp": "善",
+     "pinyin": "shàn",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "善来稽首",
+     "source": "宋拓本 第4开 · 左页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1222,
+      1160,
+      1369,
+      1301
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "盡",
+     "simp": "尽",
+     "pinyin": "jìn",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "眾盡瞻覩",
+     "source": "宋拓本 第9开 · 右页",
+     "src": "duobao",
+     "page": 8,
+     "box": [
+      2128,
+      995,
+      2252,
+      1147
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "tb",
+     "trad": "悲",
+     "simp": "悲",
+     "pinyin": "bēi",
+     "struct": "TB",
+     "focus": "G",
+     "phrase": "感深悲生",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      2148,
+      1322,
+      2268,
+      1460
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "tb",
+     "trad": "業",
+     "simp": "业",
+     "pinyin": "yè",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "業淨感深",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      2112,
+      675,
+      2268,
+      829
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "道",
+     "simp": "道",
+     "pinyin": "dào",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "行道眾聞",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1232,
+      522,
+      1361,
+      658
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "遠",
+     "simp": "远",
+     "pinyin": "yuǎn",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "去水不遠",
+     "source": "宋拓本 第9开 · 左页",
+     "src": "duobao",
+     "page": 8,
+     "box": [
+      737,
+      1145,
+      886,
+      1295
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "進",
+     "simp": "进",
+     "pinyin": "jìn",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "進具之年",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1619,
+      1019,
+      1767,
+      1157
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "過",
+     "simp": "过",
+     "pinyin": "guò",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "已過半",
+     "source": "宋拓本 第17开 · 右页",
+     "src": "duobao",
+     "page": 16,
+     "box": [
+      1797,
+      1638,
+      1952,
+      1778
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "遊",
+     "simp": "游",
+     "pinyin": "yóu",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "童遊道樹",
+     "source": "宋拓本 第2开 · 左页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      889,
+      834,
+      1039,
+      977
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "通",
+     "simp": "通",
+     "pinyin": "tōng",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "佛心感通",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      725,
+      1668,
+      871,
+      1817
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "遍",
+     "simp": "遍",
+     "pinyin": "biàn",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "遍滿空界",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      2298,
+      999,
+      2429,
+      1139
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "遺",
+     "simp": "遗",
+     "pinyin": "yí",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "持不遺",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1944,
+      1137,
+      2115,
+      1317
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "造",
+     "simp": "造",
+     "pinyin": "zào",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "兼造自身",
+     "source": "宋拓本 第11开 · 左页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      1220,
+      965,
+      1372,
+      1131
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "廣",
+     "simp": "广",
+     "pinyin": "guǎng",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "廣平人也",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      2116,
+      674,
+      2246,
+      819
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "度",
+     "simp": "度",
+     "pinyin": "dù",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "庀徒度財",
+     "source": "宋拓本 第8开 · 右页",
+     "src": "duobao",
+     "page": 7,
+     "box": [
+      2273,
+      1326,
+      2438,
+      1479
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "慶",
+     "simp": "庆",
+     "pinyin": "qìng",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "慶歸法胤",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1946,
+      855,
+      2102,
+      1012
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "庭",
+     "simp": "庭",
+     "pinyin": "tíng",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "出戶庭",
+     "source": "宋拓本 第4开 · 右页",
+     "src": "duobao",
+     "page": 3,
+     "box": [
+      1792,
+      670,
+      1948,
+      819
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "座",
+     "simp": "座",
+     "pinyin": "zuò",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "進具之年昇座",
+     "source": "宋拓本 第3开 · 右页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      1638,
+      1824,
+      1768,
+      1949
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "圓",
+     "simp": "圆",
+     "pinyin": "yuán",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "莫不圓體",
+     "source": "宋拓本 第11开 · 右页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      2300,
+      833,
+      2418,
+      971
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "因",
+     "simp": "因",
+     "pinyin": "yīn",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "尔後因靜夜",
+     "source": "宋拓本 第3开 · 左页",
+     "src": "duobao",
+     "page": 2,
+     "box": [
+      921,
+      1013,
+      1026,
+      1136
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "同",
+     "simp": "同",
+     "pinyin": "tóng",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "集同行",
+     "source": "宋拓本 第10开 · 右页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1802,
+      1170,
+      1913,
+      1303
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "門",
+     "simp": "门",
+     "pinyin": "mén",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "著釋門",
+     "source": "宋拓本 第2开 · 右页",
+     "src": "duobao",
+     "page": 1,
+     "box": [
+      1964,
+      704,
+      2080,
+      846
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "開",
+     "simp": "开",
+     "pinyin": "kāi",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "開於法性",
+     "source": "宋拓本 第5开 · 左页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      1073,
+      672,
+      1195,
+      827
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "聞",
+     "simp": "闻",
+     "pinyin": "wén",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "眾聞天樂",
+     "source": "宋拓本 第6开 · 左页",
+     "src": "duobao",
+     "page": 5,
+     "box": [
+      1228,
+      838,
+      1355,
+      994
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "內",
+     "simp": "内",
+     "pinyin": "nèi",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "寺內淨人",
+     "source": "宋拓本 第5开 · 右页",
+     "src": "duobao",
+     "page": 4,
+     "box": [
+      1802,
+      1320,
+      1919,
+      1449
+     ],
+     "cell": 173
+    },
+    {
+     "chapter": "en",
+     "trad": "凡",
+     "simp": "凡",
+     "pinyin": "fán",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "凡三千七十粒",
+     "source": "宋拓本 第10开 · 左页",
+     "src": "duobao",
+     "page": 9,
+     "box": [
+      1076,
+      1005,
+      1206,
+      1115
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "函",
+     "simp": "函",
+     "pinyin": "hán",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "以石函",
+     "source": "宋拓本 第11开 · 左页",
+     "src": "duobao",
+     "page": 10,
+     "box": [
+      1231,
+      664,
+      1360,
+      788
+     ],
+     "cell": 174
+    },
+    {
+     "chapter": "en",
+     "trad": "匹",
+     "simp": "匹",
+     "pinyin": "pǐ",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "絹千匹",
+     "source": "宋拓本 第7开 · 右页",
+     "src": "duobao",
+     "page": 6,
+     "box": [
+      1811,
+      1508,
+      1921,
+      1601
+     ],
+     "cell": 174
+    }
+   ]
+  },
+  {
+   "key": "qinli",
+   "name": "颜勤礼碑",
+   "name_v": "颜\n勤\n礼\n碑",
+   "era": "唐大历十四年（779）",
+   "emblem": "顏",
+   "intro": "全称《唐故秘书省著作郎\n夔州都督府长史上护军\n颜君神道碑》。\n唐大历十四年（779）立，\n颜真卿为曾祖勤礼撰书，\n1922 年在西安出土。\n\n颜真卿晚年力作，\n雄浑宽博，筋力丰满。",
+   "source_text": "《初拓颜勤礼碑》影印本\n上下两册，经维基共享\n资源以公有领域发布。\n\n选取 224 字，逐字裁切，\n保留石花与笔意，\n未作描修。",
+   "chapters": [
+    {
+     "key": "title",
+     "name": "篇首"
+    },
+    {
+     "key": "num",
+     "name": "数目"
+    },
+    {
+     "key": "single",
+     "name": "独体"
+    },
+    {
+     "key": "lr",
+     "name": "左右"
+    },
+    {
+     "key": "tb",
+     "name": "上下"
+    },
+    {
+     "key": "en",
+     "name": "包围"
+    }
+   ],
+   "entries": [
+    {
+     "chapter": "title",
+     "trad": "唐",
+     "simp": "唐",
+     "pinyin": "táng",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "唐故秘書省",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      511,
+      113,
+      753,
+      372
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "故",
+     "simp": "故",
+     "pinyin": "gù",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "唐故秘書省",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      520,
+      384,
+      770,
+      662
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "秘",
+     "simp": "秘",
+     "pinyin": "mì",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "唐故秘書省",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      534,
+      657,
+      770,
+      910
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "書",
+     "simp": "书",
+     "pinyin": "shū",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "秘書省著作郎",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      549,
+      881,
+      755,
+      1192
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "省",
+     "simp": "省",
+     "pinyin": "shěng",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "秘書省著作郎",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      527,
+      1171,
+      736,
+      1460
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "著",
+     "simp": "著",
+     "pinyin": "zhù",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "著作郎",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      265,
+      98,
+      519,
+      382
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "作",
+     "simp": "作",
+     "pinyin": "zuò",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "著作郎",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      288,
+      374,
+      513,
+      654
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "都",
+     "simp": "都",
+     "pinyin": "dū",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "夔州都督府",
+     "source": "初拓本 上册 · 第3页",
+     "src": "qinli_1",
+     "page": 2,
+     "box": [
+      29,
+      116,
+      266,
+      364
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "上",
+     "simp": "上",
+     "pinyin": "shàng",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "上護軍",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      550,
+      95,
+      834,
+      350
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "軍",
+     "simp": "军",
+     "pinyin": "jūn",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "上護軍",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      568,
+      642,
+      821,
+      930
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "顏",
+     "simp": "颜",
+     "pinyin": "yán",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "顏君神道碑",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      579,
+      906,
+      832,
+      1174
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "君",
+     "simp": "君",
+     "pinyin": "jūn",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "顏君神道碑",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      583,
+      1182,
+      801,
+      1438
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "神",
+     "simp": "神",
+     "pinyin": "shén",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "顏君神道碑",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      323,
+      120,
+      557,
+      352
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "道",
+     "simp": "道",
+     "pinyin": "dào",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "神道碑",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      314,
+      366,
+      556,
+      652
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "碑",
+     "simp": "碑",
+     "pinyin": "bēi",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "神道碑",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      311,
+      637,
+      575,
+      921
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "曾",
+     "simp": "曾",
+     "pinyin": "zēng",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "曾孫魯郡",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      104,
+      112,
+      288,
+      372
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "孫",
+     "simp": "孙",
+     "pinyin": "sūn",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "曾孫魯郡",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      76,
+      389,
+      313,
+      635
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "魯",
+     "simp": "鲁",
+     "pinyin": "lǔ",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "曾孫魯郡",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      102,
+      638,
+      330,
+      925
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "郡",
+     "simp": "郡",
+     "pinyin": "jùn",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "曾孫魯郡",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      66,
+      928,
+      317,
+      1172
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "開",
+     "simp": "开",
+     "pinyin": "kāi",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "開國公",
+     "source": "初拓本 上册 · 第4页",
+     "src": "qinli_1",
+     "page": 3,
+     "box": [
+      89,
+      1186,
+      338,
+      1456
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "國",
+     "simp": "国",
+     "pinyin": "guó",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "開國公",
+     "source": "初拓本 上册 · 第5页",
+     "src": "qinli_1",
+     "page": 4,
+     "box": [
+      520,
+      81,
+      748,
+      350
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "公",
+     "simp": "公",
+     "pinyin": "gōng",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "開國公",
+     "source": "初拓本 上册 · 第5页",
+     "src": "qinli_1",
+     "page": 4,
+     "box": [
+      545,
+      371,
+      748,
+      581
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "真",
+     "simp": "真",
+     "pinyin": "zhēn",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "真卿撰并書",
+     "source": "初拓本 上册 · 第5页",
+     "src": "qinli_1",
+     "page": 4,
+     "box": [
+      529,
+      643,
+      758,
+      921
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "卿",
+     "simp": "卿",
+     "pinyin": "qīng",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "真卿撰并書",
+     "source": "初拓本 上册 · 第5页",
+     "src": "qinli_1",
+     "page": 4,
+     "box": [
+      533,
+      924,
+      771,
+      1175
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "撰",
+     "simp": "撰",
+     "pinyin": "zhuàn",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "真卿撰并書",
+     "source": "初拓本 上册 · 第5页",
+     "src": "qinli_1",
+     "page": 4,
+     "box": [
+      513,
+      1175,
+      768,
+      1445
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "title",
+     "trad": "并",
+     "simp": "并",
+     "pinyin": "bìng",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "撰并書",
+     "source": "初拓本 上册 · 第5页",
+     "src": "qinli_1",
+     "page": 4,
+     "box": [
+      246,
+      87,
+      498,
+      350
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "num",
+     "trad": "一",
+     "simp": "一",
+     "pinyin": "yī",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "一慟而絕",
+     "source": "初拓本 上册 · 第7页",
+     "src": "qinli_1",
+     "page": 6,
+     "box": [
+      29,
+      110,
+      270,
+      317
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "num",
+     "trad": "二",
+     "simp": "二",
+     "pinyin": "èr",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "二十餘首",
+     "source": "初拓本 上册 · 第18页",
+     "src": "qinli_1",
+     "page": 17,
+     "box": [
+      592,
+      1203,
+      815,
+      1380
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "num",
+     "trad": "三",
+     "simp": "三",
+     "pinyin": "sān",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "貞觀三年",
+     "source": "初拓本 上册 · 第29页",
+     "src": "qinli_1",
+     "page": 28,
+     "box": [
+      540,
+      393,
+      762,
+      574
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "num",
+     "trad": "四",
+     "simp": "四",
+     "pinyin": "sì",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "十三人四世",
+     "source": "初拓本 下册 · 第37页",
+     "src": "qinli_2",
+     "page": 36,
+     "box": [
+      538,
+      978,
+      764,
+      1155
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "num",
+     "trad": "五",
+     "simp": "五",
+     "pinyin": "wǔ",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "頗好五",
+     "source": "初拓本 下册 · 第25页",
+     "src": "qinli_2",
+     "page": 24,
+     "box": [
+      26,
+      1221,
+      277,
+      1454
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "num",
+     "trad": "六",
+     "simp": "六",
+     "pinyin": "liù",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "六年七月",
+     "source": "初拓本 上册 · 第29页",
+     "src": "qinli_1",
+     "page": 28,
+     "box": [
+      40,
+      674,
+      263,
+      851
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "num",
+     "trad": "七",
+     "simp": "七",
+     "pinyin": "qī",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "六年七月",
+     "source": "初拓本 上册 · 第29页",
+     "src": "qinli_1",
+     "page": 28,
+     "box": [
+      44,
+      1243,
+      247,
+      1385
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "num",
+     "trad": "九",
+     "simp": "九",
+     "pinyin": "jiǔ",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "九年十一月",
+     "source": "初拓本 上册 · 第27页",
+     "src": "qinli_1",
+     "page": 26,
+     "box": [
+      33,
+      1186,
+      268,
+      1455
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "num",
+     "trad": "十",
+     "simp": "十",
+     "pinyin": "shí",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "二十餘首",
+     "source": "初拓本 上册 · 第18页",
+     "src": "qinli_1",
+     "page": 17,
+     "box": [
+      324,
+      107,
+      570,
+      320
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "num",
+     "trad": "千",
+     "simp": "千",
+     "pinyin": "qiān",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "光庭千里",
+     "source": "初拓本 下册 · 第40页",
+     "src": "qinli_2",
+     "page": 39,
+     "box": [
+      292,
+      893,
+      564,
+      1169
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "num",
+     "trad": "萬",
+     "simp": "万",
+     "pinyin": "wàn",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "萬年縣",
+     "source": "初拓本 上册 · 第47页",
+     "src": "qinli_1",
+     "page": 46,
+     "box": [
+      20,
+      614,
+      259,
+      901
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "人",
+     "simp": "人",
+     "pinyin": "rén",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "臨沂人",
+     "source": "初拓本 上册 · 第6页",
+     "src": "qinli_1",
+     "page": 5,
+     "box": [
+      323,
+      76,
+      558,
+      306
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "大",
+     "simp": "大",
+     "pinyin": "dà",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "中大夫",
+     "source": "初拓本 上册 · 第17页",
+     "src": "qinli_1",
+     "page": 16,
+     "box": [
+      551,
+      370,
+      785,
+      635
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "夫",
+     "simp": "夫",
+     "pinyin": "fū",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "中大夫",
+     "source": "初拓本 上册 · 第17页",
+     "src": "qinli_1",
+     "page": 16,
+     "box": [
+      548,
+      641,
+      782,
+      931
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "中",
+     "simp": "中",
+     "pinyin": "zhōng",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "御史中丞",
+     "source": "初拓本 上册 · 第6页",
+     "src": "qinli_1",
+     "page": 5,
+     "box": [
+      84,
+      1201,
+      308,
+      1467
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "天",
+     "simp": "天",
+     "pinyin": "tiān",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "天下所推",
+     "source": "初拓本 下册 · 第39页",
+     "src": "qinli_2",
+     "page": 38,
+     "box": [
+      534,
+      649,
+      778,
+      936
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "下",
+     "simp": "下",
+     "pinyin": "xià",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "天下所推",
+     "source": "初拓本 下册 · 第39页",
+     "src": "qinli_2",
+     "page": 38,
+     "box": [
+      532,
+      948,
+      777,
+      1185
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "王",
+     "simp": "王",
+     "pinyin": "wáng",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "湘東王",
+     "source": "初拓本 上册 · 第8页",
+     "src": "qinli_1",
+     "page": 7,
+     "box": [
+      99,
+      658,
+      355,
+      931
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "子",
+     "simp": "子",
+     "pinyin": "zǐ",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "太子通事舍人",
+     "source": "初拓本 上册 · 第38页",
+     "src": "qinli_1",
+     "page": 37,
+     "box": [
+      582,
+      336,
+      815,
+      626
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "太",
+     "simp": "太",
+     "pinyin": "tài",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "太子通事舍人",
+     "source": "初拓本 上册 · 第38页",
+     "src": "qinli_1",
+     "page": 37,
+     "box": [
+      575,
+      88,
+      814,
+      329
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "文",
+     "simp": "文",
+     "pinyin": "wén",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "善屬文",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      601,
+      635,
+      813,
+      875
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "single",
+     "trad": "工",
+     "simp": "工",
+     "pinyin": "gōng",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "尤工詁訓",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      577,
+      1244,
+      822,
+      1453
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "single",
+     "trad": "尤",
+     "simp": "尤",
+     "pinyin": "yóu",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "尤工詁訓",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      587,
+      872,
+      825,
+      1147
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "single",
+     "trad": "東",
+     "simp": "东",
+     "pinyin": "dōng",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "東宮學士",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      97,
+      1175,
+      314,
+      1446
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "single",
+     "trad": "長",
+     "simp": "长",
+     "pinyin": "cháng",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "京兆長安",
+     "source": "初拓本 上册 · 第11页",
+     "src": "qinli_1",
+     "page": 10,
+     "box": [
+      294,
+      366,
+      518,
+      614
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "事",
+     "simp": "事",
+     "pinyin": "shì",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "事見梁齊周書",
+     "source": "初拓本 上册 · 第7页",
+     "src": "qinli_1",
+     "page": 6,
+     "box": [
+      36,
+      1174,
+      245,
+      1449
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "自",
+     "simp": "自",
+     "pinyin": "zì",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "始自南入北",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      83,
+      875,
+      272,
+      1153
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "入",
+     "simp": "入",
+     "pinyin": "rù",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "南入北",
+     "source": "初拓本 上册 · 第11页",
+     "src": "qinli_1",
+     "page": 10,
+     "box": [
+      523,
+      93,
+      768,
+      320
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "也",
+     "simp": "也",
+     "pinyin": "yě",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "顏郎是也",
+     "source": "初拓本 上册 · 第17页",
+     "src": "qinli_1",
+     "page": 16,
+     "box": [
+      24,
+      1236,
+      264,
+      1409
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "而",
+     "simp": "而",
+     "pinyin": "ér",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "一慟而絕",
+     "source": "初拓本 上册 · 第7页",
+     "src": "qinli_1",
+     "page": 6,
+     "box": [
+      34,
+      647,
+      286,
+      922
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "不",
+     "simp": "不",
+     "pinyin": "bù",
+     "struct": "D",
+     "focus": "D",
+     "phrase": "不食數日",
+     "source": "初拓本 上册 · 第7页",
+     "src": "qinli_1",
+     "page": 6,
+     "box": [
+      283,
+      398,
+      523,
+      603
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "日",
+     "simp": "日",
+     "pinyin": "rì",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "不食數日",
+     "source": "初拓本 上册 · 第7页",
+     "src": "qinli_1",
+     "page": 6,
+     "box": [
+      276,
+      1185,
+      470,
+      1462
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "史",
+     "simp": "史",
+     "pinyin": "shǐ",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "御史中丞",
+     "source": "初拓本 上册 · 第6页",
+     "src": "qinli_1",
+     "page": 5,
+     "box": [
+      83,
+      876,
+      330,
+      1166
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "永",
+     "simp": "永",
+     "pinyin": "yǒng",
+     "struct": "D",
+     "focus": "Y",
+     "phrase": "永徽元年",
+     "source": "初拓本 上册 · 第32页",
+     "src": "qinli_1",
+     "page": 31,
+     "box": [
+      78,
+      65,
+      333,
+      352
+     ],
+     "cell": 262
+    },
+    {
+     "chapter": "single",
+     "trad": "元",
+     "simp": "元",
+     "pinyin": "yuán",
+     "struct": "D",
+     "focus": "G",
+     "phrase": "義寧元年",
+     "source": "初拓本 上册 · 第25页",
+     "src": "qinli_1",
+     "page": 24,
+     "box": [
+      537,
+      916,
+      751,
+      1145
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "年",
+     "simp": "年",
+     "pinyin": "nián",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "義寧元年",
+     "source": "初拓本 上册 · 第25页",
+     "src": "qinli_1",
+     "page": 24,
+     "box": [
+      522,
+      1181,
+      739,
+      1454
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "月",
+     "simp": "月",
+     "pinyin": "yuè",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "九年十一月",
+     "source": "初拓本 上册 · 第28页",
+     "src": "qinli_1",
+     "page": 27,
+     "box": [
+      552,
+      916,
+      794,
+      1176
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "士",
+     "simp": "士",
+     "pinyin": "shì",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "東宮學士",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      330,
+      668,
+      579,
+      889
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "其",
+     "simp": "其",
+     "pinyin": "qí",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "其後職位",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      332,
+      639,
+      554,
+      867
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "少",
+     "simp": "少",
+     "pinyin": "shào",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "太子少保",
+     "source": "初拓本 上册 · 第59页",
+     "src": "qinli_1",
+     "page": 58,
+     "box": [
+      530,
+      1181,
+      754,
+      1442
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "single",
+     "trad": "甫",
+     "simp": "甫",
+     "pinyin": "fǔ",
+     "struct": "D",
+     "focus": "S",
+     "phrase": "昭甫",
+     "source": "初拓本 上册 · 第49页",
+     "src": "qinli_1",
+     "page": 48,
+     "box": [
+      59,
+      372,
+      284,
+      638
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "曰",
+     "simp": "曰",
+     "pinyin": "yuē",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "制曰",
+     "source": "初拓本 上册 · 第33页",
+     "src": "qinli_1",
+     "page": 32,
+     "box": [
+      542,
+      919,
+      744,
+      1119
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "口",
+     "simp": "口",
+     "pinyin": "kǒu",
+     "struct": "D",
+     "focus": "Z",
+     "phrase": "長老之口",
+     "source": "初拓本 下册 · 第47页",
+     "src": "qinli_2",
+     "page": 46,
+     "box": [
+      303,
+      1190,
+      527,
+      1456
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "老",
+     "simp": "老",
+     "pinyin": "lǎo",
+     "struct": "D",
+     "focus": "P",
+     "phrase": "長老之口",
+     "source": "初拓本 下册 · 第47页",
+     "src": "qinli_2",
+     "page": 46,
+     "box": [
+      273,
+      651,
+      532,
+      882
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "single",
+     "trad": "世",
+     "simp": "世",
+     "pinyin": "shì",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "四世為學士",
+     "source": "初拓本 下册 · 第37页",
+     "src": "qinli_2",
+     "page": 36,
+     "box": [
+      524,
+      1219,
+      776,
+      1451
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "single",
+     "trad": "里",
+     "simp": "里",
+     "pinyin": "lǐ",
+     "struct": "D",
+     "focus": "H",
+     "phrase": "光庭千里",
+     "source": "初拓本 下册 · 第40页",
+     "src": "qinli_2",
+     "page": 39,
+     "box": [
+      319,
+      1178,
+      560,
+      1460
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "single",
+     "trad": "赤",
+     "simp": "赤",
+     "pinyin": "chì",
+     "struct": "D",
+     "focus": "N",
+     "phrase": "歷畿赤尉丞",
+     "source": "初拓本 上册 · 第58页",
+     "src": "qinli_1",
+     "page": 57,
+     "box": [
+      597,
+      630,
+      806,
+      890
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "北",
+     "simp": "北",
+     "pinyin": "běi",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "南入北",
+     "source": "初拓本 上册 · 第11页",
+     "src": "qinli_1",
+     "page": 10,
+     "box": [
+      521,
+      376,
+      745,
+      645
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "祖",
+     "simp": "祖",
+     "pinyin": "zǔ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "曾祖諱協",
+     "source": "初拓本 上册 · 第8页",
+     "src": "qinli_1",
+     "page": 7,
+     "box": [
+      307,
+      350,
+      570,
+      609
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "諱",
+     "simp": "讳",
+     "pinyin": "huì",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "曾祖諱協",
+     "source": "初拓本 上册 · 第8页",
+     "src": "qinli_1",
+     "page": 7,
+     "box": [
+      317,
+      605,
+      568,
+      890
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "協",
+     "simp": "协",
+     "pinyin": "xié",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "曾祖諱協",
+     "source": "初拓本 上册 · 第8页",
+     "src": "qinli_1",
+     "page": 7,
+     "box": [
+      383,
+      920,
+      568,
+      1172
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "湘",
+     "simp": "湘",
+     "pinyin": "xiāng",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "梁湘東王",
+     "source": "初拓本 上册 · 第8页",
+     "src": "qinli_1",
+     "page": 7,
+     "box": [
+      69,
+      83,
+      364,
+      314
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "記",
+     "simp": "记",
+     "pinyin": "jì",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "記室參軍",
+     "source": "初拓本 上册 · 第8页",
+     "src": "qinli_1",
+     "page": 7,
+     "box": [
+      70,
+      910,
+      318,
+      1155
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "推",
+     "simp": "推",
+     "pinyin": "tuī",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "諱之推",
+     "source": "初拓本 上册 · 第9页",
+     "src": "qinli_1",
+     "page": 8,
+     "box": [
+      280,
+      1181,
+      518,
+      1447
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "給",
+     "simp": "给",
+     "pinyin": "jǐ",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "北齊給事",
+     "source": "初拓本 上册 · 第9页",
+     "src": "qinli_1",
+     "page": 8,
+     "box": [
+      15,
+      662,
+      284,
+      884
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "侍",
+     "simp": "侍",
+     "pinyin": "shì",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "黃門侍郎",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      589,
+      358,
+      836,
+      638
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "郎",
+     "simp": "郎",
+     "pinyin": "láng",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "黃門侍郎",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      589,
+      657,
+      836,
+      913
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "隋",
+     "simp": "隋",
+     "pinyin": "suí",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "隋東宮學士",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      578,
+      916,
+      816,
+      1177
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "始",
+     "simp": "始",
+     "pinyin": "shǐ",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "始自南入北",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      76,
+      641,
+      316,
+      880
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "博",
+     "simp": "博",
+     "pinyin": "bó",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "博學善屬文",
+     "source": "初拓本 上册 · 第11页",
+     "src": "qinli_1",
+     "page": 10,
+     "box": [
+      20,
+      920,
+      254,
+      1181
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "詁",
+     "simp": "诂",
+     "pinyin": "gǔ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "尤工詁訓",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      321,
+      89,
+      568,
+      337
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "訓",
+     "simp": "训",
+     "pinyin": "xùn",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "尤工詁訓",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      322,
+      344,
+      568,
+      616
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "仕",
+     "simp": "仕",
+     "pinyin": "shì",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "仕隋司經局",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      326,
+      626,
+      562,
+      868
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "經",
+     "simp": "经",
+     "pinyin": "jīng",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "司經局校書",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      69,
+      79,
+      316,
+      331
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "校",
+     "simp": "校",
+     "pinyin": "jiào",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "司經局校書",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      65,
+      641,
+      309,
+      873
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "讀",
+     "simp": "读",
+     "pinyin": "dú",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "長寧王侍讀",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      277,
+      626,
+      519,
+      903
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "沛",
+     "simp": "沛",
+     "pinyin": "pèi",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "與沛國劉臻",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      272,
+      1165,
+      524,
+      1436
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "劉",
+     "simp": "刘",
+     "pinyin": "liú",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "沛國劉臻",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      29,
+      342,
+      275,
+      640
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "臻",
+     "simp": "臻",
+     "pinyin": "zhēn",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "沛國劉臻",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      25,
+      641,
+      271,
+      883
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "辯",
+     "simp": "辩",
+     "pinyin": "biàn",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "辯論經義",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      14,
+      899,
+      260,
+      1163
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "論",
+     "simp": "论",
+     "pinyin": "lùn",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "辯論經義",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      21,
+      1207,
+      287,
+      1430
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "呼",
+     "simp": "呼",
+     "pinyin": "hū",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "呼顏郎是也",
+     "source": "初拓本 上册 · 第17页",
+     "src": "qinli_1",
+     "page": 16,
+     "box": [
+      30,
+      92,
+      278,
+      362
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "餘",
+     "simp": "余",
+     "pinyin": "yú",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "二十餘首",
+     "source": "初拓本 上册 · 第18页",
+     "src": "qinli_1",
+     "page": 17,
+     "box": [
+      320,
+      372,
+      574,
+      609
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "雅",
+     "simp": "雅",
+     "pinyin": "yǎ",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "大雅傳",
+     "source": "初拓本 上册 · 第18页",
+     "src": "qinli_1",
+     "page": 17,
+     "box": [
+      57,
+      67,
+      314,
+      336
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "俱",
+     "simp": "俱",
+     "pinyin": "jù",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "俱仕東宮",
+     "source": "初拓本 上册 · 第19页",
+     "src": "qinli_1",
+     "page": 18,
+     "box": [
+      267,
+      109,
+      512,
+      328
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "時",
+     "simp": "时",
+     "pinyin": "shí",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "各為一時",
+     "source": "初拓本 上册 · 第21页",
+     "src": "qinli_1",
+     "page": 20,
+     "box": [
+      269,
+      1162,
+      526,
+      1449
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "優",
+     "simp": "优",
+     "pinyin": "yōu",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "顏氏為優",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      326,
+      341,
+      584,
+      625
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "職",
+     "simp": "职",
+     "pinyin": "zhí",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "其後職位",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      321,
+      1139,
+      576,
+      1436
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "位",
+     "simp": "位",
+     "pinyin": "wèi",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "其後職位",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      55,
+      64,
+      313,
+      326
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "溫",
+     "simp": "温",
+     "pinyin": "wēn",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "溫氏為盛",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      80,
+      347,
+      314,
+      609
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "朗",
+     "simp": "朗",
+     "pinyin": "lǎng",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "幼而朗晤",
+     "source": "初拓本 上册 · 第23页",
+     "src": "qinli_1",
+     "page": 22,
+     "box": [
+      293,
+      652,
+      532,
+      905
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "晤",
+     "simp": "晤",
+     "pinyin": "wù",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "幼而朗晤",
+     "source": "初拓本 上册 · 第23页",
+     "src": "qinli_1",
+     "page": 22,
+     "box": [
+      267,
+      872,
+      527,
+      1155
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "於",
+     "simp": "于",
+     "pinyin": "yú",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "工於篆籀",
+     "source": "初拓本 上册 · 第23页",
+     "src": "qinli_1",
+     "page": 22,
+     "box": [
+      19,
+      1202,
+      285,
+      1431
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "刊",
+     "simp": "刊",
+     "pinyin": "kān",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "多所刊定",
+     "source": "初拓本 上册 · 第24页",
+     "src": "qinli_1",
+     "page": 23,
+     "box": [
+      64,
+      1164,
+      281,
+      1437
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "授",
+     "simp": "授",
+     "pinyin": "shòu",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "授朝散",
+     "source": "初拓本 上册 · 第26页",
+     "src": "qinli_1",
+     "page": 25,
+     "box": [
+      557,
+      96,
+      817,
+      332
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "朝",
+     "simp": "朝",
+     "pinyin": "cháo",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "授朝散",
+     "source": "初拓本 上册 · 第26页",
+     "src": "qinli_1",
+     "page": 25,
+     "box": [
+      555,
+      354,
+      809,
+      638
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "散",
+     "simp": "散",
+     "pinyin": "sàn",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "授朝散",
+     "source": "初拓本 上册 · 第26页",
+     "src": "qinli_1",
+     "page": 25,
+     "box": [
+      572,
+      630,
+      821,
+      893
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "議",
+     "simp": "议",
+     "pinyin": "yì",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "正議大夫",
+     "source": "初拓本 上册 · 第26页",
+     "src": "qinli_1",
+     "page": 25,
+     "box": [
+      571,
+      1179,
+      833,
+      1447
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "德",
+     "simp": "德",
+     "pinyin": "dé",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "武德中",
+     "source": "初拓本 上册 · 第27页",
+     "src": "qinli_1",
+     "page": 26,
+     "box": [
+      520,
+      641,
+      762,
+      893
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "領",
+     "simp": "领",
+     "pinyin": "lǐng",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "右領左右府",
+     "source": "初拓本 上册 · 第27页",
+     "src": "qinli_1",
+     "page": 26,
+     "box": [
+      265,
+      345,
+      501,
+      617
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "鎧",
+     "simp": "铠",
+     "pinyin": "kǎi",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "鎧曹參軍",
+     "source": "初拓本 上册 · 第27页",
+     "src": "qinli_1",
+     "page": 26,
+     "box": [
+      23,
+      79,
+      279,
+      343
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "輕",
+     "simp": "轻",
+     "pinyin": "qīng",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "輕車都尉",
+     "source": "初拓本 上册 · 第28页",
+     "src": "qinli_1",
+     "page": 27,
+     "box": [
+      305,
+      78,
+      562,
+      345
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "尉",
+     "simp": "尉",
+     "pinyin": "wèi",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "輕車都尉",
+     "source": "初拓本 上册 · 第28页",
+     "src": "qinli_1",
+     "page": 27,
+     "box": [
+      310,
+      866,
+      569,
+      1169
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "佐",
+     "simp": "佐",
+     "pinyin": "zuǒ",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "著作佐郎",
+     "source": "初拓本 上册 · 第30页",
+     "src": "qinli_1",
+     "page": 29,
+     "box": [
+      571,
+      1181,
+      818,
+      1430
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "轉",
+     "simp": "转",
+     "pinyin": "zhuǎn",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "轉太子內直監",
+     "source": "初拓本 上册 · 第31页",
+     "src": "qinli_1",
+     "page": 30,
+     "box": [
+      518,
+      76,
+      768,
+      356
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "館",
+     "simp": "馆",
+     "pinyin": "guǎn",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "弘文館學士",
+     "source": "初拓本 上册 · 第32页",
+     "src": "qinli_1",
+     "page": 31,
+     "box": [
+      310,
+      629,
+      563,
+      887
+     ],
+     "cell": 262
+    },
+    {
+     "chapter": "lr",
+     "trad": "補",
+     "simp": "补",
+     "pinyin": "bǔ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "補蔣王文學",
+     "source": "初拓本 上册 · 第32页",
+     "src": "qinli_1",
+     "page": 31,
+     "box": [
+      551,
+      88,
+      811,
+      351
+     ],
+     "cell": 262
+    },
+    {
+     "chapter": "lr",
+     "trad": "徽",
+     "simp": "徽",
+     "pinyin": "huī",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "永徽元年",
+     "source": "初拓本 上册 · 第32页",
+     "src": "qinli_1",
+     "page": 31,
+     "box": [
+      54,
+      361,
+      327,
+      607
+     ],
+     "cell": 262
+    },
+    {
+     "chapter": "lr",
+     "trad": "制",
+     "simp": "制",
+     "pinyin": "zhì",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "制曰",
+     "source": "初拓本 上册 · 第33页",
+     "src": "qinli_1",
+     "page": 32,
+     "box": [
+      522,
+      637,
+      777,
+      923
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "擢",
+     "simp": "擢",
+     "pinyin": "zhuó",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "宜加獎擢",
+     "source": "初拓本 上册 · 第33页",
+     "src": "qinli_1",
+     "page": 32,
+     "box": [
+      11,
+      1195,
+      247,
+      1450
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "拜",
+     "simp": "拜",
+     "pinyin": "bài",
+     "struct": "LR",
+     "focus": "H",
+     "phrase": "拜秘書省",
+     "source": "初拓本 上册 · 第35页",
+     "src": "qinli_1",
+     "page": 34,
+     "box": [
+      513,
+      84,
+      766,
+      371
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "部",
+     "simp": "部",
+     "pinyin": "bù",
+     "struct": "LR",
+     "focus": "G",
+     "phrase": "禮部",
+     "source": "初拓本 上册 · 第37页",
+     "src": "qinli_1",
+     "page": 36,
+     "box": [
+      280,
+      638,
+      519,
+      894
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "禮",
+     "simp": "礼",
+     "pinyin": "lǐ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "禮部",
+     "source": "初拓本 上册 · 第37页",
+     "src": "qinli_1",
+     "page": 36,
+     "box": [
+      275,
+      368,
+      514,
+      633
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "懷",
+     "simp": "怀",
+     "pinyin": "huái",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "懷文守",
+     "source": "初拓本 上册 · 第42页",
+     "src": "qinli_1",
+     "page": 41,
+     "box": [
+      565,
+      87,
+      818,
+      342
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "終",
+     "simp": "终",
+     "pinyin": "zhōng",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "終日德彰",
+     "source": "初拓本 上册 · 第42页",
+     "src": "qinli_1",
+     "page": 41,
+     "box": [
+      81,
+      102,
+      318,
+      359
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "彰",
+     "simp": "彰",
+     "pinyin": "zhāng",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "德彰素里",
+     "source": "初拓本 上册 · 第42页",
+     "src": "qinli_1",
+     "page": 41,
+     "box": [
+      52,
+      909,
+      295,
+      1184
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "樓",
+     "simp": "楼",
+     "pinyin": "lóu",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "龍樓",
+     "source": "初拓本 上册 · 第43页",
+     "src": "qinli_1",
+     "page": 42,
+     "box": [
+      22,
+      83,
+      263,
+      341
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "鶴",
+     "simp": "鹤",
+     "pinyin": "hè",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "鶴籥馳譽",
+     "source": "初拓本 上册 · 第43页",
+     "src": "qinli_1",
+     "page": 42,
+     "box": [
+      264,
+      101,
+      523,
+      345
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "明",
+     "simp": "明",
+     "pinyin": "míng",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "明慶六年",
+     "source": "初拓本 上册 · 第45页",
+     "src": "qinli_1",
+     "page": 44,
+     "box": [
+      288,
+      671,
+      512,
+      888
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "護",
+     "simp": "护",
+     "pinyin": "hù",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "上護軍",
+     "source": "初拓本 上册 · 第45页",
+     "src": "qinli_1",
+     "page": 44,
+     "box": [
+      34,
+      922,
+      259,
+      1199
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "栖",
+     "simp": "栖",
+     "pinyin": "qī",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "鳳栖原",
+     "source": "初拓本 上册 · 第48页",
+     "src": "qinli_1",
+     "page": 47,
+     "box": [
+      334,
+      80,
+      567,
+      328
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "鄉",
+     "simp": "乡",
+     "pinyin": "xiāng",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "寧安鄉",
+     "source": "初拓本 上册 · 第48页",
+     "src": "qinli_1",
+     "page": 47,
+     "box": [
+      575,
+      641,
+      826,
+      910
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "柳",
+     "simp": "柳",
+     "pinyin": "liǔ",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "柳芳續",
+     "source": "初拓本 下册 · 第37页",
+     "src": "qinli_2",
+     "page": 36,
+     "box": [
+      22,
+      653,
+      277,
+      899
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "祔",
+     "simp": "祔",
+     "pinyin": "fù",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "合祔",
+     "source": "初拓本 上册 · 第49页",
+     "src": "qinli_1",
+     "page": 48,
+     "box": [
+      522,
+      1184,
+      774,
+      1450
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "昭",
+     "simp": "昭",
+     "pinyin": "zhāo",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "昭甫",
+     "source": "初拓本 上册 · 第49页",
+     "src": "qinli_1",
+     "page": 48,
+     "box": [
+      35,
+      98,
+      258,
+      365
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "贈",
+     "simp": "赠",
+     "pinyin": "zèng",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "贈華州刺史",
+     "source": "初拓本 上册 · 第50页",
+     "src": "qinli_1",
+     "page": 49,
+     "box": [
+      576,
+      924,
+      803,
+      1172
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "刺",
+     "simp": "刺",
+     "pinyin": "cì",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "華州刺史",
+     "source": "初拓本 上册 · 第50页",
+     "src": "qinli_1",
+     "page": 49,
+     "box": [
+      315,
+      369,
+      571,
+      655
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "lr",
+     "trad": "翰",
+     "simp": "翰",
+     "pinyin": "hàn",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "詞翰",
+     "source": "初拓本 上册 · 第61页",
+     "src": "qinli_1",
+     "page": 60,
+     "box": [
+      13,
+      923,
+      269,
+      1168
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "lr",
+     "trad": "詞",
+     "simp": "词",
+     "pinyin": "cí",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "詞翰",
+     "source": "初拓本 上册 · 第61页",
+     "src": "qinli_1",
+     "page": 60,
+     "box": [
+      24,
+      649,
+      281,
+      896
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "lr",
+     "trad": "劍",
+     "simp": "剑",
+     "pinyin": "jiàn",
+     "struct": "LR",
+     "focus": "S",
+     "phrase": "劍南節度",
+     "source": "初拓本 上册 · 第63页",
+     "src": "qinli_1",
+     "page": 62,
+     "box": [
+      26,
+      93,
+      294,
+      331
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "lr",
+     "trad": "酒",
+     "simp": "酒",
+     "pinyin": "jiǔ",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "國子祭酒",
+     "source": "初拓本 上册 · 第59页",
+     "src": "qinli_1",
+     "page": 58,
+     "box": [
+      510,
+      384,
+      756,
+      654
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "保",
+     "simp": "保",
+     "pinyin": "bǎo",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "太子少保",
+     "source": "初拓本 上册 · 第59页",
+     "src": "qinli_1",
+     "page": 58,
+     "box": [
+      252,
+      112,
+      504,
+      345
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "陸",
+     "simp": "陆",
+     "pinyin": "lù",
+     "struct": "LR",
+     "focus": "Z",
+     "phrase": "陸據",
+     "source": "初拓本 上册 · 第59页",
+     "src": "qinli_1",
+     "page": 58,
+     "box": [
+      275,
+      1186,
+      511,
+      1443
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "據",
+     "simp": "据",
+     "pinyin": "jù",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "陸據",
+     "source": "初拓本 上册 · 第59页",
+     "src": "qinli_1",
+     "page": 58,
+     "box": [
+      8,
+      100,
+      274,
+      377
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "lr",
+     "trad": "衛",
+     "simp": "卫",
+     "pinyin": "wèi",
+     "struct": "LR",
+     "focus": "F",
+     "phrase": "左衛",
+     "source": "初拓本 上册 · 第60页",
+     "src": "qinli_1",
+     "page": 59,
+     "box": [
+      49,
+      899,
+      308,
+      1187
+     ],
+     "cell": 263
+    },
+    {
+     "chapter": "lr",
+     "trad": "江",
+     "simp": "江",
+     "pinyin": "jiāng",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "江陵",
+     "source": "初拓本 下册 · 第18页",
+     "src": "qinli_2",
+     "page": 17,
+     "box": [
+      327,
+      393,
+      564,
+      635
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "陵",
+     "simp": "陵",
+     "pinyin": "líng",
+     "struct": "LR",
+     "focus": "N",
+     "phrase": "江陵",
+     "source": "初拓本 下册 · 第18页",
+     "src": "qinli_2",
+     "page": 17,
+     "box": [
+      320,
+      617,
+      580,
+      885
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "lr",
+     "trad": "好",
+     "simp": "好",
+     "pinyin": "hǎo",
+     "struct": "LR",
+     "focus": "P",
+     "phrase": "好屬文",
+     "source": "初拓本 下册 · 第25页",
+     "src": "qinli_2",
+     "page": 24,
+     "box": [
+      526,
+      637,
+      785,
+      888
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "lr",
+     "trad": "詩",
+     "simp": "诗",
+     "pinyin": "shī",
+     "struct": "LR",
+     "focus": "D",
+     "phrase": "工詩善草",
+     "source": "初拓本 下册 · 第5页",
+     "src": "qinli_2",
+     "page": 4,
+     "box": [
+      271,
+      366,
+      523,
+      628
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "tb",
+     "trad": "參",
+     "simp": "参",
+     "pinyin": "cān",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "記室參軍",
+     "source": "初拓本 上册 · 第9页",
+     "src": "qinli_1",
+     "page": 8,
+     "box": [
+      515,
+      109,
+      764,
+      375
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "黃",
+     "simp": "黄",
+     "pinyin": "huáng",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "黃門侍郎",
+     "source": "初拓本 上册 · 第9页",
+     "src": "qinli_1",
+     "page": 8,
+     "box": [
+      38,
+      1193,
+      266,
+      1446
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "宮",
+     "simp": "宫",
+     "pinyin": "gōng",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "東宮學士",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      355,
+      96,
+      565,
+      349
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "學",
+     "simp": "学",
+     "pinyin": "xué",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "東宮學士",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      346,
+      354,
+      582,
+      644
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "齊",
+     "simp": "齐",
+     "pinyin": "qí",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "北齊給事",
+     "source": "初拓本 上册 · 第9页",
+     "src": "qinli_1",
+     "page": 8,
+     "box": [
+      29,
+      349,
+      279,
+      631
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "善",
+     "simp": "善",
+     "pinyin": "shàn",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "博學善屬文",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      576,
+      87,
+      802,
+      327
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "寧",
+     "simp": "宁",
+     "pinyin": "níng",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "長寧王",
+     "source": "初拓本 上册 · 第13页",
+     "src": "qinli_1",
+     "page": 12,
+     "box": [
+      521,
+      1232,
+      735,
+      1461
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "義",
+     "simp": "义",
+     "pinyin": "yì",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "辯論經義",
+     "source": "初拓本 上册 · 第14页",
+     "src": "qinli_1",
+     "page": 13,
+     "box": [
+      608,
+      341,
+      814,
+      649
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "秦",
+     "simp": "秦",
+     "pinyin": "qín",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "太宗為秦王",
+     "source": "初拓本 上册 · 第15页",
+     "src": "qinli_1",
+     "page": 14,
+     "box": [
+      23,
+      899,
+      273,
+      1173
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "宗",
+     "simp": "宗",
+     "pinyin": "zōng",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "太宗為秦王",
+     "source": "初拓本 上册 · 第15页",
+     "src": "qinli_1",
+     "page": 14,
+     "box": [
+      28,
+      330,
+      267,
+      611
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "首",
+     "simp": "首",
+     "pinyin": "shǒu",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "二十餘首",
+     "source": "初拓本 上册 · 第18页",
+     "src": "qinli_1",
+     "page": 17,
+     "box": [
+      312,
+      608,
+      549,
+      889
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "業",
+     "simp": "业",
+     "pinyin": "yè",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "學業",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      594,
+      634,
+      806,
+      906
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "盛",
+     "simp": "盛",
+     "pinyin": "shèng",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "溫氏為盛",
+     "source": "初拓本 上册 · 第22页",
+     "src": "qinli_1",
+     "page": 21,
+     "box": [
+      67,
+      1152,
+      313,
+      1423
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "篆",
+     "simp": "篆",
+     "pinyin": "zhuàn",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "工於篆籀",
+     "source": "初拓本 上册 · 第24页",
+     "src": "qinli_1",
+     "page": 23,
+     "box": [
+      582,
+      68,
+      817,
+      358
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "籀",
+     "simp": "籀",
+     "pinyin": "zhòu",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "篆籀",
+     "source": "初拓本 上册 · 第24页",
+     "src": "qinli_1",
+     "page": 23,
+     "box": [
+      568,
+      360,
+      786,
+      648
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "籍",
+     "simp": "籍",
+     "pinyin": "jí",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "經史籍",
+     "source": "初拓本 上册 · 第24页",
+     "src": "qinli_1",
+     "page": 23,
+     "box": [
+      69,
+      354,
+      316,
+      616
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "多",
+     "simp": "多",
+     "pinyin": "duō",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "多所刊定",
+     "source": "初拓本 上册 · 第24页",
+     "src": "qinli_1",
+     "page": 23,
+     "box": [
+      80,
+      626,
+      283,
+      887
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "定",
+     "simp": "定",
+     "pinyin": "dìng",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "多所刊定",
+     "source": "初拓本 上册 · 第25页",
+     "src": "qinli_1",
+     "page": 24,
+     "box": [
+      523,
+      110,
+      755,
+      340
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "曹",
+     "simp": "曹",
+     "pinyin": "cáo",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "鎧曹參軍",
+     "source": "初拓本 上册 · 第27页",
+     "src": "qinli_1",
+     "page": 26,
+     "box": [
+      22,
+      363,
+      242,
+      633
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "兼",
+     "simp": "兼",
+     "pinyin": "jiān",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "兼直秘書省",
+     "source": "初拓本 上册 · 第28页",
+     "src": "qinli_1",
+     "page": 27,
+     "box": [
+      329,
+      1192,
+      574,
+      1436
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "直",
+     "simp": "直",
+     "pinyin": "zhí",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "兼直秘書省",
+     "source": "初拓本 上册 · 第28页",
+     "src": "qinli_1",
+     "page": 27,
+     "box": [
+      71,
+      88,
+      307,
+      379
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "監",
+     "simp": "监",
+     "pinyin": "jiān",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "太子內直監",
+     "source": "初拓本 上册 · 第31页",
+     "src": "qinli_1",
+     "page": 30,
+     "box": [
+      285,
+      91,
+      519,
+      359
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "督",
+     "simp": "督",
+     "pinyin": "dū",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "都督府長史",
+     "source": "初拓本 上册 · 第45页",
+     "src": "qinli_1",
+     "page": 44,
+     "box": [
+      498,
+      926,
+      775,
+      1175
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "宜",
+     "simp": "宜",
+     "pinyin": "yí",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "宜加獎擢",
+     "source": "初拓本 上册 · 第33页",
+     "src": "qinli_1",
+     "page": 32,
+     "box": [
+      31,
+      408,
+      276,
+      661
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "獎",
+     "simp": "奖",
+     "pinyin": "jiǎng",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "宜加獎擢",
+     "source": "初拓本 上册 · 第33页",
+     "src": "qinli_1",
+     "page": 32,
+     "box": [
+      39,
+      904,
+      251,
+      1181
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "舍",
+     "simp": "舍",
+     "pinyin": "shè",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "太子通事舍人",
+     "source": "初拓本 上册 · 第38页",
+     "src": "qinli_1",
+     "page": 37,
+     "box": [
+      584,
+      1193,
+      808,
+      1428
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "奉",
+     "simp": "奉",
+     "pinyin": "fèng",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "奉令於司經局",
+     "source": "初拓本 上册 · 第38页",
+     "src": "qinli_1",
+     "page": 37,
+     "box": [
+      332,
+      1171,
+      556,
+      1456
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "令",
+     "simp": "令",
+     "pinyin": "lìng",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "奉令於司經局",
+     "source": "初拓本 上册 · 第38页",
+     "src": "qinli_1",
+     "page": 37,
+     "box": [
+      74,
+      92,
+      325,
+      369
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "素",
+     "simp": "素",
+     "pinyin": "sù",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "德彰素里",
+     "source": "初拓本 上册 · 第42页",
+     "src": "qinli_1",
+     "page": 41,
+     "box": [
+      69,
+      1173,
+      295,
+      1442
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "委",
+     "simp": "委",
+     "pinyin": "wěi",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "委質當代",
+     "source": "初拓本 上册 · 第43页",
+     "src": "qinli_1",
+     "page": 42,
+     "box": [
+      26,
+      341,
+      275,
+      617
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "質",
+     "simp": "质",
+     "pinyin": "zhì",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "委質當代",
+     "source": "初拓本 上册 · 第43页",
+     "src": "qinli_1",
+     "page": 42,
+     "box": [
+      54,
+      636,
+      244,
+      910
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "安",
+     "simp": "安",
+     "pinyin": "ān",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "君安時",
+     "source": "初拓本 上册 · 第46页",
+     "src": "qinli_1",
+     "page": 45,
+     "box": [
+      597,
+      349,
+      805,
+      636
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "官",
+     "simp": "官",
+     "pinyin": "guān",
+     "struct": "TB",
+     "focus": "B",
+     "phrase": "官舍",
+     "source": "初拓本 上册 · 第47页",
+     "src": "qinli_1",
+     "page": 46,
+     "box": [
+      522,
+      384,
+      754,
+      624
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "先",
+     "simp": "先",
+     "pinyin": "xiān",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "先夫人",
+     "source": "初拓本 上册 · 第48页",
+     "src": "qinli_1",
+     "page": 47,
+     "box": [
+      336,
+      613,
+      564,
+      863
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "合",
+     "simp": "合",
+     "pinyin": "hé",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "合祔",
+     "source": "初拓本 上册 · 第49页",
+     "src": "qinli_1",
+     "page": 48,
+     "box": [
+      533,
+      915,
+      779,
+      1205
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "晉",
+     "simp": "晋",
+     "pinyin": "jìn",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "晉王",
+     "source": "初拓本 上册 · 第49页",
+     "src": "qinli_1",
+     "page": 48,
+     "box": [
+      26,
+      639,
+      262,
+      929
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "華",
+     "simp": "华",
+     "pinyin": "huá",
+     "struct": "TB",
+     "focus": "S",
+     "phrase": "贈華州刺史",
+     "source": "初拓本 上册 · 第50页",
+     "src": "qinli_1",
+     "page": 49,
+     "box": [
+      551,
+      1172,
+      806,
+      1454
+     ],
+     "cell": 261
+    },
+    {
+     "chapter": "tb",
+     "trad": "考",
+     "simp": "考",
+     "pinyin": "kǎo",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "考功",
+     "source": "初拓本 上册 · 第54页",
+     "src": "qinli_1",
+     "page": 53,
+     "box": [
+      584,
+      88,
+      820,
+      364
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "tb",
+     "trad": "等",
+     "simp": "等",
+     "pinyin": "děng",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "高等",
+     "source": "初拓本 上册 · 第55页",
+     "src": "qinli_1",
+     "page": 54,
+     "box": [
+      267,
+      348,
+      488,
+      662
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "高",
+     "simp": "高",
+     "pinyin": "gāo",
+     "struct": "TB",
+     "focus": "D",
+     "phrase": "高等",
+     "source": "初拓本 上册 · 第55页",
+     "src": "qinli_1",
+     "page": 54,
+     "box": [
+      252,
+      76,
+      498,
+      365
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "累",
+     "simp": "累",
+     "pinyin": "lěi",
+     "struct": "TB",
+     "focus": "Z",
+     "phrase": "累遷",
+     "source": "初拓本 上册 · 第55页",
+     "src": "qinli_1",
+     "page": 54,
+     "box": [
+      273,
+      1183,
+      472,
+      1467
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "畿",
+     "simp": "畿",
+     "pinyin": "jī",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "歷畿赤尉丞",
+     "source": "初拓本 上册 · 第58页",
+     "src": "qinli_1",
+     "page": 57,
+     "box": [
+      568,
+      353,
+      817,
+      617
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "祭",
+     "simp": "祭",
+     "pinyin": "jì",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "國子祭酒",
+     "source": "初拓本 上册 · 第59页",
+     "src": "qinli_1",
+     "page": 58,
+     "box": [
+      512,
+      101,
+      777,
+      366
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "tb",
+     "trad": "孝",
+     "simp": "孝",
+     "pinyin": "xiào",
+     "struct": "TB",
+     "focus": "P",
+     "phrase": "孝友",
+     "source": "初拓本 上册 · 第60页",
+     "src": "qinli_1",
+     "page": 59,
+     "box": [
+      312,
+      95,
+      570,
+      366
+     ],
+     "cell": 263
+    },
+    {
+     "chapter": "tb",
+     "trad": "節",
+     "simp": "节",
+     "pinyin": "jié",
+     "struct": "TB",
+     "focus": "F",
+     "phrase": "劍南節度",
+     "source": "初拓本 上册 · 第63页",
+     "src": "qinli_1",
+     "page": 62,
+     "box": [
+      39,
+      633,
+      256,
+      904
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "tb",
+     "trad": "草",
+     "simp": "草",
+     "pinyin": "cǎo",
+     "struct": "TB",
+     "focus": "H",
+     "phrase": "工詩善草",
+     "source": "初拓本 下册 · 第5页",
+     "src": "qinli_2",
+     "page": 4,
+     "box": [
+      238,
+      908,
+      498,
+      1190
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "tb",
+     "trad": "莫",
+     "simp": "莫",
+     "pinyin": "mò",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "莫追長老",
+     "source": "初拓本 下册 · 第47页",
+     "src": "qinli_2",
+     "page": 46,
+     "box": [
+      537,
+      1201,
+      773,
+      1470
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "tb",
+     "trad": "美",
+     "simp": "美",
+     "pinyin": "měi",
+     "struct": "TB",
+     "focus": "N",
+     "phrase": "君之德美",
+     "source": "初拓本 下册 · 第47页",
+     "src": "qinli_2",
+     "page": 46,
+     "box": [
+      26,
+      1188,
+      253,
+      1457
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "遠",
+     "simp": "远",
+     "pinyin": "yuǎn",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "諱見遠",
+     "source": "初拓本 上册 · 第6页",
+     "src": "qinli_1",
+     "page": 5,
+     "box": [
+      86,
+      77,
+      351,
+      341
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "遊",
+     "simp": "游",
+     "pinyin": "yóu",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "弟遊秦",
+     "source": "初拓本 上册 · 第20页",
+     "src": "qinli_1",
+     "page": 19,
+     "box": [
+      345,
+      935,
+      584,
+      1173
+     ],
+     "cell": 256
+    },
+    {
+     "chapter": "en",
+     "trad": "選",
+     "simp": "选",
+     "pinyin": "xuǎn",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "精選僚屬",
+     "source": "初拓本 上册 · 第16页",
+     "src": "qinli_1",
+     "page": 15,
+     "box": [
+      569,
+      365,
+      827,
+      630
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "遷",
+     "simp": "迁",
+     "pinyin": "qiān",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "累遷",
+     "source": "初拓本 上册 · 第55页",
+     "src": "qinli_1",
+     "page": 54,
+     "box": [
+      10,
+      87,
+      256,
+      337
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "en",
+     "trad": "追",
+     "simp": "追",
+     "pinyin": "zhuī",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "莫追長老",
+     "source": "初拓本 下册 · 第47页",
+     "src": "qinli_2",
+     "page": 46,
+     "box": [
+      277,
+      110,
+      513,
+      365
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "進",
+     "simp": "进",
+     "pinyin": "jìn",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "不得仕進",
+     "source": "初拓本 上册 · 第53页",
+     "src": "qinli_1",
+     "page": 52,
+     "box": [
+      278,
+      909,
+      530,
+      1178
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "府",
+     "simp": "府",
+     "pinyin": "fǔ",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "右領左右府",
+     "source": "初拓本 上册 · 第27页",
+     "src": "qinli_1",
+     "page": 26,
+     "box": [
+      279,
+      1185,
+      505,
+      1457
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "局",
+     "simp": "局",
+     "pinyin": "jú",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "司經局校書",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      69,
+      351,
+      315,
+      624
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "司",
+     "simp": "司",
+     "pinyin": "sī",
+     "struct": "EN",
+     "focus": "Z",
+     "phrase": "仕隋司經局",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      356,
+      1201,
+      547,
+      1430
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "同",
+     "simp": "同",
+     "pinyin": "tóng",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "同合祔",
+     "source": "初拓本 上册 · 第49页",
+     "src": "qinli_1",
+     "page": 48,
+     "box": [
+      561,
+      633,
+      779,
+      908
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "內",
+     "simp": "内",
+     "pinyin": "nèi",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "太子內直監",
+     "source": "初拓本 上册 · 第31页",
+     "src": "qinli_1",
+     "page": 30,
+     "box": [
+      549,
+      924,
+      749,
+      1172
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "門",
+     "simp": "门",
+     "pinyin": "mén",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "黃門侍郎",
+     "source": "初拓本 上册 · 第10页",
+     "src": "qinli_1",
+     "page": 9,
+     "box": [
+      579,
+      95,
+      808,
+      364
+     ],
+     "cell": 258
+    },
+    {
+     "chapter": "en",
+     "trad": "閣",
+     "simp": "阁",
+     "pinyin": "gé",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "秘閣",
+     "source": "初拓本 上册 · 第21页",
+     "src": "qinli_1",
+     "page": 20,
+     "box": [
+      545,
+      360,
+      766,
+      629
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "原",
+     "simp": "原",
+     "pinyin": "yuán",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "鳳栖原",
+     "source": "初拓本 上册 · 第48页",
+     "src": "qinli_1",
+     "page": 47,
+     "box": [
+      323,
+      337,
+      567,
+      593
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "鳳",
+     "simp": "凤",
+     "pinyin": "fèng",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "鳳栖原",
+     "source": "初拓本 上册 · 第48页",
+     "src": "qinli_1",
+     "page": 47,
+     "box": [
+      589,
+      1181,
+      831,
+      1439
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "慶",
+     "simp": "庆",
+     "pinyin": "qìng",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "明慶六年",
+     "source": "初拓本 上册 · 第45页",
+     "src": "qinli_1",
+     "page": 44,
+     "box": [
+      278,
+      905,
+      504,
+      1184
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "度",
+     "simp": "度",
+     "pinyin": "dù",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "劍南節度",
+     "source": "初拓本 上册 · 第63页",
+     "src": "qinli_1",
+     "page": 62,
+     "box": [
+      12,
+      907,
+      264,
+      1189
+     ],
+     "cell": 257
+    },
+    {
+     "chapter": "en",
+     "trad": "屬",
+     "simp": "属",
+     "pinyin": "shǔ",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "善屬文",
+     "source": "初拓本 上册 · 第12页",
+     "src": "qinli_1",
+     "page": 11,
+     "box": [
+      574,
+      346,
+      819,
+      636
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "居",
+     "simp": "居",
+     "pinyin": "jū",
+     "struct": "EN",
+     "focus": "P",
+     "phrase": "自居下帷",
+     "source": "初拓本 上册 · 第42页",
+     "src": "qinli_1",
+     "page": 41,
+     "box": [
+      315,
+      626,
+      564,
+      900
+     ],
+     "cell": 259
+    },
+    {
+     "chapter": "en",
+     "trad": "闕",
+     "simp": "阙",
+     "pinyin": "quē",
+     "struct": "EN",
+     "focus": "G",
+     "phrase": "多恨闕遺",
+     "source": "初拓本 下册 · 第48页",
+     "src": "qinli_2",
+     "page": 47,
+     "box": [
+      587,
+      622,
+      799,
+      901
+     ],
+     "cell": 260
+    },
+    {
+     "chapter": "en",
+     "trad": "遺",
+     "simp": "遗",
+     "pinyin": "yí",
+     "struct": "EN",
+     "focus": "W",
+     "phrase": "多恨闕遺",
+     "source": "初拓本 下册 · 第48页",
+     "src": "qinli_2",
+     "page": 47,
+     "box": [
+      561,
+      902,
+      816,
+      1188
+     ],
+     "cell": 260
+    }
+   ]
   }
  ]
 }

@@ -22,6 +22,7 @@ extern const yz_page_t YZ_PAGE_CATALOG;
 extern const yz_page_t YZ_PAGE_PRACTICE;
 extern const yz_page_t YZ_PAGE_ABOUT;
 extern const yz_page_t YZ_PAGE_SETTINGS;
+extern const yz_page_t YZ_PAGE_LIBRARY;
 
 // 去掉默认样式的基础对象 / 文字。
 lv_obj_t *yz_ui_box(lv_obj_t *parent, int x, int y, int w, int h, uint32_t bg, int radius);
@@ -39,4 +40,5 @@ const char *yz_ui_ink_name(uint8_t ink);
 const char *yz_ui_struct_name(uint8_t structure);
 const char *yz_ui_struct_tip(uint8_t structure);
 const char *yz_ui_focus_tip(uint8_t focus);
-const char *yz_ui_tab_name(uint8_t tab);
+// 当前字帖的页签名（章节名或“收藏”）。
+const char *yz_ui_tab_name(const yz_book_t *book, uint8_t tab);

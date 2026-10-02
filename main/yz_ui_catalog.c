@@ -11,7 +11,10 @@
 #define PREVIEW_Y 230
 
 static lv_obj_t *s_head;
-static lv_obj_t *s_tabs[YZ_TAB_COUNT];
+#define MAX_TABS (YZ_BOOK_MAX_CHAPTERS + 1)
+
+static lv_obj_t *s_tabs[MAX_TABS];
+static int s_tab_count;
 static lv_obj_t *s_tab_line;
 static lv_obj_t *s_cells[CELLS];
 static lv_obj_t *s_cell_text[CELLS];
@@ -26,8 +29,8 @@ static lv_obj_t *s_phrase;
 static lv_obj_t *s_count;
 
 static void update(const yz_book_t *book) {
-    lv_label_set_text_fmt(s_head, YZ_STR_CAT_HEAD_FMT, yz_ui_tab_name(book->tab), (unsigned)book->list_len);
-    for (int t = 0; t < YZ_TAB_COUNT; t++) {
+    lv_label_set_text_fmt(s_head, YZ_STR_CAT_HEAD_FMT, yz_ui_tab_name(book, book->tab), (unsigned)book->list_len);
+    for (int t = 0; t < s_tab_count; t++) {
         const bool cur = t == book->tab;
         lv_obj_set_style_text_color(s_tabs[t], lv_color_hex(cur ? YZ_C_VERMILION : YZ_C_INK_SOFT), 0);
         lv_obj_set_style_text_opa(s_tabs[t], cur ? LV_OPA_COVER : LV_OPA_60, 0);
@@ -90,9 +93,10 @@ static void update(const yz_book_t *book) {
 static bool build(lv_obj_t *scr, const yz_book_t *book) {
     s_head = yz_ui_label(scr, &yz_zh18, YZ_C_INK, 24, 8);
 
-    for (int t = 0; t < YZ_TAB_COUNT; t++) {
+    s_tab_count = yz_book_tab_count(book);
+    for (int t = 0; t < s_tab_count; t++) {
         s_tabs[t] = yz_ui_label(scr, &yz_zh14, YZ_C_INK_SOFT, TAB_X + t * TAB_W, TAB_Y);
-        lv_label_set_text_static(s_tabs[t], yz_ui_tab_name((uint8_t)t));
+        lv_label_set_text_static(s_tabs[t], yz_ui_tab_name(book, (uint8_t)t));
     }
     s_tab_line = yz_ui_box(scr, TAB_X + 3, TAB_Y + 20, 22, 2, YZ_C_VERMILION, 1);
 
@@ -134,7 +138,8 @@ static bool build(lv_obj_t *scr, const yz_book_t *book) {
 static void forget(void) {
     s_head = s_tab_line = s_scroll = s_empty = s_tile = NULL;
     s_simp = s_pinyin = s_phrase = s_count = NULL;
-    for (int t = 0; t < YZ_TAB_COUNT; t++) s_tabs[t] = NULL;
+    for (int t = 0; t < MAX_TABS; t++) s_tabs[t] = NULL;
+    s_tab_count = 0;
     for (int c = 0; c < CELLS; c++) s_cells[c] = s_cell_text[c] = s_cell_fav[c] = s_cell_done[c] = NULL;
 }
 

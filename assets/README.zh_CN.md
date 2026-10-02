@@ -15,14 +15,14 @@
 - 添加字库前评估 Flash 与内部 RAM 影响；ESP32-C3 无 PSRAM。
 - 不提交许可不允许分发的字库。
 
-### 颜真卿字帖（多宝塔碑）字体
+### 颜真卿字帖（多宝塔碑、颜勤礼碑）字体
 
 | 文件 | 字号 / bpp | 字符 | 用途 |
 | --- | --- | --- | --- |
-| [`fonts/yz_zh14.c`](fonts/yz_zh14.c) | 14 px / 4 bpp | `main/yz_strings.h` 全部字符串字面量 + `tools/yz_catalog.json` 的简体、繁体、拼音、碑文语境 + 可打印 ASCII | 正文、提示、页签、笔法卡、电量 |
+| [`fonts/yz_zh14.c`](fonts/yz_zh14.c) | 14 px / 4 bpp | `main/yz_strings.h` 全部字符串字面量 + `tools/yz_catalog.json` 中显示的全部文字（帖名、年代、简介、拓本来源、章节名，以及每个字的简体、繁体、拼音、碑文语境、出处）+ 可打印 ASCII | 正文、提示、页签、笔法卡、电量 |
 | [`fonts/yz_zh18.c`](fonts/yz_zh18.c) | 18 px / 4 bpp | 同 `yz_zh14` | 菜单、标题行、拼音 |
 | [`fonts/yz_zh24.c`](fonts/yz_zh24.c) | 24 px / 4 bpp | 同 `yz_zh14` | 目录字格（碑上原字）、页面标题、计时 |
-| [`fonts/yz_zh32.c`](fonts/yz_zh32.c) | 32 px / 4 bpp | 字目的简体与繁体单字、`YZ_STR_APP_TITLE`、数字 | 竖排题名、简体大字 |
+| [`fonts/yz_zh32.c`](fonts/yz_zh32.c) | 32 px / 4 bpp | 各帖帖名、字目的简体与繁体单字、数字 | 竖排帖名、简体大字 |
 
 - 来源：Adobe Source Han Sans SC 2.005（`SourceHanSansSC-Regular.otf`，SubsetOTF/SC），SIL Open Font License 1.1。OTF 不提交，其 SHA-256 记录在 [`fonts/yz_fonts.manifest.json`](fonts/yz_fonts.manifest.json)。
 - 转换器：`lv_font_conv` 1.5.3，参数 `--no-compress --no-kerning`，LVGL 9.5 格式；manifest 记录每个字体的完整命令、码点范围与输出哈希。
@@ -45,17 +45,19 @@
 - 许可允许时保留可编辑源文件，并记录来源与许可。
 - 图片中不得包含设备二维码秘密、凭证或个人数据。
 
-### 颜真卿字帖：《多宝塔碑》拓本字形包
+### 颜真卿字帖：《多宝塔碑》《颜勤礼碑》拓本字形包
 
 | 文件 | 格式 | 用途与来源 |
 | --- | --- | --- |
-| [`images/yz_glyphs.bin`](images/yz_glyphs.bin) | 188 字 × 176×176，4 bpp 灰度 + 游程编码（`YZG1`，约 666 KB） | 字帖的拓本原字。`main/CMakeLists.txt` 以 `EMBED_FILES` 嵌入 Flash，运行时只把当前字解码到一块 30 KB 的 A8 缓冲，按“拓本 / 墨迹 / 描红”着色。 |
+| [`images/yz_glyphs.bin`](images/yz_glyphs.bin) | 412 字（多宝塔碑 188 + 颜勤礼碑 224）× 176×176，4 bpp 灰度 + 游程编码（`YZG1`，约 1.5 MB） | 字帖的拓本原字，两本字帖依次排列。`main/CMakeLists.txt` 以 `EMBED_FILES` 嵌入 Flash，运行时只把当前字解码到一块 30 KB 的 A8 缓冲，按“拓本 / 墨迹 / 描红”着色。新字帖只能追加在末尾，旧存档的字下标才保持不变。 |
 | [`images/yz_glyphs.manifest.json`](images/yz_glyphs.manifest.json) | JSON | 来源、处理参数、每字哈希。 |
 
-- 来源：宋拓《多寶佛塔碑》冊，台北故宫博物院藏（故帖 000019），[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:NPM-%E6%95%85%E5%B8%96000019_%E5%AE%8B%E6%8B%93%E5%A4%9A%E5%AF%B6%E4%BD%9B%E5%A1%94%E7%A2%91_%E5%86%8A.pdf) 标注为公有领域（唐代书迹的平面复制品）。PDF（约 33 MB）不提交，SHA-256 记录在 manifest。
-- 字目：[`tools/yz_catalog.json`](../tools/yz_catalog.json) 逐字记录章节、简体、拼音、结构、笔法重点、碑文语境、拓本页码与像素框；全部经人工对照拓本核对。
+- 来源（均经 [Wikimedia Commons](https://commons.wikimedia.org/) 以公有领域发布，唐代书迹的平面复制品；PDF 不提交，SHA-256 记录在 `tools/yz_catalog.json` 与 manifest）：
+  - 《多宝塔碑》：宋拓《多寶佛塔碑》冊，台北故宫博物院藏（故帖 000019），[PDF 约 33 MB](https://commons.wikimedia.org/wiki/File:NPM-%E6%95%85%E5%B8%96000019_%E5%AE%8B%E6%8B%93%E5%A4%9A%E5%AF%B6%E4%BD%9B%E5%A1%94%E7%A2%91_%E5%86%8A.pdf)。
+  - 《颜勤礼碑》：《初拓顏勤禮碑》影印本 [上册](https://commons.wikimedia.org/wiki/File:SSID-12999612_%E5%88%9D%E6%8B%93%E9%A1%8F%E5%8B%A4%E7%A6%AE%E7%A2%91_%E4%B8%8A.pdf)（约 15.7 MB）、[下册](https://commons.wikimedia.org/wiki/File:SSID-12999613_%E5%88%9D%E6%8B%93%E9%A1%8F%E5%8B%A4%E7%A6%AE%E7%A2%91_%E4%B8%8B.pdf)（约 15.3 MB）。
+- 字目：[`tools/yz_catalog.json`](../tools/yz_catalog.json) 按字帖记录帖名、简介、拓本来源与章节，并逐字记录章节、简体、拼音、结构、笔法重点、碑文语境、出处、拓本页码与像素框；全部经人工对照拓本核对。
 - 处理：按像素框裁切 → 单字自适应阈值（背景取中位数、笔画取 97 百分位）→ 去掉小于约 0.25% 字格面积的石花噪点 → 按版心字格统一缩放（保留字与字的相对大小）→ 居中放入 176×176 画布 → 量化到 4 bpp。保留拓本肌理与残损，不作描修。
-- 重新生成：`python3 tools/gen_yz_assets.py generate --pdf <拓本 PDF>`（需要 pymupdf、Pillow、numpy、scipy）；只改字目文字时用 `python3 tools/gen_yz_assets.py catalog`。`python3 tools/gen_yz_assets.py check`（已纳入 `tools/validate.sh --static`）只用标准库，逐字解码并核对字目与 manifest；`preview --out <png>` 输出核对用的对照表。
+- 重新生成：`python3 tools/gen_yz_assets.py generate --pdf duobao=<多宝塔 PDF> --pdf qinli_1=<勤礼碑上册> --pdf qinli_2=<勤礼碑下册>`（需要 pymupdf、Pillow、numpy、scipy）；只改字目文字时用 `python3 tools/gen_yz_assets.py catalog`。`python3 tools/gen_yz_assets.py check`（已纳入 `tools/validate.sh --static`）只用标准库，逐字解码并核对字目与 manifest；`preview --out <png>` 输出核对用的对照表。
 
 ## 音乐与音效（music）
 

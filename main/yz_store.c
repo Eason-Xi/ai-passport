@@ -17,7 +17,7 @@ static bool s_ok;
 static bool s_cfg_dirty;
 static bool s_prog_dirty;
 static uint32_t s_changed_ms;
-static uint8_t s_buf[YZ_PROG_BLOB_SIZE];   // 只在应用任务里使用
+static uint8_t s_buf[YZ_PROG_READ_MAX];   // 只在应用任务里使用；读取时要容得下旧版 v1 进度
 
 void yz_store_init(yz_cfg_t *cfg, yz_progress_t *prog) {
     yz_cfg_default(cfg);
@@ -47,8 +47,8 @@ void yz_store_init(yz_cfg_t *cfg, yz_progress_t *prog) {
         yz_progress_reset(prog);
     }
     nvs_close(h);
-    ESP_LOGI(TAG, "存档已读取：当前第 %u 字，累计 %lu 遍", (unsigned)prog->current + 1,
-             (unsigned long)prog->sessions);
+    ESP_LOGI(TAG, "存档已读取：当前字帖 %u，第 %u 字，本帖累计 %lu 遍", (unsigned)prog->book,
+             (unsigned)prog->current[prog->book] + 1, (unsigned long)prog->sessions[prog->book]);
 }
 
 void yz_store_mark(bool cfg_dirty, bool prog_dirty, uint32_t now_ms) {
