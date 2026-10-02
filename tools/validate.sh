@@ -54,13 +54,32 @@ run_static_checks() {
         tests/test_bsp_audio_recovery.c components/bsp/src/bsp_es8311_sleep_check.c \
         -o "${test_dir}/test_bsp_audio_recovery"
     "${test_dir}/test_bsp_audio_recovery"
+    # 去除未用段：GNU ld 用 --gc-sections，macOS ld64 用 -dead_strip。
+    local gc_flag="-Wl,--gc-sections"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        gc_flag="-Wl,-dead_strip"
+    fi
     for demo in audio low_power ble wifi; do
         "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
             -ffunction-sections -fdata-sections -Itests/demo_stubs -Imain \
-            "tests/test_demo_${demo}_runtime.c" -Wl,--gc-sections \
+            "tests/test_demo_${demo}_runtime.c" "${gc_flag}" \
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
+    # 颜真卿字帖：纯逻辑模块（状态机、字形包解码、存档格式、调暗、提示音合成）逐个测试；
+    # 字形包 / 字目 / 字体子集与源数据一致、字形覆盖完整、非 ASCII 字面量集中在 yz_strings.h。
+    local yz_sources=(main/yz_book.c main/yz_catalog.c main/yz_catalog_data.c main/yz_glyph.c
+        main/yz_save.c main/yz_power.c main/yz_bell.c)
+    local yz_test
+    for yz_test in book glyph save power bell; do
+        "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain -Itests \
+            "tests/test_yz_${yz_test}.c" "${yz_sources[@]}" -lm \
+            -o "${test_dir}/test_yz_${yz_test}"
+        "${test_dir}/test_yz_${yz_test}" assets/images/yz_glyphs.bin
+    done
+    python3 tools/gen_yz_assets.py check
+    python3 tools/gen_yz_fonts.py check
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_yz_tools.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py

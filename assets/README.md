@@ -17,6 +17,20 @@ Store reusable font files and generated font sources in `fonts/`.
 - Check Flash and internal-RAM impact before adding a font; the ESP32-C3 has no PSRAM.
 - Do not commit fonts whose license does not permit redistribution.
 
+### Yan Zhenqing copybook (Duobao Pagoda Stele) fonts
+
+| File | Size / bpp | Characters | Use |
+| --- | --- | --- | --- |
+| [`fonts/yz_zh14.c`](fonts/yz_zh14.c) | 14 px / 4 bpp | Every string literal in `main/yz_strings.h` + simplified, traditional, pinyin, and stele-context text from `tools/yz_catalog.json` + printable ASCII | Body text, hints, tabs, technique card, battery |
+| [`fonts/yz_zh18.c`](fonts/yz_zh18.c) | 18 px / 4 bpp | Same as `yz_zh14` | Menus, header rows, pinyin |
+| [`fonts/yz_zh24.c`](fonts/yz_zh24.c) | 24 px / 4 bpp | Same as `yz_zh14` | Catalog cells (original stele characters), page titles, timer |
+| [`fonts/yz_zh32.c`](fonts/yz_zh32.c) | 32 px / 4 bpp | Simplified and traditional catalog characters, `YZ_STR_APP_TITLE`, digits | Vertical title, large simplified character |
+
+- Source: Adobe Source Han Sans SC 2.005 (`SourceHanSansSC-Regular.otf`, SubsetOTF/SC), SIL Open Font License 1.1. The OTF is not committed; its SHA-256 is recorded in [`fonts/yz_fonts.manifest.json`](fonts/yz_fonts.manifest.json).
+- Converter: `lv_font_conv` 1.5.3 with `--no-compress --no-kerning`, LVGL 9.5 format. The manifest records each font's full command, code-point ranges, and output hash.
+- Regenerate after changing UI text or the catalog: `python3 tools/gen_yz_fonts.py generate --lv-font-conv <lv_font_conv> --font <SourceHanSansSC-Regular.otf>` (requires fontTools). The generator also rewrites `main/yz_font_glyphs.h`, which the firmware uses for a per-code-point self-check at startup.
+- `python3 tools/gen_yz_fonts.py check` (part of `tools/validate.sh --static`) uses only the standard library: it parses the committed fonts' cmaps and fails on missing glyphs, stale files, absolute paths, or non-ASCII UI literals in handwritten sources other than `main/yz_strings.h`.
+
 ## Images
 
 Store reusable source images and generated display assets in `images/`.
@@ -32,6 +46,18 @@ Store reusable source images and generated display assets in `images/`.
 - Prefer formats suitable for the 240 × 320 RGB565 display and account for Flash and internal RAM.
 - Preserve editable sources where licensing permits, and record the source and license.
 - Never commit device QR secrets, credentials, or personal data in images.
+
+### Yan Zhenqing copybook: Duobao Pagoda Stele rubbing glyph pack
+
+| File | Format | Use and source |
+| --- | --- | --- |
+| [`images/yz_glyphs.bin`](images/yz_glyphs.bin) | 188 characters × 176×176, 4 bpp grayscale + run-length encoding (`YZG1`, about 666 KB) | The copybook's original rubbing characters. `main/CMakeLists.txt` embeds it in Flash with `EMBED_FILES`; at runtime only the current character is decoded into one 30 KB A8 buffer and recolored for the stone, ink, or tracing style. |
+| [`images/yz_glyphs.manifest.json`](images/yz_glyphs.manifest.json) | JSON | Source, processing parameters, and per-glyph hashes. |
+
+- Source: Song-dynasty rubbing album of the Duobao Pagoda Stele, National Palace Museum, Taipei (object no. Gutie 000019), marked public domain on [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:NPM-%E6%95%85%E5%B8%96000019_%E5%AE%8B%E6%8B%93%E5%A4%9A%E5%AF%B6%E4%BD%9B%E5%A1%94%E7%A2%91_%E5%86%8A.pdf) (a flat reproduction of Tang-dynasty calligraphy). The PDF (about 33 MB) is not committed; its SHA-256 is recorded in the manifest.
+- Catalog: [`tools/yz_catalog.json`](../tools/yz_catalog.json) records each character's chapter, simplified form, pinyin, structure, brush-technique focus, stele context, rubbing page, and pixel box. Every entry was checked by hand against the rubbing.
+- Processing: crop by pixel box → per-character adaptive threshold (median background, 97th-percentile stroke level) → remove stone-flaw specks smaller than about 0.25% of a character cell → scale by the panel's cell size so relative character sizes are preserved → center on a 176×176 canvas → quantize to 4 bpp. Rubbing texture and damage are kept; nothing is retouched.
+- Regenerate with `python3 tools/gen_yz_assets.py generate --pdf <rubbing PDF>` (requires pymupdf, Pillow, numpy, scipy); use `python3 tools/gen_yz_assets.py catalog` when only catalog text changes. `python3 tools/gen_yz_assets.py check` (part of `tools/validate.sh --static`) uses only the standard library to decode every glyph and compare the pack with the catalog and manifest; `preview --out <png>` writes a contact sheet for review.
 
 ## Music and sound effects
 

@@ -1,0 +1,956 @@
+{
+ "source": {
+  "title": "宋拓多寶佛塔碑 冊（台北故宫博物院 故帖000019）",
+  "url": "https://commons.wikimedia.org/wiki/File:NPM-%E6%95%85%E5%B8%96000019_%E5%AE%8B%E6%8B%93%E5%A4%9A%E5%AF%B6%E4%BD%9B%E5%A1%94%E7%A2%91_%E5%86%8A.pdf",
+  "license": "Public domain (Wikimedia Commons)",
+  "sha256": "3b231dbb95ef0ac871e07a0162a0c8587f16ef9d3cbee26df98483e26dd02069"
+ },
+ "glyph_size": 176,
+ "bits_per_pixel": 4,
+ "encoding": "YZG1: header + (offset,len) table + RLE 4bpp (see tools/gen_yz_assets.py)",
+ "count": 188,
+ "bin_bytes": 681827,
+ "bin_sha256": "aa1b2b86d08ff9f6417a1bd6e0bc0815453323f38a0554bbf8183f9943303c54",
+ "glyphs": [
+  {
+   "trad": "大",
+   "bytes": 3401,
+   "sha256": "248fcd0a45f99961b4e498135ab05de3fc8665d534b6b984eef3842968753ee0"
+  },
+  {
+   "trad": "唐",
+   "bytes": 4064,
+   "sha256": "0ea03957892d6b3d411ac9cad68db625d2af690156aae271723f4f09d18e8a39"
+  },
+  {
+   "trad": "西",
+   "bytes": 3306,
+   "sha256": "3386cd471463076940d225e1e6f7c9a3dcb097c6a521bc8a76c84a1afec4e861"
+  },
+  {
+   "trad": "京",
+   "bytes": 3685,
+   "sha256": "36a28ea24a92344106cde9fdd3889cc8dbfb0df79beb2700ee1c434b0fabb128"
+  },
+  {
+   "trad": "千",
+   "bytes": 2402,
+   "sha256": "6d592eb0d59f86b35550bf0c66aaf115e98fe6663c4a00aeb34d08cd2461f1e0"
+  },
+  {
+   "trad": "福",
+   "bytes": 4459,
+   "sha256": "de81128ca06cc1eb3fbedac293b0ce2f482d11bfba3131d719d8cf7e8a074e43"
+  },
+  {
+   "trad": "寺",
+   "bytes": 2949,
+   "sha256": "da877e1d0ec15b562f2c45340066513b637b16dcca3c58bfc7cc8ece8e163dfb"
+  },
+  {
+   "trad": "多",
+   "bytes": 2293,
+   "sha256": "f579555b6f336d396cf7d049c5a83c6c8bf3c6114fd8c61d1b3fcf5b36a69e65"
+  },
+  {
+   "trad": "寶",
+   "bytes": 3737,
+   "sha256": "65a388cca1a2b7e317ac9b8c1f1c5644753a5d46c0a4d41078f71a592d18234b"
+  },
+  {
+   "trad": "佛",
+   "bytes": 3715,
+   "sha256": "f8d116e612eb67ef24ec4c6ed59b9a037a194d9ad15edaf4e79a7f62a0ffe0cb"
+  },
+  {
+   "trad": "塔",
+   "bytes": 3817,
+   "sha256": "ec16fffd3bb9a0785595c4ff5b0029f4f89ef7eb4f5da68f95381866f1041630"
+  },
+  {
+   "trad": "感",
+   "bytes": 5048,
+   "sha256": "4af3eab922fe940fd6a7b050a0153b07aa6d81a24aba8bbc1964dcd362807aa9"
+  },
+  {
+   "trad": "應",
+   "bytes": 4763,
+   "sha256": "8ef6c6c1ba25663196c53471b9dd7956e2bb2da4e904b91af0111fcef2660fd8"
+  },
+  {
+   "trad": "碑",
+   "bytes": 3606,
+   "sha256": "a1a41ab2e87adeb2fba14acbb5744a211c8b87549c47f32f64e7df8e276fd012"
+  },
+  {
+   "trad": "文",
+   "bytes": 2842,
+   "sha256": "877eee1ec13f06e146a7e079032a0e5473ff908b626f89265fcb88c2d281e271"
+  },
+  {
+   "trad": "顏",
+   "bytes": 6028,
+   "sha256": "f42e968d5499db08ff211645aa0f7542a59bb8769729d655c6c414c5b345bd02"
+  },
+  {
+   "trad": "真",
+   "bytes": 3581,
+   "sha256": "1dedb4765d6fd9c9483c48c888edfca69ee1b07f3569bdabcc307d46a92ab3d8"
+  },
+  {
+   "trad": "卿",
+   "bytes": 4688,
+   "sha256": "7881938862861f903d5e664bb2dc2429acc2bd7a2ff8c0b293f134e6cd4da5a6"
+  },
+  {
+   "trad": "書",
+   "bytes": 4333,
+   "sha256": "dced71d000c4eba38584097dd25906c9391f760c134b855cb0a42e1dbb2c94bc"
+  },
+  {
+   "trad": "一",
+   "bytes": 1500,
+   "sha256": "656f6fffceb52b073b6667613ac5e60b81b572c15e45435f7822929b0cc58d9d"
+  },
+  {
+   "trad": "二",
+   "bytes": 1689,
+   "sha256": "16c6884efe9cc7f02076233594ad360b8fa339b7d36fe0fc149252df50efac14"
+  },
+  {
+   "trad": "三",
+   "bytes": 1812,
+   "sha256": "4505e5ff5af41abdcef3f73d49dbc42f437199ae2780c5efbe6f96c399f50038"
+  },
+  {
+   "trad": "四",
+   "bytes": 2961,
+   "sha256": "40d97ac83e4b5f8dc0d8d1e14a06bcce9154cd5a29d33e4b85e93a7db14e2657"
+  },
+  {
+   "trad": "五",
+   "bytes": 3061,
+   "sha256": "392f91243271d098ead325727f8991bc59d925d904338740a05a68cbd8322b84"
+  },
+  {
+   "trad": "六",
+   "bytes": 2110,
+   "sha256": "cf0884ad76c3c5e6ce7bb7599579d0d4c006aa638faa9482b98326cb2c4dac31"
+  },
+  {
+   "trad": "七",
+   "bytes": 1829,
+   "sha256": "60397436824fc5355f125bfa41397c0a64014978398f20705e34177946815373"
+  },
+  {
+   "trad": "八",
+   "bytes": 1523,
+   "sha256": "11ca5dc48c0340e5177abe8a99f74839824c3876c0da0a27013991a8f0a76e89"
+  },
+  {
+   "trad": "九",
+   "bytes": 3042,
+   "sha256": "ad5e1ac2b16008dbe8908ca4daa7341b6ed02069d54ed57123d0de2eeda66bf3"
+  },
+  {
+   "trad": "十",
+   "bytes": 2727,
+   "sha256": "d10b26f7b98c1e827497e657b126c17168cad3c590b020207e38dd6563820f85"
+  },
+  {
+   "trad": "百",
+   "bytes": 3037,
+   "sha256": "ef4384d94023604f1c237264c0a481f4b649884c8f6c22f8d6cbfdfa20a30a85"
+  },
+  {
+   "trad": "千",
+   "bytes": 2157,
+   "sha256": "60bc69f895d9d362c00ff5a5ac70bc0954dc4748b38b579c3686e6df297fe4bb"
+  },
+  {
+   "trad": "萬",
+   "bytes": 3817,
+   "sha256": "e6b1f186899cd4ba6cd1a03f0f9b4367392d6daf691efc43568051179660d40e"
+  },
+  {
+   "trad": "人",
+   "bytes": 2071,
+   "sha256": "21fc6b51ee4e8e3c42887e142c8bae87c288084a3441670ab29e67c0e210b50c"
+  },
+  {
+   "trad": "入",
+   "bytes": 2154,
+   "sha256": "d24498c9706d096e8f59fe8f6312b54f4cb2f5dd63dfdbee8e10a9aee3752a11"
+  },
+  {
+   "trad": "天",
+   "bytes": 2793,
+   "sha256": "1d3df90e738a7bdde9ac3585905efb53577c02aed3ae2c042648bd3c9b33903e"
+  },
+  {
+   "trad": "夫",
+   "bytes": 3465,
+   "sha256": "10d83cea86c30e697eec4eff68cd605f1b59cde4bf9bfffb047e351a4e145d8b"
+  },
+  {
+   "trad": "上",
+   "bytes": 1919,
+   "sha256": "c24662eeb15ae055300f70b532df727b1bd073061f4686916aff8dcca88f13f0"
+  },
+  {
+   "trad": "下",
+   "bytes": 2331,
+   "sha256": "b5b7d48d678323efe2d6f551ac948d899be90b20056fb77303c670a52b0f4b6c"
+  },
+  {
+   "trad": "中",
+   "bytes": 2626,
+   "sha256": "7bb7e536db53def472249559f3f0dd08c7ef44283f1ba1409acbaeb9d43c6bfd"
+  },
+  {
+   "trad": "王",
+   "bytes": 2272,
+   "sha256": "b1d76b91f8a3ec9fc7faa2c815b19790549de2648b4e0f7c43582bc9bb1b1d43"
+  },
+  {
+   "trad": "日",
+   "bytes": 2250,
+   "sha256": "19d9ede0b0b395a8629bc782b750bb587ed445d2d82c9243aacaf2f3a60a7eb9"
+  },
+  {
+   "trad": "月",
+   "bytes": 3227,
+   "sha256": "37caf6bd881f1ba8cac5b168de7da5155e5f7ebc13742271734630deeb4e7823"
+  },
+  {
+   "trad": "目",
+   "bytes": 2897,
+   "sha256": "fabe2b2a7484ebb39c00c6b95d305922aa507331c66af625f4dfa1019f2dada3"
+  },
+  {
+   "trad": "山",
+   "bytes": 2611,
+   "sha256": "4066481f02c187d3cdbbce74aded2d9a9745c78407d67f3b4202eb5cecacea71"
+  },
+  {
+   "trad": "水",
+   "bytes": 3040,
+   "sha256": "f9fc04ce2cb1b761e43af6ba1ef343e023508a129d8d95fa9b0a37d56c2bfc19"
+  },
+  {
+   "trad": "木",
+   "bytes": 3242,
+   "sha256": "3f2f68e740fef5a264e0e2c05bb73f064a608014067ba09a9f6a7085d48dca27"
+  },
+  {
+   "trad": "心",
+   "bytes": 2310,
+   "sha256": "c90c308acaa37417655c7a2f48eb1be73e07ded6f20c03f32d9e50ec7fc780e4"
+  },
+  {
+   "trad": "力",
+   "bytes": 3107,
+   "sha256": "f6a6be01a4402c8234d21239d865d709286aa36993c48683f85eb249e4ebb6bf"
+  },
+  {
+   "trad": "又",
+   "bytes": 2179,
+   "sha256": "0c9045224bdb207c512b0c78d3d9cc7c16fd62249072e6dfeba87bf668ac41c1"
+  },
+  {
+   "trad": "及",
+   "bytes": 2867,
+   "sha256": "c2d952ae5ffbd07bb0c34e6a21334e46417e092ff36808265ec7f0016895753e"
+  },
+  {
+   "trad": "久",
+   "bytes": 2840,
+   "sha256": "998616886940747bdd7659642eaa79a5ae422a3b7dee06543938e2be94029518"
+  },
+  {
+   "trad": "乃",
+   "bytes": 2633,
+   "sha256": "3684c291330c4961705274ececcb6a46ce515f0991ed1a8f0a25291879fc9117"
+  },
+  {
+   "trad": "也",
+   "bytes": 2492,
+   "sha256": "302cb25baa73cbfa5bb8190f9d340b29b8eed3248b673970ecdb9947ea78809d"
+  },
+  {
+   "trad": "子",
+   "bytes": 3162,
+   "sha256": "6e9403fc42e2942cbd0329930b8ee30adb45a88a599cf8886113cea7e90e6d16"
+  },
+  {
+   "trad": "女",
+   "bytes": 2722,
+   "sha256": "f1d668a0816c8aa62cc9d6446701ddc90173ef6c009b4cc45e4e26bd0199548d"
+  },
+  {
+   "trad": "生",
+   "bytes": 2655,
+   "sha256": "9056d392e6400e1f11c023359720791259400fce9a6e6398b6c8bf18ebd16515"
+  },
+  {
+   "trad": "方",
+   "bytes": 2977,
+   "sha256": "4f5097610accace58927fccbb74bac29b1e3f15d14c1f7c8d4a340db1b24018b"
+  },
+  {
+   "trad": "永",
+   "bytes": 3546,
+   "sha256": "514508303463470fd72bdf534f8fabc1bf0c25b9307185f23dce2263df562776"
+  },
+  {
+   "trad": "不",
+   "bytes": 3094,
+   "sha256": "3aaa22328bc4f0a25639b5fe956e37ecac5583602c57ef8b28de3be5afe64fed"
+  },
+  {
+   "trad": "而",
+   "bytes": 3273,
+   "sha256": "f1e40c109c58de2e3d083d66fc05383a81e98bf43152a8a3a443847ca5e7d80b"
+  },
+  {
+   "trad": "至",
+   "bytes": 3065,
+   "sha256": "d4d8c258642b270a73a09dce0489205cb0947e03f00fddee7add91fd7a450ce7"
+  },
+  {
+   "trad": "求",
+   "bytes": 3702,
+   "sha256": "05d95f9281dd1041d2d2052db8eb3f3bdc73e9fbdbf64d45bb735ecd2332acc3"
+  },
+  {
+   "trad": "事",
+   "bytes": 3314,
+   "sha256": "c31429399221746c0725f854354b551a2563c4ece2131ee131a826c6a0e19f6e"
+  },
+  {
+   "trad": "年",
+   "bytes": 2693,
+   "sha256": "73bece551732436608a6cc2697f1fbf49d4bc75f5814ab86e1baec2bbea33183"
+  },
+  {
+   "trad": "身",
+   "bytes": 2858,
+   "sha256": "b0a1c44103e0f4b1f42ccb716bf7e5becceb4fe245d417e78524eb995a66f414"
+  },
+  {
+   "trad": "自",
+   "bytes": 2728,
+   "sha256": "a1fba1e05cd6af87b46ba82207489ea9de4bfa18415ee0a39cb54289ef14f2cb"
+  },
+  {
+   "trad": "金",
+   "bytes": 3665,
+   "sha256": "76682e4b9ab18f1b2688d5cad97acd92a98b87809c5d0a151f8f2c4a734994cc"
+  },
+  {
+   "trad": "東",
+   "bytes": 4881,
+   "sha256": "d0794d5439485e9f276d4713d20da4cebf85375621aa4e7edf9e6699a38e3a82"
+  },
+  {
+   "trad": "果",
+   "bytes": 3153,
+   "sha256": "3686097e7fa32328853c66165d41792fafcfe9d2a3cdfb3a7af617748d76ef8a"
+  },
+  {
+   "trad": "母",
+   "bytes": 3668,
+   "sha256": "224359cc7f92e6a0ba44bf4e3492691769585e9c6cb24d1fb81c72c3f85a655f"
+  },
+  {
+   "trad": "氏",
+   "bytes": 2889,
+   "sha256": "e96f7717d4ce62a8f9f37965317dd8eb0df6153924a239afd69e14ac73a4d576"
+  },
+  {
+   "trad": "乘",
+   "bytes": 4580,
+   "sha256": "107d5120b25a7f1559e2d56b854d3c0b0576de68cbe2b0dacc78c7bef4d22e89"
+  },
+  {
+   "trad": "象",
+   "bytes": 3387,
+   "sha256": "5616f590a717f25dffb344a4b3ed8a29e31275df6925b7c7b3b1c62fcf4c9177"
+  },
+  {
+   "trad": "我",
+   "bytes": 4085,
+   "sha256": "3530ac8231c8bd3a3f03a2ce6f5c0f5002dc1d5ac1317506c8a6119c7bcf5e0f"
+  },
+  {
+   "trad": "法",
+   "bytes": 3554,
+   "sha256": "a561274de933f60005b97f353753cfff387db2fd6785e123cf42eaa1851514c8"
+  },
+  {
+   "trad": "師",
+   "bytes": 4932,
+   "sha256": "9d4fe9d44bf8abd9a284ab2231cc7034dff74d5b86e53288752e988d324b594a"
+  },
+  {
+   "trad": "禪",
+   "bytes": 5022,
+   "sha256": "81de1a7c6f16df2a3deed94b2812d552f52fbb2b750246a7368fe5698c9b08b4"
+  },
+  {
+   "trad": "陽",
+   "bytes": 5181,
+   "sha256": "e67f4fa4d8ccfcfd874009ff968b5de28fd5a374eae81aaf7d081c8e1e8ba4ae"
+  },
+  {
+   "trad": "明",
+   "bytes": 4498,
+   "sha256": "e05632f756a32713cc1f08756e580a709d4c66747b62b1f29a1ec4791bdf2c79"
+  },
+  {
+   "trad": "時",
+   "bytes": 4018,
+   "sha256": "ce95b361d524893b45c24acdad8f83c21e0d1ededfa3c402db9b51914c6df3d5"
+  },
+  {
+   "trad": "相",
+   "bytes": 3611,
+   "sha256": "cdb6782ac6e1c6044cb8ccfc99b230a58d6db32466cb9ef541813e1b375af619"
+  },
+  {
+   "trad": "利",
+   "bytes": 4084,
+   "sha256": "ad4a5f165847d61371c7168f26b429f7245042e1e1683fb4aa9ca9289e53dff9"
+  },
+  {
+   "trad": "能",
+   "bytes": 4830,
+   "sha256": "75825f8596f2155e1cd8ca5c964293f6991fdefa0c2b69cf4ac6db879cd579f1"
+  },
+  {
+   "trad": "經",
+   "bytes": 3217,
+   "sha256": "e4f9effdbc541eba313f4577edcf8c2861b8ea17f2c515fe9ea6bef71163e23c"
+  },
+  {
+   "trad": "誦",
+   "bytes": 4428,
+   "sha256": "90319629011e2befe52784a9dce6185527a3ab9fe3da3d4108194e9bc9f7ee07"
+  },
+  {
+   "trad": "持",
+   "bytes": 3531,
+   "sha256": "966cdd5e5e36ff42c2d613c5c0f83e7c8822f536192a4f7895d303a6c2140d82"
+  },
+  {
+   "trad": "行",
+   "bytes": 2849,
+   "sha256": "3a2d84ef8a31ed249936cff246fdc01f833364fce46ce4093255b0be8fda0cdd"
+  },
+  {
+   "trad": "德",
+   "bytes": 4591,
+   "sha256": "c25482b731879cb2c718a426d6c66ec465cde2fb023960a49e51237639e96153"
+  },
+  {
+   "trad": "鏡",
+   "bytes": 5242,
+   "sha256": "c4e6558614d7439eb4afeec9fe0dbb35a39139e1625800cef223b13e10c88865"
+  },
+  {
+   "trad": "海",
+   "bytes": 4010,
+   "sha256": "2528c1b17ef12241e7edbac550d2262247a69fd740ac6cd46ea13f0ab286a19d"
+  },
+  {
+   "trad": "流",
+   "bytes": 3013,
+   "sha256": "d96bd98b5c854cdd1bef190c766970a3bb76cb8d554fb8bf1a891fd76ed3420f"
+  },
+  {
+   "trad": "清",
+   "bytes": 3660,
+   "sha256": "cad0547a25ca7abea454572e78013fd45e75c12b8026f6e16df45d3b72885284"
+  },
+  {
+   "trad": "淨",
+   "bytes": 4239,
+   "sha256": "e2cb7307b4f49928c7be948757ba9de6a3f5de5673bb016a944f0fad6a096883"
+  },
+  {
+   "trad": "深",
+   "bytes": 4234,
+   "sha256": "f54534363284ef7eb5e47301a2bab5513c48c50e1bf11bf7dc04923df6cb10e1"
+  },
+  {
+   "trad": "動",
+   "bytes": 4221,
+   "sha256": "32582e53136726c7f6c017f1463b657a84dfad1edbe85bd070aa3565c22ce18a"
+  },
+  {
+   "trad": "功",
+   "bytes": 3817,
+   "sha256": "5a31c39d00794692a36ca769fa00a106c9e1488f9f460d9d270f5f3811e9294d"
+  },
+  {
+   "trad": "現",
+   "bytes": 3375,
+   "sha256": "0c376871cd713e0ea9a111261251c75198f89edd21ec1b31833e4b890e561b40"
+  },
+  {
+   "trad": "就",
+   "bytes": 4631,
+   "sha256": "ccac2f0129884fe254884bb4bc5dccc0cb143ef85f37c42ac981e7a639932813"
+  },
+  {
+   "trad": "輪",
+   "bytes": 4823,
+   "sha256": "0240282a39d774050f3a140f21eaaa6f4e699edc1bd471a12a8122b9b1056801"
+  },
+  {
+   "trad": "輝",
+   "bytes": 4396,
+   "sha256": "399cfa0d16b0c9dd45d2377553435af9c2a2d070d701a1e1587d12445ad92e8d"
+  },
+  {
+   "trad": "知",
+   "bytes": 3200,
+   "sha256": "4c22ec4cc95f274ce8c29c73d01cccedc54fb8d375e06e75e452830e4395511a"
+  },
+  {
+   "trad": "程",
+   "bytes": 3898,
+   "sha256": "f824de85a11822fd0cb971c83e0f5f96f1e204528875b51bcf4f4d25e55d139b"
+  },
+  {
+   "trad": "姓",
+   "bytes": 3642,
+   "sha256": "ea5fdb77b5ec46f0c8d6ed81b08826c0f2700f781c6bbb8924b3a207ea758d31"
+  },
+  {
+   "trad": "信",
+   "bytes": 2796,
+   "sha256": "29677d96016c8384dd8cad345e4012cae022fdb7354d906a9fe83a8bc8ee0526"
+  },
+  {
+   "trad": "祖",
+   "bytes": 3714,
+   "sha256": "ca6a7fa717e2742ec02ef566113f406b07e458e914c8bfde331a0c43f886b3d8"
+  },
+  {
+   "trad": "歸",
+   "bytes": 4578,
+   "sha256": "a7955833b2c6b0c729936de59e5924085c8c17a3f7ad944ee3920ca0722b33b5"
+  },
+  {
+   "trad": "絕",
+   "bytes": 4257,
+   "sha256": "4e79130bee2b51ca7d8544cdad2c0a397700aa2f5fadf21aaefb833a290740eb"
+  },
+  {
+   "trad": "於",
+   "bytes": 3136,
+   "sha256": "ed5f1dfbfc10338204690c4222c055cb7f054e1cfb8df3916ac99a8a6370a5fc"
+  },
+  {
+   "trad": "樹",
+   "bytes": 4680,
+   "sha256": "6b784c9dd59f1629cafc7dd85c5d4cb006f1594eed36bb75abe4e0b4387a4b54"
+  },
+  {
+   "trad": "池",
+   "bytes": 2385,
+   "sha256": "27edc74bbea8ca22074d914b03e6c2a4d18042868605f61de2d799f1ab8acc76"
+  },
+  {
+   "trad": "誠",
+   "bytes": 4783,
+   "sha256": "a3d806962b2ee6c687048291a9e6599c016aebca4e5c6637ccaf47b79df414e9"
+  },
+  {
+   "trad": "鋒",
+   "bytes": 4794,
+   "sha256": "d34eb17ac948caf0ed2857a0c803fe11b231082fd8cc5aeb462577e6baa62851"
+  },
+  {
+   "trad": "粒",
+   "bytes": 3763,
+   "sha256": "f903f34d98c5b25e625b66519ec5b3c8a2b27db7d1d34cc09e2963095bc7d3cc"
+  },
+  {
+   "trad": "欲",
+   "bytes": 3169,
+   "sha256": "a77109d2c9cfec36d1b2c0fbdfcba1808d886823d39245f3870edd17c5c659af"
+  },
+  {
+   "trad": "場",
+   "bytes": 4461,
+   "sha256": "da65bd1337e9773581f2ee51af9c1ee7ea837594ce560eb12fda60e109c7c297"
+  },
+  {
+   "trad": "後",
+   "bytes": 4303,
+   "sha256": "0fb82a1e280938cb5692348afa3d12d52bf26afff725df2f01ba44a45097df3b"
+  },
+  {
+   "trad": "恒",
+   "bytes": 4128,
+   "sha256": "500f1ffcd6f9588db1d7fd38629a60d8e7da07b4c8938d67c5878ff16a9d636f"
+  },
+  {
+   "trad": "許",
+   "bytes": 3346,
+   "sha256": "29b341a56d736489349be66be9476ec9cd83d18d731852e31be27d6a33fd0c8e"
+  },
+  {
+   "trad": "秋",
+   "bytes": 3469,
+   "sha256": "b8db119c4a25eff79830cdea806357e73b8def13e1496e5f3e6e05bdad42eedd"
+  },
+  {
+   "trad": "煙",
+   "bytes": 3556,
+   "sha256": "a504bd3a2648819f7782ff6c272629a6effba521a8ce89b8ca08f7d074e8cfd6"
+  },
+  {
+   "trad": "斷",
+   "bytes": 4496,
+   "sha256": "196321480477ec969d35a515bc21d74ad0746425e6c2871b52d037f6bcd21cc6"
+  },
+  {
+   "trad": "得",
+   "bytes": 3651,
+   "sha256": "176405626b4ccd0af05ab1063f58473a334cbf0403af237a60990f31db852eef"
+  },
+  {
+   "trad": "體",
+   "bytes": 4875,
+   "sha256": "0bbcb3a358ea364c2a99b09d10acae658a1bfa78ca5097d74e3b715683a10f3f"
+  },
+  {
+   "trad": "觀",
+   "bytes": 4386,
+   "sha256": "93f28da98d0c2a9330132112534352ea8127f08143bd7b334fe34dfd22474736"
+  },
+  {
+   "trad": "部",
+   "bytes": 4863,
+   "sha256": "94029e2649c6f8ccf3f870065c9f90a598d7970c40fe1e6d41bf5342bb2a8c1a"
+  },
+  {
+   "trad": "陳",
+   "bytes": 4503,
+   "sha256": "2757f093df6cc3ce4874413522025e28f7ae29f6f5ccdcbfc18e40e1e7e0bd9f"
+  },
+  {
+   "trad": "華",
+   "bytes": 4224,
+   "sha256": "afe44d92d29c888d17d51f44e0cbd6d18555e1b36afcc98fd2ef2d30beb1b96e"
+  },
+  {
+   "trad": "意",
+   "bytes": 3612,
+   "sha256": "e232f8b5de26efb0b90275d317064d8b1f81b6b37fc583bd6c31af010644bc27"
+  },
+  {
+   "trad": "普",
+   "bytes": 3371,
+   "sha256": "ffbdf1c8d6280dfe963993455232e177e433cea35af91f2b2913bc64b764b0b8"
+  },
+  {
+   "trad": "雲",
+   "bytes": 4480,
+   "sha256": "b93e1f78b785bb8533574ef9d67b6a3bf3fa2413b519b9ec1704c01cb042ac46"
+  },
+  {
+   "trad": "雪",
+   "bytes": 4211,
+   "sha256": "85108ca24c02cdc0c4683258730e77fbe2a4fddf543fa57db8f34f00148c96ad"
+  },
+  {
+   "trad": "香",
+   "bytes": 3410,
+   "sha256": "5fabed999b6de94af105e56752d63c791dd5cc8ded4a736dbd3b80b48b1d4917"
+  },
+  {
+   "trad": "忽",
+   "bytes": 4879,
+   "sha256": "34b7bfc732111688774ca00e7166161b887b06fe64e371546d51aa59b431bd07"
+  },
+  {
+   "trad": "念",
+   "bytes": 3857,
+   "sha256": "be36108b27324170eee0fe60a1d34f6892ba8681ef73da5bb394c30069189a6d"
+  },
+  {
+   "trad": "思",
+   "bytes": 3250,
+   "sha256": "f965aa9dbb3aebfb92b5de09ce4e5507a3863512cc1ab6069f38656120828157"
+  },
+  {
+   "trad": "聖",
+   "bytes": 4160,
+   "sha256": "9253e47a4452b0efb1b739555d6b2b35b5cdd1a244bdc4e82ac86a97f3f42901"
+  },
+  {
+   "trad": "慈",
+   "bytes": 3603,
+   "sha256": "2ef2b0f6ec1291b19ec097e5431b804cfa2802aadccb675af915cc5e49b45a3a"
+  },
+  {
+   "trad": "慧",
+   "bytes": 4266,
+   "sha256": "2dbf80ee3be7fbc151740eee1c236b6c4bd14c37d7704315706ba700071d7df8"
+  },
+  {
+   "trad": "崇",
+   "bytes": 3632,
+   "sha256": "6b1098721ce867a57ba5ab366673eb97919001fbfca4e810cbfd431d95ef2a1f"
+  },
+  {
+   "trad": "莫",
+   "bytes": 3648,
+   "sha256": "450728520e04a87dcef4a3649541b9f9e4c7def80ef6fd175750cfef753d5c94"
+  },
+  {
+   "trad": "菩",
+   "bytes": 3593,
+   "sha256": "35b02db7c87ccf63a90c55a999f9501f0833cbe25a62314313b5951c2ab6a64c"
+  },
+  {
+   "trad": "晝",
+   "bytes": 3788,
+   "sha256": "4e2d7bd60fb2f99ff032a4deac7497531fcb8c9ed22cff58d9e2b3343d4ddb75"
+  },
+  {
+   "trad": "志",
+   "bytes": 3228,
+   "sha256": "c5f8916576d7dc797bb79f23c7f5b5def191e40c87e9ac791b1e7dae9ada380d"
+  },
+  {
+   "trad": "恩",
+   "bytes": 3997,
+   "sha256": "7d22e17769a5bd1477956344767701873c94fe921ef90ad246fd3cac4ec0c4a7"
+  },
+  {
+   "trad": "舍",
+   "bytes": 3625,
+   "sha256": "67e18845757b6faa32fae6aecc0a408580a8107b247cbbbf7b31fef50571c475"
+  },
+  {
+   "trad": "春",
+   "bytes": 3464,
+   "sha256": "0e5398b8c09607081546af1f5bfe33152e9e55751585f22f1ea3ef14f21376d0"
+  },
+  {
+   "trad": "集",
+   "bytes": 3443,
+   "sha256": "1ad329aa83d94cc4a529a2b137cb5d7bcb99a5a7e4bc9750a64eb5ef2dd007f4"
+  },
+  {
+   "trad": "替",
+   "bytes": 4197,
+   "sha256": "1ed51ae1e58fdc46fad01513f36753885df5e5792dc4965b5d6cd0dc66e2632d"
+  },
+  {
+   "trad": "常",
+   "bytes": 3608,
+   "sha256": "ebbce2b0bfd4a9d38f596cf1c699cac0de1829e8c04cc96c5882f75b7cec74ef"
+  },
+  {
+   "trad": "異",
+   "bytes": 4426,
+   "sha256": "4a10373f078499ef3f0e9927be8b36be1b320c1bb3321732d06006376888436b"
+  },
+  {
+   "trad": "喜",
+   "bytes": 3475,
+   "sha256": "ada41a5b10102501a4bc9c8f4949f9615d13647f8ccbc568a786eb73cc9fb6aa"
+  },
+  {
+   "trad": "音",
+   "bytes": 3343,
+   "sha256": "c87c4348471de7c99c6c4f218ef58904658d9c9e1ca36b8af97f05670d5ca307"
+  },
+  {
+   "trad": "安",
+   "bytes": 3444,
+   "sha256": "cf933727b77841f29d490665efda9955400556869fa3c60079025fadc1558ceb"
+  },
+  {
+   "trad": "家",
+   "bytes": 3768,
+   "sha256": "e4cad828317b2c54ef46333d6bba46d85ffa6f946e80533875d389ae56eb2572"
+  },
+  {
+   "trad": "宿",
+   "bytes": 3582,
+   "sha256": "93c27edf82e3df729108116f0e8dfbe4277c1feeb8bf493edeabb9547659234f"
+  },
+  {
+   "trad": "空",
+   "bytes": 2653,
+   "sha256": "da2e0b2e8b7eef582944c0f085595dc750af86675ee5f957dfaa9264f72bbb18"
+  },
+  {
+   "trad": "尊",
+   "bytes": 4539,
+   "sha256": "16b3a7e66151cb3ad2a01daab733360320f4c5aea327d891d93abe44ffaff762"
+  },
+  {
+   "trad": "英",
+   "bytes": 3688,
+   "sha256": "ac3c7293e85a63d2f971a821893cef0cd06f3057a56af1fdbf8e36fa43de976d"
+  },
+  {
+   "trad": "若",
+   "bytes": 4571,
+   "sha256": "d8ec8100d7c6e5f9254c78a6d939db4730d54fb08b8737e13d66a60f21d98c88"
+  },
+  {
+   "trad": "首",
+   "bytes": 3429,
+   "sha256": "f51b61f28f9b91a4d5cab2f1ee212dd4587a4ee4ef4920edd194968269a414b2"
+  },
+  {
+   "trad": "善",
+   "bytes": 3381,
+   "sha256": "85914808a34428adff091e26fd9799172e13d6e62ed1333030e33b46e47449d1"
+  },
+  {
+   "trad": "盡",
+   "bytes": 4298,
+   "sha256": "eefe583d54e06c7604e96f48900431b0c7fc70c06f5464e4e08e9b321e4bbd48"
+  },
+  {
+   "trad": "悲",
+   "bytes": 3781,
+   "sha256": "96bdaa59c39aa7f7dd34ef344d0dcccacfdf1e653953309356d36f87158b5bfb"
+  },
+  {
+   "trad": "業",
+   "bytes": 4513,
+   "sha256": "a7c93001e201333fbe0cf203a57e8d59673e037f186154188ba63e35657604fb"
+  },
+  {
+   "trad": "道",
+   "bytes": 3190,
+   "sha256": "a2a35ba4fe7be8c50b20fef224d600007457b96272c2099af7e0ce695edea144"
+  },
+  {
+   "trad": "遠",
+   "bytes": 4243,
+   "sha256": "14f5ee115f87de43e84a402c7da983f84fe9e96eea71848ff4baa6153aea60a5"
+  },
+  {
+   "trad": "進",
+   "bytes": 4483,
+   "sha256": "3356c94ffd5384de657c8048e2efce8c74d8c2c6c2b14052873f268e48d30b44"
+  },
+  {
+   "trad": "過",
+   "bytes": 4287,
+   "sha256": "5c6bef76002036833fb31431bde6c86aad33910271864ed45fc5c8fd886c0a3d"
+  },
+  {
+   "trad": "遊",
+   "bytes": 4373,
+   "sha256": "827cfc4969aa68ad97800c74a7e7e2837a9926de4c207cfd59c2d01416919c16"
+  },
+  {
+   "trad": "通",
+   "bytes": 4719,
+   "sha256": "bdb5c8b91f58bf5e1fbffe85ff6f01ca0f1840dedc735d51741c6e85614f4243"
+  },
+  {
+   "trad": "遍",
+   "bytes": 3984,
+   "sha256": "252405d1bbfc4d79c198c7b2c516a06d149d9e2f24fbb4778908497e5ab6921e"
+  },
+  {
+   "trad": "遺",
+   "bytes": 4666,
+   "sha256": "66b86970d4a192ccf453048d42e1062847353b42ff5c663a11fe810b0be8fbae"
+  },
+  {
+   "trad": "造",
+   "bytes": 4244,
+   "sha256": "90298f6914a17313eb159f432dace7f52e8a9d7efa09c1c278c0d304a341d6f7"
+  },
+  {
+   "trad": "廣",
+   "bytes": 3704,
+   "sha256": "f69ff01c43023baf2ae023c6f28d112952db1e893405927166c9e4c01cc49172"
+  },
+  {
+   "trad": "度",
+   "bytes": 3963,
+   "sha256": "d772797d188c809ce7414b0618d8cf4ba6aa722807ba4eb8052de9cf5b885e25"
+  },
+  {
+   "trad": "慶",
+   "bytes": 4746,
+   "sha256": "ca915596f57c43cca3f409bbd6de868aa3730d2b6e06383ecfce769c07c22b44"
+  },
+  {
+   "trad": "庭",
+   "bytes": 4342,
+   "sha256": "4cfe17aa90108731b56106eeddb16a9f41b361d6272dd631892cc444d5908406"
+  },
+  {
+   "trad": "座",
+   "bytes": 3685,
+   "sha256": "57728192046d77460eaad2d6c263c0d7260c2f6108db268e955efd351792fa72"
+  },
+  {
+   "trad": "圓",
+   "bytes": 4348,
+   "sha256": "a760ee3e05d07f524ac947fcc5e1470764bd02e1cd48d8da7b9d1ffac713e760"
+  },
+  {
+   "trad": "因",
+   "bytes": 3586,
+   "sha256": "319467268a8c5e1144b0726456c34891803c78f3c6efb78bbd46386806c32091"
+  },
+  {
+   "trad": "同",
+   "bytes": 3616,
+   "sha256": "295bc1a85c46c5baa043069cc9527b4afc02cc3d5b792256d6f647eab1f2a22e"
+  },
+  {
+   "trad": "門",
+   "bytes": 3329,
+   "sha256": "bf5cd9677bc72da3ddc618c2110616c91ef8638aae0a4504e48e837e47b0ed57"
+  },
+  {
+   "trad": "開",
+   "bytes": 4821,
+   "sha256": "f955ea2c17a671a35729089459b34ee9c6a4c05dd42ed91b1d38dde0032deb15"
+  },
+  {
+   "trad": "聞",
+   "bytes": 4990,
+   "sha256": "bbcb67746f821bb54002b9567b1838917c7182479ff348a166b26644c4eebb74"
+  },
+  {
+   "trad": "內",
+   "bytes": 3650,
+   "sha256": "0ecbe2a91feedc9e7958519f494f051e9f0c50e584231357f0e4c3d7d2f26a7d"
+  },
+  {
+   "trad": "凡",
+   "bytes": 2670,
+   "sha256": "374f3f3fd171d48cc9b357337c1e4dac36a50c76dde3f44d268c4ac27a7e5518"
+  },
+  {
+   "trad": "函",
+   "bytes": 3600,
+   "sha256": "2e695c2c82c03499f06eeec72267f481d442adc8e385131e2d20982b40d1a65e"
+  },
+  {
+   "trad": "匹",
+   "bytes": 2391,
+   "sha256": "e2dc85355e302b639ac6d9515e53ffc1db2f6a91ddba4a162f814dd80b7c9d3b"
+  }
+ ]
+}

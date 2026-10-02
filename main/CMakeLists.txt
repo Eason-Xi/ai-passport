@@ -1,16 +1,15 @@
+# 颜真卿字帖（多宝塔碑）固件只编译 main.c 与 yz_*.c。
+# baseline 的 demo_*.c / ui_pixel*.c 仍保留在仓库里（主机测试会用到），但不进固件。
+file(GLOB YZ_SOURCES "${CMAKE_CURRENT_LIST_DIR}/yz_*.c")
+
 idf_component_register(
-    SRCS "main.c"
-         "demo_navigation.c"
-         "ui_pixel.c"
-         "ui_pixel_math.c"
-         "demo_display.c"
-         "demo_button.c"
-         "demo_audio.c"
-         "demo_battery.c"
-         "demo_radio.c"
-         "demo_wifi.c"
-         "demo_ble.c"
-         "demo_low_power.c"
+    SRCS "main.c" ${YZ_SOURCES}
     INCLUDE_DIRS "."
-    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
+    REQUIRES bsp esp_timer nvs_flash
+    # 拓本字形包（tools/gen_yz_assets.py 生成），符号 _binary_yz_glyphs_bin_start/_end。
+    EMBED_FILES "../assets/images/yz_glyphs.bin"
 )
+
+# 中文字体子集（tools/gen_yz_fonts.py 生成，见 assets/README）。
+file(GLOB YZ_FONT_SOURCES "${CMAKE_CURRENT_LIST_DIR}/../assets/fonts/yz_*.c")
+target_sources(${COMPONENT_LIB} PRIVATE ${YZ_FONT_SOURCES})
