@@ -2,9 +2,9 @@
 // 下方是全部字帖的列表；当前打开的字帖标“当前”。
 #include "yz_ui_internal.h"
 
-#define TABLET 104
-#define ROW_Y 202
-#define ROW_H 32
+#define TABLET 96
+#define ROW_Y 200
+#define ROW_H 27
 
 // 列表区最多放三行。
 _Static_assert(YZ_BOOK_COUNT <= 3, "library list fits at most three books");
@@ -39,19 +39,19 @@ static bool build(lv_obj_t *scr, const yz_book_t *book) {
     lv_label_set_text_static(head, YZ_STR_LIB_TITLE);
 
     lv_obj_t *tablet = yz_ui_box(scr, 22, 46, TABLET, TABLET, YZ_C_STONE, 4);
-    lv_obj_t *img = yz_ui_glyph_image(tablet, 140, YZ_C_STONE_TEXT);   // 176 × 0.55 ≈ 96 px
+    lv_obj_t *img = yz_ui_glyph_image(tablet, 128, YZ_C_STONE_TEXT);   // 176 × 0.5 = 88 px
     lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-    s_title = yz_ui_label(scr, &yz_zh32, YZ_C_INK, 150, 36);
+    s_title = yz_ui_label(scr, &yz_zh32, YZ_C_INK, 146, 36);
     lv_obj_set_style_text_line_space(s_title, -4, 0);
 
-    s_meta = yz_ui_label(scr, &yz_zh14, YZ_C_INK_SOFT, 22, 160);
-    s_done = yz_ui_label(scr, &yz_zh14, YZ_C_VERMILION, 22, 178);
+    s_meta = yz_ui_label(scr, &yz_zh14, YZ_C_INK_SOFT, 22, 158);
+    s_done = yz_ui_label(scr, &yz_zh14, YZ_C_VERMILION, 22, 176);
 
     for (int b = 0; b < YZ_BOOK_COUNT; b++) {
-        s_rows[b] = yz_ui_box(scr, 18, ROW_Y + b * ROW_H, 204, ROW_H - 4, YZ_C_PAPER_DEEP, 5);
-        s_marks[b] = yz_ui_box(s_rows[b], 0, 6, 3, ROW_H - 16, YZ_C_VERMILION, 1);
-        s_names[b] = yz_ui_label(s_rows[b], &yz_zh18, YZ_C_INK, 12, 1);
+        s_rows[b] = yz_ui_box(scr, 18, ROW_Y + b * ROW_H, 204, ROW_H - 2, YZ_C_PAPER_DEEP, 5);
+        s_marks[b] = yz_ui_box(s_rows[b], 0, 6, 3, ROW_H - 14, YZ_C_VERMILION, 1);
+        s_names[b] = yz_ui_label(s_rows[b], &yz_zh18, YZ_C_INK, 12, -1);
         lv_label_set_text_static(s_names[b], YZ_BOOKS[b].name);
         s_tags[b] = yz_ui_label(s_rows[b], &yz_zh14, YZ_C_PAPER, 0, 0);
         lv_obj_set_style_bg_color(s_tags[b], lv_color_hex(YZ_C_INK_SOFT), 0);

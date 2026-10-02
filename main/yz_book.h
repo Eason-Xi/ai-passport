@@ -65,7 +65,7 @@ typedef enum {
 #define YZ_BRIGHT_OPTIONS 4
 #define YZ_ABOUT_PAGES 5
 #define YZ_FAV_BYTES ((YZ_ENTRY_COUNT + 7) / 8)
-#define YZ_CATALOG_COLS 5
+#define YZ_FAV_COLS 5                   // 收藏页签的目录列数
 #define YZ_CATALOG_ROWS 4
 #define YZ_TOAST_MS 1500
 
@@ -149,4 +149,6 @@ uint16_t yz_book_done_count(const yz_book_t *book, int b);
 // 当前字帖的“收藏”页签序号与页签总数。
 uint8_t yz_book_fav_tab(const yz_book_t *book);
 uint8_t yz_book_tab_count(const yz_book_t *book);
+// 当前页签的目录列数（千字文全文 4 列，其余 5 列）。
+uint8_t yz_book_cols(const yz_book_t *book);
 uint32_t yz_book_timer_total_ms(const yz_cfg_t *cfg);

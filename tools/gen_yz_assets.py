@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""颜真卿字帖（《多宝塔碑》《颜勤礼碑》）资源生成 / 校验。
+"""颜真卿字帖（《多宝塔碑》《颜勤礼碑》《千字文》）资源生成 / 校验。
 
 子命令：
-  generate --pdf KEY=PATH ...  从拓本扫描裁切单字（KEY 为 tools/yz_catalog.json 的 sources 键），生成：
+  generate --src KEY=PATH ...  从拓本扫描裁切单字（KEY 为 tools/yz_catalog.json 的 sources 键；
+                              PATH 为 PDF，或逐页 p00.jpg… 图片所在目录），生成：
         assets/images/yz_glyphs.bin            4 bpp + 游程编码的字形包（固件 EMBED_FILES 嵌入）
         assets/images/yz_glyphs.manifest.json  来源、参数、每字哈希
         main/yz_catalog_data.c                 字帖、章节与字目文字表
@@ -131,6 +132,35 @@ def all_entries(cat: dict) -> list[dict]:
     return [e for book in cat["books"] for e in book["entries"]]
 
 
+def chapter_items(book: dict) -> list[list[int]]:
+    """每个章节包含的字（本帖内下标）。
+
+    普通字帖：按字目里的 chapter 字段归卷，必须连续排列。
+    sequence 字帖（千字文）：第一卷是全文顺序；其余各卷按每字的 cat 字段归类，同一个字形
+    在全文与分类卷中只存一份。数目卷可用 order 指定排列顺序。
+    """
+    entries = book["entries"]
+    out = []
+    for c in book["chapters"]:
+        if c.get("sequence"):
+            idx = list(range(len(entries)))
+        elif any("cat" in e for e in entries):
+            idx = [i for i, e in enumerate(entries) if e.get("cat") == c["key"]]
+            if "order" in c:
+                idx.sort(key=lambda i: c["order"].index(entries[i]["trad"]))
+        else:
+            idx = [i for i, e in enumerate(entries) if e["chapter"] == c["key"]]
+            if idx != list(range(idx[0], idx[0] + len(idx))) if idx else True:
+                raise SystemExit(f"{book['key']} 章节 {c['key']} 的字必须连续排列")
+        if not idx:
+            raise SystemExit(f"{book['key']} 章节 {c['key']} 没有字")
+        out.append(idx)
+    covered = {i for idx in out for i in idx}
+    if covered != set(range(len(entries))):
+        raise SystemExit(f"{book['key']} 有字没有归入任何章节")
+    return out
+
+
 def render_catalog_c(cat: dict) -> str:
     lines = [
         "// main/yz_catalog_data.c —— 由 tools/gen_yz_assets.py 依据 tools/yz_catalog.json 生成，勿手改。",
@@ -138,19 +168,14 @@ def render_catalog_c(cat: dict) -> str:
         '#include "yz_catalog.h"',
         "",
     ]
-    books, chapters, entries = [], [], []
+    books, chapters, items, entries = [], [], [], []
     for book in cat["books"]:
         first_chapter, first_entry = len(chapters), len(entries)
+        for c, idx in zip(book["chapters"], chapter_items(book)):
+            chapters.append(f"    {{ {c_str(c['name'])}, {len(items)}, {len(idx)}, {c.get('cols', 5)} }},")
+            items += [first_entry + i for i in idx]
         emblem = None
-        for c in book["chapters"]:
-            idx = [i for i, e in enumerate(book["entries"]) if e["chapter"] == c["key"]]
-            if not idx or idx != list(range(idx[0], idx[0] + len(idx))):
-                raise SystemExit(f"{book['key']} 章节 {c['key']} 的字必须连续排列")
-            chapters.append(f"    {{ {c_str(c['name'])}, {first_entry + idx[0]}, {len(idx)} }},")
-        keys = {c["key"] for c in book["chapters"]}
         for e in book["entries"]:
-            if e["chapter"] not in keys:
-                raise SystemExit(f"{book['key']} 未知章节 {e['chapter']}")
             if emblem is None and e["trad"] == book["emblem"]:
                 emblem = len(entries)
             entries.append(
@@ -160,11 +185,15 @@ def render_catalog_c(cat: dict) -> str:
             raise SystemExit(f"{book['key']} 的题签字 {book['emblem']} 不在字目中")
         books.append(
             f"    {{ {c_str(book['name'])}, {c_str(book['name_v'])}, {c_str(book['era'])}, "
+            f"{c_str(book['author'])}, {c_str(book['phrase_tag'])}, "
             f"{c_str(book['intro'])}, {c_str(book['source_text'])}, {emblem}, {first_chapter}, "
             f"{len(book['chapters'])}, {first_entry}, {len(book['entries'])} }},")
-    lines += [f"const yz_book_info_t YZ_BOOKS[YZ_BOOK_COUNT] = {{", *books, "};", "",
-              f"const yz_chapter_t YZ_CHAPTERS[YZ_CHAPTER_COUNT] = {{", *chapters, "};", "",
-              f"const yz_entry_t YZ_ENTRIES[YZ_ENTRY_COUNT] = {{", *entries, "};", ""]
+    item_rows = [", ".join(str(v) for v in items[k:k + 16]) for k in range(0, len(items), 16)]
+    lines += ["const yz_book_info_t YZ_BOOKS[YZ_BOOK_COUNT] = {", *books, "};", "",
+              "const yz_chapter_t YZ_CHAPTERS[YZ_CHAPTER_COUNT] = {", *chapters, "};", "",
+              "const uint16_t YZ_CHAPTER_ITEMS[YZ_CHAPTER_ITEM_COUNT] = {",
+              *[f"    {row}," for row in item_rows], "};", "",
+              "const yz_entry_t YZ_ENTRIES[YZ_ENTRY_COUNT] = {", *entries, "};", ""]
     return "\n".join(lines)
 
 
@@ -176,9 +205,11 @@ def render_size_h(cat: dict) -> str:
         "",
         f"#define YZ_BOOK_COUNT {len(books)}",
         f"#define YZ_CHAPTER_COUNT {sum(len(b['chapters']) for b in books)}",
+        f"#define YZ_CHAPTER_ITEM_COUNT {sum(len(i) for b in books for i in chapter_items(b))}",
         f"#define YZ_ENTRY_COUNT {sum(len(b['entries']) for b in books)}",
         f"#define YZ_BOOK_MAX_CHAPTERS {max(len(b['chapters']) for b in books)}",
         f"#define YZ_BOOK_MAX_ENTRIES {max(len(b['entries']) for b in books)}",
+        f"#define YZ_CATALOG_MAX_COLS {max(c.get('cols', 5) for b in books for c in b['chapters'])}",
         "",
     ])
 
@@ -188,7 +219,7 @@ def load_catalog() -> dict:
     for book in cat["books"]:
         for e in book["entries"]:
             if e["trad"] not in e["phrase"]:
-                raise SystemExit(f"{e['trad']} 不在其碑文语境「{e['phrase']}」中")
+                raise SystemExit(f"{e['trad']} 不在其原文语境「{e['phrase']}」中")
             if e["src"] not in cat["sources"]:
                 raise SystemExit(f"{e['trad']} 的来源 {e['src']} 未登记")
     return cat
@@ -247,39 +278,57 @@ def process_glyph(gray, entry):  # pragma: no cover - 依赖 numpy/scipy/PIL
     return [int(v) for v in q.flatten()]
 
 
-def page_gray(doc, page: int, pad: int = 8):  # pragma: no cover - 依赖 pymupdf/numpy
+def page_gray(source: dict, path: str, page: int, docs: dict, pad: int = 8):  # pragma: no cover
+    """取一页灰度图并四周补边。PDF 来源取该页第一张内嵌图；图片目录来源读 p{page:02d}.jpg。"""
     import numpy as np
-    import pymupdf
 
-    xref = doc[page].get_images(full=True)[0][0]
-    pix = pymupdf.Pixmap(doc, xref)
-    if pix.n != 1:
-        pix = pymupdf.Pixmap(pymupdf.csGRAY, pix)
-    arr = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width)
+    if "pages" in source:
+        from PIL import Image
+
+        arr = np.asarray(Image.open(Path(path) / f"p{page:02d}.jpg").convert("L"))
+    else:
+        import pymupdf
+
+        doc = docs[path]
+        xref = doc[page].get_images(full=True)[0][0]
+        pix = pymupdf.Pixmap(doc, xref)
+        if pix.n != 1:
+            pix = pymupdf.Pixmap(pymupdf.csGRAY, pix)
+        arr = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width)
     return np.pad(arr, pad, mode="edge")
+
+
+def verify_source(key: str, source: dict, path: str) -> None:  # pragma: no cover
+    if "pages" in source:
+        for name, digest in source["pages"].items():
+            got = hashlib.sha256((Path(path) / f"{name}.jpg").read_bytes()).hexdigest()
+            if got != digest:
+                raise SystemExit(f"{key}/{name}.jpg 的 SHA-256 不符：{got}")
+    else:
+        got = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+        if got != source["sha256"]:
+            raise SystemExit(f"{key} 的 SHA-256 不符：{got}")
 
 
 def cmd_generate(args) -> int:  # pragma: no cover - 依赖第三方库
     import pymupdf
 
     cat = load_catalog()
-    pdfs = dict(item.split("=", 1) for item in args.pdf)
+    paths = dict(item.split("=", 1) for item in args.src)
     docs = {}
     for key, source in cat["sources"].items():
-        if key not in pdfs:
-            raise SystemExit(f"缺少拓本 {key}：--pdf {key}=<path>")
-        data = Path(pdfs[key]).read_bytes()
-        digest = hashlib.sha256(data).hexdigest()
-        if digest != source["sha256"]:
-            raise SystemExit(f"{key} 的 SHA-256 不符：{digest}")
-        docs[key] = pymupdf.open(pdfs[key])
+        if key not in paths:
+            raise SystemExit(f"缺少拓本 {key}：--src {key}=<PDF 或图片目录>")
+        verify_source(key, source, paths[key])
+        if "pages" not in source:
+            docs[paths[key]] = pymupdf.open(paths[key])
     pages: dict[tuple[str, int], object] = {}
     blobs, items = [], []
     for book in cat["books"]:
         for e in book["entries"]:
             key = (e["src"], e["page"])
             if key not in pages:
-                pages[key] = page_gray(docs[e["src"]], e["page"])
+                pages[key] = page_gray(cat["sources"][e["src"]], paths[e["src"]], e["page"], docs)
             pixels = process_glyph(pages[key], e)
             blob = rle_encode(pixels)
             assert rle_decode(blob, GLYPH_SIZE * GLYPH_SIZE) == pixels
@@ -387,8 +436,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     g = sub.add_parser("generate")
-    g.add_argument("--pdf", action="append", required=True, metavar="KEY=PATH",
-                   help="拓本 PDF，可重复：duobao=… qinli_1=… qinli_2=…")
+    g.add_argument("--src", action="append", required=True, metavar="KEY=PATH",
+                   help="拓本来源，可重复：duobao=<PDF> qinli_1=<PDF> qinli_2=<PDF> qianzi=<图片目录>")
     sub.add_parser("catalog")
     sub.add_parser("check")
     p = sub.add_parser("preview")

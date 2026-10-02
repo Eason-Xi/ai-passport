@@ -41,7 +41,7 @@ static void update(const yz_book_t *book) {
 
 static bool build(lv_obj_t *scr, const yz_book_t *book) {
     lv_obj_t *author = yz_ui_label(scr, &yz_zh14, YZ_C_INK_SOFT, 24, 11);
-    lv_label_set_text_static(author, YZ_STR_AUTHOR);
+    lv_label_set_text_static(author, YZ_BOOKS[book->prog.book].author);
 
     // 碑石：显示上次临写的字。
     lv_obj_t *tablet = yz_ui_box(scr, 22, 34, TABLET, TABLET, YZ_C_STONE, 4);

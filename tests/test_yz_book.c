@@ -33,30 +33,44 @@ static void open_book(int which) {
     CHECK(b.screen == YZ_SCR_HOME && b.prog.book == which);
 }
 
+static int book_index(const char *name) {
+    for (int k = 0; k < YZ_BOOK_COUNT; k++) {
+        if (strcmp(YZ_BOOKS[k].name, name) == 0) return k;
+    }
+    return -1;
+}
+
 static void test_catalog_integrity(void) {
-    // 字帖、章节、单字三张表首尾相接，覆盖全部字；查询函数与表一致。
-    CHECK(YZ_BOOK_COUNT >= 2);
-    int next_entry = 0, next_chapter = 0;
+    // 字帖、章节、单字三张表首尾相接；每本帖的章节项都落在本帖范围内，且覆盖本帖每一个字。
+    CHECK(YZ_BOOK_COUNT >= 3);
+    int next_entry = 0, next_chapter = 0, next_item = 0;
+    static uint8_t seen[YZ_ENTRY_COUNT];
     for (int k = 0; k < YZ_BOOK_COUNT; k++) {
         const yz_book_info_t *info = &YZ_BOOKS[k];
         CHECK(info->first_entry == next_entry && info->first_chapter == next_chapter);
         CHECK(info->entry_count <= YZ_BOOK_MAX_ENTRIES && info->chapter_count <= YZ_BOOK_MAX_CHAPTERS);
         CHECK(yz_catalog_book_of(info->emblem) == k);
-        int in_book = 0;
+        CHECK(info->author[0] && info->phrase_tag[0]);
         for (int c = info->first_chapter; c < info->first_chapter + info->chapter_count; c++) {
-            CHECK(YZ_CHAPTERS[c].first == next_entry + in_book && YZ_CHAPTERS[c].count > 0);
+            CHECK(YZ_CHAPTERS[c].first == next_item && YZ_CHAPTERS[c].count > 0);
+            CHECK(YZ_CHAPTERS[c].cols >= 4 && YZ_CHAPTERS[c].cols <= YZ_CATALOG_MAX_COLS);
             for (int i = 0; i < YZ_CHAPTERS[c].count; i++) {
-                CHECK(yz_catalog_chapter_of(YZ_CHAPTERS[c].first + i) == c);
-                CHECK(yz_catalog_book_of(YZ_CHAPTERS[c].first + i) == k);
+                const int e = yz_chapter_entry(c, i);
+                CHECK(yz_catalog_book_of(e) == k);
+                seen[e] = 1;
+                int pos = -1;
+                const int first = yz_catalog_chapter_of(e, &pos);
+                CHECK(first >= info->first_chapter && first <= c);       // 第一次出现的章节不晚于本章
+                CHECK(yz_chapter_entry(first, pos) == e);
             }
-            in_book += YZ_CHAPTERS[c].count;
+            next_item += YZ_CHAPTERS[c].count;
         }
-        CHECK(in_book == info->entry_count);
         next_entry += info->entry_count;
         next_chapter += info->chapter_count;
     }
-    CHECK(next_entry == YZ_ENTRY_COUNT && next_chapter == YZ_CHAPTER_COUNT);
-    CHECK(yz_catalog_chapter_of(-1) == -1 && yz_catalog_chapter_of(YZ_ENTRY_COUNT) == -1);
+    CHECK(next_entry == YZ_ENTRY_COUNT && next_chapter == YZ_CHAPTER_COUNT && next_item == YZ_CHAPTER_ITEM_COUNT);
+    for (int i = 0; i < YZ_ENTRY_COUNT; i++) CHECK(seen[i]);
+    CHECK(yz_catalog_chapter_of(-1, NULL) == -1 && yz_catalog_chapter_of(YZ_ENTRY_COUNT, NULL) == -1);
     CHECK(yz_catalog_book_of(-1) == -1 && yz_catalog_book_of(YZ_ENTRY_COUNT) == -1);
     for (int i = 0; i < YZ_ENTRY_COUNT; i++) {
         const yz_entry_t *e = &YZ_ENTRIES[i];
@@ -88,7 +102,7 @@ static void test_home_and_back(void) {
     open_home_item(YZ_HOME_CONTINUE);
     CHECK(b.screen == YZ_SCR_PRACTICE);
     CHECK(yz_book_entry(&b) == 80);
-    CHECK(b.tab == yz_catalog_chapter_of(80));
+    CHECK(b.tab == yz_catalog_chapter_of(80, NULL));
 }
 
 static void test_catalog_navigation(void) {
@@ -102,7 +116,8 @@ static void test_catalog_navigation(void) {
     CHECK(fx & YZ_FX_SCREEN);
     CHECK(yz_book_entry(&b) == d->first_entry + d->entry_count - 1);
     CHECK(b.tab == d->chapter_count - 1);
-    CHECK(b.pos / YZ_CATALOG_COLS >= b.first_row && b.pos / YZ_CATALOG_COLS < b.first_row + YZ_CATALOG_ROWS);
+    CHECK(yz_book_cols(&b) == 5);
+    CHECK(b.pos / 5 >= b.first_row && b.pos / 5 < b.first_row + YZ_CATALOG_ROWS);
 
     // 下移越过本帖最后一字：回到本帖第一字。
     fx = key(YZ_BTN_DOWN, YZ_EV_CLICK);
@@ -137,7 +152,7 @@ static void test_catalog_navigation(void) {
     CHECK(b.list_len == 52);
     for (int i = 0; i < 51; i++) {
         key(YZ_BTN_DOWN, YZ_EV_CLICK);
-        const int row = b.pos / YZ_CATALOG_COLS;
+        const int row = b.pos / yz_book_cols(&b);
         CHECK(row >= b.first_row && row < b.first_row + YZ_CATALOG_ROWS);
     }
     CHECK(b.pos == 51 && b.first_row == 7);
@@ -335,6 +350,70 @@ static void test_library(void) {
     CHECK(!(key(YZ_BTN_OK, YZ_EV_CLICK) & YZ_FX_SAVE_PROG));
 }
 
+// 千字文：第一卷“全文”按原文顺序排 1000 字、每行 4 字（一句）；分类卷引用同一批字。
+static void test_qianzi(void) {
+    fresh();
+    const int qz = book_index("千字文");
+    CHECK(qz >= 0);
+    const yz_book_info_t *info = &YZ_BOOKS[qz];
+    CHECK(info->entry_count == 1000 && info->chapter_count == 6);
+    const yz_chapter_t *full = &YZ_CHAPTERS[info->first_chapter];
+    CHECK(strcmp(full->name, "全文") == 0 && full->count == 1000 && full->cols == 4);
+    for (int i = 0; i < 1000; i++) CHECK(yz_chapter_entry(info->first_chapter, i) == info->first_entry + i);
+    CHECK(strcmp(YZ_ENTRIES[info->first_entry].trad, "天") == 0);
+    CHECK(strcmp(YZ_ENTRIES[info->first_entry + 999].trad, "也") == 0);
+    // 分类卷合起来恰好覆盖 1000 字各一次。
+    static uint8_t hits[1000];
+    for (int c = info->first_chapter + 1; c < info->first_chapter + info->chapter_count; c++) {
+        CHECK(YZ_CHAPTERS[c].cols == 5);
+        for (int i = 0; i < YZ_CHAPTERS[c].count; i++) hits[yz_chapter_entry(c, i) - info->first_entry]++;
+    }
+    for (int i = 0; i < 1000; i++) CHECK(hits[i] == 1);
+
+    open_book(qz);
+    open_home_item(YZ_HOME_CONTINUE);
+    CHECK(b.screen == YZ_SCR_PRACTICE && b.tab == 0 && yz_book_entry(&b) == info->first_entry);
+    CHECK(yz_book_cols(&b) == 4);
+    // 全文逐字前进，顺序与原文一致。
+    for (int i = 1; i < 12; i++) {
+        key(YZ_BTN_DOWN, YZ_EV_CLICK);
+        CHECK(yz_book_entry(&b) == info->first_entry + i && b.tab == 0);
+    }
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    CHECK(b.screen == YZ_SCR_CATALOG);
+    // 目录里双击跳一句（4 字），行始终可见。
+    key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
+    CHECK(yz_book_entry(&b) == info->first_entry + 15);
+    for (int i = 0; i < 60; i++) {
+        key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
+        const int row = b.pos / 4;
+        CHECK(row >= b.first_row && row < b.first_row + YZ_CATALOG_ROWS);
+    }
+    CHECK(yz_book_entry(&b) == info->first_entry + 255);
+    // 全文末尾再往后：进入“数目”卷，按数值排列，从“壹”开始。
+    while (yz_book_entry(&b) != info->first_entry + 999) key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    CHECK(b.tab == 1 && b.pos == 0 && yz_book_cols(&b) == 5);
+    CHECK(strcmp(YZ_ENTRIES[yz_book_entry(&b)].trad, "壹") == 0);
+    // 从分类卷进入临帖，记住的字仍定位回全文中的位置。
+    key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    const int two = yz_book_entry(&b);
+    CHECK(strcmp(YZ_ENTRIES[two].trad, "二") == 0);
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    CHECK(b.prog.current[qz] == two);
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    open_home_item(YZ_HOME_CONTINUE);
+    CHECK(b.tab == 0 && yz_book_entry(&b) == two);
+    // 往前翻过全文第一字：回到本帖最后一卷的最后一字。
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    b.prog.current[qz] = (uint16_t)info->first_entry;
+    open_home_item(YZ_HOME_CONTINUE);
+    key(YZ_BTN_UP, YZ_EV_CLICK);
+    CHECK(b.tab == info->chapter_count - 1 && b.pos == YZ_CHAPTERS[info->first_chapter + b.tab].count - 1);
+}
+
 static void test_settings(void) {
     fresh();
     // 两本帖都有进度；清除只作用于当前打开的第一本。
@@ -420,6 +499,7 @@ int main(void) {
     test_timer();
     test_favorites_snapshot();
     test_library();
+    test_qianzi();
     test_settings();
     test_init_sanitizes();
     printf("test_yz_book: PASS\n");

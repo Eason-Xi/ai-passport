@@ -6,7 +6,6 @@
 #pragma once
 
 // ---- 主页 ----
-#define YZ_STR_AUTHOR           "唐 · 颜真卿 书"
 #define YZ_STR_SEAL             "鲁公"
 #define YZ_STR_HOME_CONTINUE    "继续临帖"
 #define YZ_STR_HOME_CATALOG     "目录选字"
@@ -36,7 +35,7 @@
 // ---- 临帖 ----
 #define YZ_STR_POS_FMT          "%s %u/%u"
 #define YZ_STR_FAV_MARK         "★"
-#define YZ_STR_PHRASE_FMT       "碑文「%s」"
+#define YZ_STR_PHRASE_FMT       "%s「%s」"    // 前缀取自字帖：“碑文”或“原文”
 #define YZ_STR_PREVIEW_PHRASE_FMT "「%s」"
 #define YZ_STR_TIMER_FMT        "%u:%02u"
 #define YZ_STR_CARD_FOCUS       "笔法"

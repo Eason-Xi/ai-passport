@@ -3,6 +3,8 @@
 // 数据由 tools/gen_yz_assets.py 依据 tools/yz_catalog.json 生成到 yz_catalog_data.c 与
 // yz_catalog_size.h。所有字帖的字依次排成一个全局序列：字形包 assets/images/yz_glyphs.bin
 // 中第 i 个字形对应 YZ_ENTRIES[i]；每本字帖占其中连续一段，章节也按字帖依次排列。
+// 章节是 YZ_CHAPTER_ITEMS 中的一段下标：《千字文》的“全文”卷按原文顺序列出全部字，
+// 分类卷引用同一批字，字形不重复存储。
 #pragma once
 
 #include <stdint.h>
@@ -38,6 +40,8 @@ typedef struct {
     const char *name;           // 帖名（四字）
     const char *name_v;         // 竖排帖名（每字一行）
     const char *era;            // 立碑年代
+    const char *author;         // 主页顶部的书者行
+    const char *phrase_tag;     // 语境前缀：“碑文”或“原文”
     const char *intro;          // 简介正文（显式换行）
     const char *source_text;    // 拓本来源正文（显式换行）
     uint16_t emblem;            // 题签字：字帖目录里代表这本帖的字（全局下标）
@@ -49,8 +53,9 @@ typedef struct {
 
 typedef struct {
     const char *name;       // 章节名（两字）
-    uint16_t first;         // 第一个字在 YZ_ENTRIES 中的下标（全局）
+    uint16_t first;         // 第一个字在 YZ_CHAPTER_ITEMS 中的位置
     uint16_t count;
+    uint8_t cols;           // 目录网格列数（全文按四字一句排 4 列）
 } yz_chapter_t;
 
 typedef struct {
@@ -65,8 +70,15 @@ typedef struct {
 
 extern const yz_book_info_t YZ_BOOKS[YZ_BOOK_COUNT];
 extern const yz_chapter_t YZ_CHAPTERS[YZ_CHAPTER_COUNT];
+extern const uint16_t YZ_CHAPTER_ITEMS[YZ_CHAPTER_ITEM_COUNT];   // 全局字下标
 extern const yz_entry_t YZ_ENTRIES[YZ_ENTRY_COUNT];
 
-// 单字所属的全局章节下标 / 字帖下标（越界返回 -1）。
-int yz_catalog_chapter_of(int entry);
+// 第 chapter 章第 pos 个字的全局下标。
+static inline int yz_chapter_entry(int chapter, int pos) {
+    return YZ_CHAPTER_ITEMS[YZ_CHAPTERS[chapter].first + pos];
+}
+
+// 单字所在的第一个全局章节（全文卷优先），并给出在章内的位置；越界返回 -1。
+int yz_catalog_chapter_of(int entry, int *pos);
+// 单字所属的字帖下标（越界返回 -1）。
 int yz_catalog_book_of(int entry);

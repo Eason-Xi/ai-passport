@@ -161,7 +161,7 @@ static int check_layout(void) {
     }
     for (int i = 0; i < YZ_ENTRY_COUNT; i++) {
         const yz_entry_t *e = &YZ_ENTRIES[i];
-        snprintf(buf, sizeof buf, YZ_STR_PHRASE_FMT, e->phrase);
+        snprintf(buf, sizeof buf, YZ_STR_PHRASE_FMT, YZ_BOOKS[yz_catalog_book_of(i)].phrase_tag, e->phrase);
         bad += text_fits(e->phrase, buf, &yz_zh14, 196, 0);                 // 临帖页底部
         snprintf(buf, sizeof buf, YZ_STR_PREVIEW_PHRASE_FMT, e->phrase);
         bad += text_fits(e->phrase, buf, &yz_zh14, 120, 0);                 // 目录预览
@@ -384,6 +384,42 @@ int main(int argc, char **argv) {
     capture("36_library_back_to_duobao");
     key(YZ_BTN_OK, YZ_EV_LONG);
     capture("37_home_still_qinli");
+
+    // 千字文：字帖目录选第三本 → 主页 → 全文目录（4 列，一行一句）→ 临帖 → 分类卷 → 简介。
+    home_open(YZ_HOME_LIBRARY);
+    while (b.lib_sel != 2) key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("38_library_qianzi");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    capture("39_home_qianzi");
+    home_open(YZ_HOME_CATALOG);
+    capture("40_catalog_qianzi_full");
+    for (int i = 0; i < 9; i++) key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
+    key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("41_catalog_qianzi_full_scrolled");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    capture("42_practice_qianzi");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    capture("43_practice_qianzi_card");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    capture("44_catalog_qianzi_num");
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    capture("45_catalog_qianzi_single");
+    home_open(YZ_HOME_ABOUT);
+    capture("46_about_qianzi_1");
+    for (int i = 0; i < 4; i++) key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("47_about_qianzi_5");
+
+    // 逐字检查：千字文全文 1000 字，从第一字临到最后一字。
+    home();
+    b.prog.current[2] = (uint16_t)YZ_BOOKS[2].first_entry;
+    home_open(YZ_HOME_CONTINUE);
+    for (int i = 0; i < YZ_BOOKS[2].entry_count - 1; i++) {
+        key(YZ_BTN_DOWN, YZ_EV_CLICK);
+        settle();
+    }
+    capture("48_practice_qianzi_last");
 
     printf("PEAK used=%zu of %u\n", s_peak, (unsigned)LV_MEM_SIZE);
     free(pack_data);

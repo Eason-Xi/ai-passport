@@ -100,6 +100,76 @@ static void test_prog(void) {
     CHECK(memcmp(&probe, &keep, sizeof keep) == 0);              // 失败时不改动输出
 }
 
+// 字帖较少的旧版 v2（例如只有前两本帖的固件）：前几本帖的进度保留，新字帖从零开始。
+static size_t make_v2_prefix(uint8_t *buf, int nb, int book, const uint16_t *current) {
+    const int ne = YZ_BOOKS[nb].first_entry;
+    const int fav_bytes = (ne + 7) / 8;
+    uint8_t *p = buf;
+    *p++ = 'Y';
+    *p++ = 'P';
+    *p++ = 2;
+    *p++ = (uint8_t)nb;
+    *p++ = (uint8_t)ne;
+    *p++ = (uint8_t)(ne >> 8);
+    *p++ = (uint8_t)book;
+    for (int b = 0; b < nb; b++) {
+        *p++ = (uint8_t)current[b];
+        *p++ = (uint8_t)(current[b] >> 8);
+    }
+    for (int i = 0; i < ne; i++) *p++ = (uint8_t)(1 + i % 3);
+    memset(p, 0, (size_t)fav_bytes);
+    p[(ne - 1) / 8] |= (uint8_t)(1u << ((ne - 1) % 8));
+    p += fav_bytes;
+    for (int b = 0; b < nb; b++, p += 4) {
+        const uint32_t v = 100u + (uint32_t)b;
+        memcpy(p, &v, 4);
+    }
+    for (int b = 0; b < nb; b++, p += 4) {
+        const uint32_t v = 6000u + (uint32_t)b;
+        memcpy(p, &v, 4);
+    }
+    const uint32_t crc = yz_crc32(buf, (size_t)(p - buf));
+    memcpy(p, &crc, 4);
+    return (size_t)(p - buf) + 4;
+}
+
+static void test_prog_v2_fewer_books(void) {
+    static uint8_t buf[YZ_PROG_READ_MAX];
+    const int nb = YZ_BOOK_COUNT - 1;
+    uint16_t current[YZ_BOOK_COUNT];
+    for (int b = 0; b < nb; b++) current[b] = (uint16_t)(YZ_BOOKS[b].first_entry + 3);
+    size_t len = make_v2_prefix(buf, nb, nb - 1, current);
+    CHECK(len <= sizeof buf);
+    yz_progress_t out;
+    CHECK(yz_prog_unpack(&out, buf, len));
+    const int ne = YZ_BOOKS[nb].first_entry;
+    CHECK(out.book == nb - 1);
+    for (int b = 0; b < nb; b++) {
+        CHECK(out.current[b] == current[b] && out.sessions[b] == 100u + (uint32_t)b && out.seconds[b] == 6000u + (uint32_t)b);
+    }
+    CHECK(out.current[nb] == YZ_BOOKS[nb].first_entry && out.sessions[nb] == 0 && out.seconds[nb] == 0);
+    for (int i = 0; i < ne; i++) CHECK(out.count[i] == (uint8_t)(1 + i % 3));
+    for (int i = ne; i < YZ_ENTRY_COUNT; i++) CHECK(out.count[i] == 0);
+    CHECK((out.fav[(ne - 1) / 8] >> ((ne - 1) % 8)) & 1u);
+    for (int i = ne; i < YZ_ENTRY_COUNT; i++) CHECK(((out.fav[i / 8] >> (i % 8)) & 1u) == 0);
+
+    // 拒绝：当前字帖越出旧字帖数；字数与前几本帖不符；某帖记住的字不属于该帖。
+    yz_progress_t probe;
+    yz_progress_reset(&probe);
+    const yz_progress_t keep = probe;
+    len = make_v2_prefix(buf, nb, nb, current);
+    CHECK(!yz_prog_unpack(&probe, buf, len));
+    len = make_v2_prefix(buf, nb, 0, current);
+    buf[4] ^= 1;
+    const uint32_t crc = yz_crc32(buf, len - 4);
+    memcpy(buf + len - 4, &crc, 4);
+    CHECK(!yz_prog_unpack(&probe, buf, len));
+    current[0] = (uint16_t)YZ_BOOKS[1].first_entry;
+    len = make_v2_prefix(buf, nb, 0, current);
+    CHECK(!yz_prog_unpack(&probe, buf, len));
+    CHECK(memcmp(&probe, &keep, sizeof keep) == 0);
+}
+
 // 只有《多宝塔碑》的旧固件写下的 v1 进度：全部迁移到第一本字帖，其余字帖从零开始。
 static size_t make_v1(uint8_t *buf, int n, int current, uint32_t sessions, uint32_t seconds) {
     const int fav_bytes = (n + 7) / 8;
@@ -169,6 +239,7 @@ int main(void) {
     test_crc();
     test_cfg();
     test_prog();
+    test_prog_v2_fewer_books();
     test_prog_v1_migration();
     printf("test_yz_save: PASS\n");
     return 0;

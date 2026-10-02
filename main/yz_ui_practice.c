@@ -111,7 +111,7 @@ static void update(const yz_book_t *book) {
     lv_label_set_text_static(s_simp, e->simp);
     lv_label_set_text_static(s_pinyin, e->pinyin);
     lv_label_set_text_static(s_struct, yz_ui_struct_name(e->structure));
-    lv_label_set_text_fmt(s_phrase, YZ_STR_PHRASE_FMT, e->phrase);
+    lv_label_set_text_fmt(s_phrase, YZ_STR_PHRASE_FMT, YZ_BOOKS[book->prog.book].phrase_tag, e->phrase);
 
     if (book->timing) {
         const unsigned left_s = (unsigned)((book->timer_left_ms + 999u) / 1000u);

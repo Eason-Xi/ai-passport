@@ -1,4 +1,5 @@
-// main/yz_ui_catalog.c —— 目录：章节页签、5×4 字格（碑上原字）、底部拓本预览与释文。
+// main/yz_ui_catalog.c —— 目录：章节页签、字格（碑上原字，一般 5×4；千字文全文 4×4，一行一句）、
+// 底部拓本预览与释文。
 #include "yz_ui_internal.h"
 
 #define TAB_Y 36
@@ -6,8 +7,9 @@
 #define TAB_W 31
 #define GRID_X 20
 #define GRID_Y 62
-#define CELL 40
-#define CELLS (YZ_CATALOG_COLS * YZ_CATALOG_ROWS)
+#define GRID_W 200
+#define CELL 40                     // 行高；列宽 = GRID_W / 列数
+#define CELLS (YZ_CATALOG_MAX_COLS * YZ_CATALOG_ROWS)
 #define PREVIEW_Y 230
 
 static lv_obj_t *s_head;
@@ -15,6 +17,7 @@ static lv_obj_t *s_head;
 
 static lv_obj_t *s_tabs[MAX_TABS];
 static int s_tab_count;
+static int s_cols;                  // 本页字格列数（换卷会重建页面）
 static lv_obj_t *s_tab_line;
 static lv_obj_t *s_cells[CELLS];
 static lv_obj_t *s_cell_text[CELLS];
@@ -38,8 +41,8 @@ static void update(const yz_book_t *book) {
     lv_obj_set_x(s_tab_line, TAB_X + book->tab * TAB_W + 3);
 
     const bool empty = book->list_len == 0;
-    for (int c = 0; c < CELLS; c++) {
-        const int idx = (book->first_row * YZ_CATALOG_COLS) + c;
+    for (int c = 0; c < s_cols * YZ_CATALOG_ROWS; c++) {     // 只遍历本页实际建立的字格
+        const int idx = (book->first_row * s_cols) + c;
         if (idx >= book->list_len) {
             lv_obj_add_flag(s_cells[c], LV_OBJ_FLAG_HIDDEN);
             continue;
@@ -59,10 +62,11 @@ static void update(const yz_book_t *book) {
     }
 
     // 滚动条：总行数超过可见行数时显示。
-    const int rows = (book->list_len + YZ_CATALOG_COLS - 1) / YZ_CATALOG_COLS;
+    const int rows = (book->list_len + s_cols - 1) / s_cols;
     if (rows > YZ_CATALOG_ROWS) {
         const int track = CELL * YZ_CATALOG_ROWS;
-        const int h = track * YZ_CATALOG_ROWS / rows;
+        int h = track * YZ_CATALOG_ROWS / rows;
+        if (h < 10) h = 10;                      // 千字文全文 250 行：保留可见的最小长度
         lv_obj_remove_flag(s_scroll, LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_height(s_scroll, h);
         lv_obj_set_y(s_scroll, GRID_Y + (track - h) * book->first_row / (rows - YZ_CATALOG_ROWS));
@@ -100,14 +104,16 @@ static bool build(lv_obj_t *scr, const yz_book_t *book) {
     }
     s_tab_line = yz_ui_box(scr, TAB_X + 3, TAB_Y + 20, 22, 2, YZ_C_VERMILION, 1);
 
-    for (int c = 0; c < CELLS; c++) {
-        const int x = GRID_X + (c % YZ_CATALOG_COLS) * CELL;
-        const int y = GRID_Y + (c / YZ_CATALOG_COLS) * CELL;
-        s_cells[c] = yz_ui_box(scr, x + 2, y + 2, CELL - 4, CELL - 4, YZ_C_VERMILION, 5);
+    s_cols = yz_book_cols(book);
+    const int cell_w = GRID_W / s_cols;
+    for (int c = 0; c < s_cols * YZ_CATALOG_ROWS; c++) {
+        const int x = GRID_X + (c % s_cols) * cell_w;
+        const int y = GRID_Y + (c / s_cols) * CELL;
+        s_cells[c] = yz_ui_box(scr, x + 2, y + 2, cell_w - 4, CELL - 4, YZ_C_VERMILION, 5);
         s_cell_text[c] = yz_ui_label(s_cells[c], &yz_zh24, YZ_C_INK, 0, 0);
         lv_obj_align(s_cell_text[c], LV_ALIGN_CENTER, 0, -1);
-        s_cell_fav[c] = yz_ui_box(s_cells[c], CELL - 10, 2, 4, 4, YZ_C_VERMILION, 2);
-        s_cell_done[c] = yz_ui_box(s_cells[c], CELL - 10, CELL - 10, 4, 4, YZ_C_INK_SOFT, 2);
+        s_cell_fav[c] = yz_ui_box(s_cells[c], cell_w - 10, 2, 4, 4, YZ_C_VERMILION, 2);
+        s_cell_done[c] = yz_ui_box(s_cells[c], cell_w - 10, CELL - 10, 4, 4, YZ_C_INK_SOFT, 2);
     }
     s_scroll = yz_ui_box(scr, 223, GRID_Y, 3, CELL * YZ_CATALOG_ROWS, YZ_C_INK_SOFT, 1);
     lv_obj_set_style_bg_opa(s_scroll, LV_OPA_50, 0);
@@ -141,6 +147,7 @@ static void forget(void) {
     for (int t = 0; t < MAX_TABS; t++) s_tabs[t] = NULL;
     s_tab_count = 0;
     for (int c = 0; c < CELLS; c++) s_cells[c] = s_cell_text[c] = s_cell_fav[c] = s_cell_done[c] = NULL;
+    s_cols = 0;
 }
 
 const yz_page_t YZ_PAGE_CATALOG = { build, update, forget };

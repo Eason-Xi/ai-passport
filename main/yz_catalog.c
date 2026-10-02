@@ -1,10 +1,15 @@
 // main/yz_catalog.c —— 字目查询（数据见生成的 yz_catalog_data.c）。
 #include "yz_catalog.h"
 
-int yz_catalog_chapter_of(int entry) {
+int yz_catalog_chapter_of(int entry, int *pos) {
     if (entry < 0 || entry >= YZ_ENTRY_COUNT) return -1;
     for (int c = 0; c < YZ_CHAPTER_COUNT; c++) {
-        if (entry >= YZ_CHAPTERS[c].first && entry < YZ_CHAPTERS[c].first + YZ_CHAPTERS[c].count) return c;
+        for (int i = 0; i < YZ_CHAPTERS[c].count; i++) {
+            if (yz_chapter_entry(c, i) == entry) {
+                if (pos) *pos = i;
+                return c;
+            }
+        }
     }
     return -1;
 }

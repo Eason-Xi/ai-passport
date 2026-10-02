@@ -62,6 +62,11 @@ static const yz_book_info_t *cur_book(const yz_book_t *book) {
     return &YZ_BOOKS[book->prog.book];
 }
 
+uint8_t yz_book_cols(const yz_book_t *book) {
+    if (book->tab >= yz_book_fav_tab(book)) return YZ_FAV_COLS;
+    return YZ_CHAPTERS[cur_book(book)->first_chapter + book->tab].cols;
+}
+
 int yz_book_entry(const yz_book_t *book) {
     if (book->list_len == 0 || book->pos >= book->list_len) return -1;
     return book->list[book->pos];
@@ -78,30 +83,34 @@ static void load_tab(yz_book_t *book, uint8_t tab) {
             if (yz_book_is_fav(book, i)) book->list[book->list_len++] = (uint16_t)i;
         }
     } else {
-        const yz_chapter_t *c = &YZ_CHAPTERS[info->first_chapter + tab];
-        for (uint16_t i = 0; i < c->count; i++) book->list[book->list_len++] = (uint16_t)(c->first + i);
+        const int chapter = info->first_chapter + tab;
+        for (int i = 0; i < YZ_CHAPTERS[chapter].count; i++) {
+            book->list[book->list_len++] = (uint16_t)yz_chapter_entry(chapter, i);
+        }
     }
     book->pos = 0;
     book->first_row = 0;
 }
 
 static void keep_row_visible(yz_book_t *book) {
-    const uint16_t row = book->pos / YZ_CATALOG_COLS;
+    const uint16_t row = book->pos / yz_book_cols(book);
     if (row < book->first_row) book->first_row = row;
     if (row >= book->first_row + YZ_CATALOG_ROWS) book->first_row = (uint16_t)(row - YZ_CATALOG_ROWS + 1);
 }
 
-// 定位到当前字帖里某个字所在的章节；不属于当前字帖的字退回本帖第一个字。
+// 定位到当前字帖里某个字所在的第一个章节（千字文即全文卷）；不属于当前字帖的字退回本帖第一个字。
 static void locate(yz_book_t *book, int entry) {
     const yz_book_info_t *info = cur_book(book);
     if (yz_catalog_book_of(entry) != book->prog.book) entry = info->first_entry;
-    const int chapter = yz_catalog_chapter_of(entry);
+    int pos = 0;
+    const int chapter = yz_catalog_chapter_of(entry, &pos);
     load_tab(book, (uint8_t)(chapter - info->first_chapter));
-    book->pos = (uint16_t)(entry - YZ_CHAPTERS[chapter].first);
+    book->pos = (uint16_t)pos;
     keep_row_visible(book);
 }
 
-// 前后移动 delta 个字。普通章节越界时进入相邻章节（本帖首尾相接）；收藏页签在快照内循环。
+// 前后移动 delta 个字。普通章节越界时把余数带进相邻章节（本帖各卷首尾相接）；
+// 收藏页签在快照内循环。
 static void step(yz_book_t *book, int delta) {
     if (book->list_len == 0) return;
     if (book->tab == yz_book_fav_tab(book)) {
@@ -109,9 +118,22 @@ static void step(yz_book_t *book, int delta) {
         book->pos = (uint16_t)(((book->pos + delta) % n + n) % n);
     } else {
         const yz_book_info_t *info = cur_book(book);
-        const int n = info->entry_count;
-        const int local = book->list[book->pos] - info->first_entry + delta;
-        locate(book, info->first_entry + (local % n + n) % n);
+        int tab = book->tab;
+        int pos = book->pos + delta;
+        for (;;) {
+            const int len = YZ_CHAPTERS[info->first_chapter + tab].count;
+            if (pos >= len) {
+                pos -= len;
+                tab = (tab + 1) % info->chapter_count;
+            } else if (pos < 0) {
+                tab = (tab + info->chapter_count - 1) % info->chapter_count;
+                pos += YZ_CHAPTERS[info->first_chapter + tab].count;
+            } else {
+                break;
+            }
+        }
+        if (tab != book->tab) load_tab(book, (uint8_t)tab);
+        book->pos = (uint16_t)pos;
     }
     keep_row_visible(book);
 }
@@ -237,7 +259,7 @@ static uint32_t catalog_input(yz_book_t *book, yz_btn_t btn, yz_ev_t ev) {
     const int dir = btn == YZ_BTN_UP ? -1 : 1;
     const uint8_t old_tab = book->tab;
     if (ev == YZ_EV_CLICK) step(book, dir);
-    else if (ev == YZ_EV_DOUBLE) step(book, dir * YZ_CATALOG_COLS);
+    else if (ev == YZ_EV_DOUBLE) step(book, dir * yz_book_cols(book));
     else if (ev == YZ_EV_LONG) switch_tab(book, dir);
     else return 0;
     return (book->tab != old_tab ? YZ_FX_SCREEN : YZ_FX_REFRESH) | YZ_FX_GLYPH;

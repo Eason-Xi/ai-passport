@@ -102,24 +102,34 @@ static bool fav_tail_clear(const uint8_t *fav, int n, int bytes) {
     return true;
 }
 
+// v2 记录了写入时的字帖数 nb 与字数 ne。旧固件字帖较少时（新字帖只追加在末尾），
+// 前 nb 本帖的进度原样保留，其余字帖从零开始；字数必须正好等于前 nb 本帖的字数之和。
 static bool unpack_v2(yz_progress_t *prog, const uint8_t *buf, size_t len) {
-    if (len != YZ_PROG_BLOB_SIZE || buf[3] != YZ_BOOK_COUNT || get_u16(buf + 4) != YZ_ENTRY_COUNT) return false;
+    if (len < 7) return false;
+    const int nb = buf[3];
+    const int ne = get_u16(buf + 4);
+    if (nb == 0 || nb > YZ_BOOK_COUNT) return false;
+    const int expect_ne = nb == YZ_BOOK_COUNT ? YZ_ENTRY_COUNT : YZ_BOOKS[nb].first_entry;
+    const int fav_bytes = (ne + 7) / 8;
+    if (ne != expect_ne || len != (size_t)(3 + 1 + 2 + 1 + 2 * nb + ne + fav_bytes + 8 * nb + 4)) return false;
+
     const uint8_t *p = buf + 6;
     yz_progress_t out;
     memset(&out, 0, sizeof(out));
+    for (int b = 0; b < YZ_BOOK_COUNT; b++) out.current[b] = YZ_BOOKS[b].first_entry;
     out.book = *p++;
-    if (out.book >= YZ_BOOK_COUNT) return false;
-    for (int b = 0; b < YZ_BOOK_COUNT; b++, p += 2) {
+    if (out.book >= nb) return false;
+    for (int b = 0; b < nb; b++, p += 2) {
         out.current[b] = get_u16(p);
         if (yz_catalog_book_of(out.current[b]) != b) return false;
     }
-    memcpy(out.count, p, YZ_ENTRY_COUNT);
-    p += YZ_ENTRY_COUNT;
-    memcpy(out.fav, p, YZ_FAV_BYTES);
-    if (!fav_tail_clear(out.fav, YZ_ENTRY_COUNT, YZ_FAV_BYTES)) return false;
-    p += YZ_FAV_BYTES;
-    for (int b = 0; b < YZ_BOOK_COUNT; b++, p += 4) out.sessions[b] = get_u32(p);
-    for (int b = 0; b < YZ_BOOK_COUNT; b++, p += 4) out.seconds[b] = get_u32(p);
+    memcpy(out.count, p, (size_t)ne);
+    p += ne;
+    if (!fav_tail_clear(p, ne, fav_bytes)) return false;
+    memcpy(out.fav, p, (size_t)fav_bytes);
+    p += fav_bytes;
+    for (int b = 0; b < nb; b++, p += 4) out.sessions[b] = get_u32(p);
+    for (int b = 0; b < nb; b++, p += 4) out.seconds[b] = get_u32(p);
     *prog = out;
     return true;
 }

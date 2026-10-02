@@ -34,7 +34,7 @@ MANIFEST = FONT_DIR / "yz_fonts.manifest.json"
 CONVERTER_VERSION = "1.5.3"
 
 # 名称、字号、bpp、字符集。text = 界面文字 + 字目 JSON 中显示的全部文字；
-# big = 32 px 大字：各帖帖名、字目的简体与繁体单字、数字。
+# big = 32 px 大字：各帖帖名、字目的简体单字、数字（繁体只出现在 24 px 目录字格里）。
 SPECS = [
     ("yz_zh14", 14, 4, "text"),
     ("yz_zh18", 18, 4, "text"),
@@ -124,7 +124,7 @@ def catalog_strings() -> list[str]:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     out = []
     for book in catalog["books"]:
-        out += [book[k] for k in ("name", "name_v", "era", "intro", "source_text")]
+        out += [book[k] for k in ("name", "name_v", "era", "author", "phrase_tag", "intro", "source_text")]
         out += [c["name"] for c in book["chapters"]]
         for entry in book["entries"]:
             out += [entry[k] for k in ("simp", "trad", "pinyin", "phrase", "source")]
@@ -144,7 +144,7 @@ def big_charset() -> list[int]:
     for book in catalog["books"]:
         points.update(ord(ch) for ch in book["name"])
         for entry in book["entries"]:
-            points.update(ord(ch) for ch in entry["simp"] + entry["trad"])
+            points.update(ord(ch) for ch in entry["simp"])
     return sorted(points)
 
 
