@@ -3,8 +3,8 @@
 // 应用任务把按键事件与时间流逝交给本模块，模块只改状态并返回“副作用”标志，
 // 由应用任务去刷新界面、解码字形、保存、播放提示音。
 //
-// 多本字帖：同一时间只打开一本（prog.book）。目录页签、翻字、收藏列表、统计都限定在
-// 当前字帖内；“字帖目录”页用来换帖，每本帖各自记住上次临到的字。
+// 《多宝塔碑》全碑按碑文顺序分作九卷，另有五个分类卷与“收藏”页签。“分卷目录”页列出
+// 各卷与临写进度，可直接跳到某一卷第一个还没临过的字。
 #pragma once
 
 #include <stdbool.h>
@@ -21,7 +21,7 @@ typedef enum {
     YZ_SCR_PRACTICE,
     YZ_SCR_ABOUT,
     YZ_SCR_SETTINGS,
-    YZ_SCR_LIBRARY,          // 字帖目录：选择字帖
+    YZ_SCR_VOLUMES,          // 分卷目录：各卷字数与临写进度
 } yz_screen_t;
 
 typedef enum { YZ_GRID_MI = 0, YZ_GRID_TIAN, YZ_GRID_JIU, YZ_GRID_NONE, YZ_GRID_COUNT } yz_grid_t;
@@ -30,8 +30,8 @@ typedef enum { YZ_INK_STONE = 0, YZ_INK_PAPER, YZ_INK_TRACE, YZ_INK_COUNT } yz_i
 typedef enum {
     YZ_HOME_CONTINUE = 0,
     YZ_HOME_CATALOG,
+    YZ_HOME_VOLUMES,
     YZ_HOME_FAVORITES,
-    YZ_HOME_LIBRARY,
     YZ_HOME_ABOUT,
     YZ_HOME_SETTINGS,
     YZ_HOME_COUNT,
@@ -66,6 +66,8 @@ typedef enum {
 #define YZ_ABOUT_PAGES 5
 #define YZ_FAV_BYTES ((YZ_ENTRY_COUNT + 7) / 8)
 #define YZ_FAV_COLS 5                   // 收藏页签的目录列数
+#define YZ_FAV_TAB YZ_CHAPTER_COUNT     // “收藏”页签排在各卷之后
+#define YZ_TAB_COUNT (YZ_CHAPTER_COUNT + 1)
 #define YZ_CATALOG_ROWS 4
 #define YZ_TOAST_MS 1500
 
@@ -93,12 +95,11 @@ typedef struct {
 } yz_cfg_t;
 
 typedef struct {
-    uint8_t book;                          // 当前打开的字帖
-    uint16_t current[YZ_BOOK_COUNT];       // 每本帖最近临写的字（全局下标）
-    uint8_t count[YZ_ENTRY_COUNT];         // 每字临写遍数，饱和于 255
-    uint8_t fav[YZ_FAV_BYTES];             // 收藏位图（全局下标）
-    uint32_t sessions[YZ_BOOK_COUNT];      // 每本帖累计临写遍数
-    uint32_t seconds[YZ_BOOK_COUNT];       // 每本帖计时临写累计秒数
+    uint16_t current;                  // 最近临写的字
+    uint8_t count[YZ_ENTRY_COUNT];     // 每字临写遍数，饱和于 255
+    uint8_t fav[YZ_FAV_BYTES];         // 收藏位图
+    uint32_t sessions;                 // 累计临写遍数
+    uint32_t seconds;                  // 计时临写累计秒数
 } yz_progress_t;
 
 typedef struct {
@@ -107,13 +108,12 @@ typedef struct {
     yz_progress_t prog;
 
     uint8_t home_sel;
+    uint8_t vol_sel;             // 分卷目录里选中的卷
 
-    uint8_t lib_sel;             // 字帖目录里选中的字帖
-
-    // 浏览列表：目录与临帖共用。tab 是当前字帖内的章节序号，等于章节数时是“收藏”页签。
-    // 普通章节按顺序排列；收藏页签是进入时的快照，临帖中取消收藏不会让当前字从列表里消失。
+    // 浏览列表：目录与临帖共用。tab 是卷序号，等于 YZ_FAV_TAB 时是“收藏”页签。
+    // 各卷按顺序排列；收藏页签是进入时的快照，临帖中取消收藏不会让当前字从列表里消失。
     uint8_t tab;
-    uint16_t list[YZ_BOOK_MAX_ENTRIES];
+    uint16_t list[YZ_ENTRY_COUNT];
     uint16_t list_len;
     uint16_t pos;
     uint16_t first_row;          // 目录网格可见区的第一行
@@ -140,15 +140,13 @@ void yz_book_init(yz_book_t *book, const yz_cfg_t *cfg, const yz_progress_t *pro
 uint32_t yz_book_input(yz_book_t *book, yz_btn_t btn, yz_ev_t ev);
 uint32_t yz_book_tick(yz_book_t *book, uint32_t elapsed_ms);
 
-// 当前列表位置上的字（全局下标；列表为空时返回 -1）。
+// 当前列表位置上的字（列表为空时返回 -1）。
 int yz_book_entry(const yz_book_t *book);
 bool yz_book_is_fav(const yz_book_t *book, int entry);
-// 某本字帖的收藏字数 / 临写过的字数。
-uint16_t yz_book_fav_count(const yz_book_t *book, int b);
-uint16_t yz_book_done_count(const yz_book_t *book, int b);
-// 当前字帖的“收藏”页签序号与页签总数。
-uint8_t yz_book_fav_tab(const yz_book_t *book);
-uint8_t yz_book_tab_count(const yz_book_t *book);
-// 当前页签的目录列数（千字文全文 4 列，其余 5 列）。
+// 收藏字数 / 全碑临写过的字数 / 某一卷临写过的字数。
+uint16_t yz_book_fav_count(const yz_book_t *book);
+uint16_t yz_book_done_count(const yz_book_t *book);
+uint16_t yz_book_chapter_done(const yz_book_t *book, int chapter);
+// 当前页签的目录列数。
 uint8_t yz_book_cols(const yz_book_t *book);
 uint32_t yz_book_timer_total_ms(const yz_cfg_t *cfg);

@@ -145,27 +145,39 @@ static int check_layout(void) {
     bad += text_fits("about3r", YZ_STR_ABOUT_BODY_3R, &yz_zh14, 76, 4);
     bad += text_fits("about4", YZ_STR_ABOUT_BODY_4, &yz_zh14, 118, 4);
     bad += text_fits("about4r", YZ_STR_ABOUT_BODY_4R, &yz_zh14, 76, 4);
-    for (int k = 0; k < YZ_BOOK_COUNT; k++) {
-        const yz_book_info_t *info = &YZ_BOOKS[k];
-        bad += text_fits(info->name, info->intro, &yz_zh14, 194, 4);          // 简介第 1 页
-        bad += text_fits(info->name, info->source_text, &yz_zh14, 194, 4);    // 简介第 5 页
-        snprintf(buf, sizeof buf, YZ_STR_LIB_META_FMT, info->era, (unsigned)info->entry_count);
-        bad += text_fits(info->name, buf, &yz_zh14, 196, 0);                  // 字帖目录
-        // 简介两页正文最多 11 行，避免压到页码。
+    bad += text_fits("intro", YZ_BOOK.intro, &yz_zh14, 194, 4);                // 简介第 1 页
+    bad += text_fits("source", YZ_BOOK.source_text, &yz_zh14, 194, 4);         // 简介第 5 页
+    // 简介两页正文最多 12 行，避免压到页码。
+    const char *const BODY[] = { YZ_BOOK.intro, YZ_BOOK.source_text };
+    for (int k = 0; k < 2; k++) {
         int lines = 1;
-        for (const char *c = info->intro; *c; c++) lines += *c == '\n';
-        if (lines > 11) {
-            printf("LAYOUT %s intro has %d lines\n", info->name, lines);
+        for (const char *c = BODY[k]; *c; c++) lines += *c == '\n';
+        if (lines > 12) {
+            printf("LAYOUT about body %d has %d lines\n", k, lines);
             bad++;
         }
     }
+    snprintf(buf, sizeof buf, YZ_STR_VOL_TOTAL_FMT, (unsigned)YZ_ENTRY_COUNT, (unsigned)YZ_ENTRY_COUNT);
+    bad += text_fits("vol-total", buf, &yz_zh14, 194, 0);                     // 分卷目录顶部
+    bad += text_fits("vol-hint", YZ_STR_VOL_HINT, &yz_zh14, 200, 0);
+    for (int c = 0; c < YZ_CHAPTER_COUNT; c++) {
+        snprintf(buf, sizeof buf, YZ_STR_VOL_COUNT_FMT, (unsigned)YZ_CHAPTERS[c].count,
+                 (unsigned)YZ_CHAPTERS[c].count);
+        bad += text_fits(YZ_CHAPTERS[c].name, buf, &yz_zh14, 58, 0);          // 分卷目录行尾
+        bad += text_fits(YZ_CHAPTERS[c].name, YZ_CHAPTERS[c].name, &yz_zh18, 40, 0);
+    }
+    snprintf(buf, sizeof buf, YZ_STR_HOME_CONT_FMT, YZ_ENTRIES[1].simp, (unsigned)YZ_ENTRY_COUNT,
+             (unsigned)YZ_ENTRY_COUNT);
+    bad += text_fits("home-continue", buf, &yz_zh14, 116, 0);
+    bad += text_fits("home-continue-name", YZ_STR_HOME_CONTINUE, &yz_zh18, 82 - 10, 0);   // 菜单名止于右侧标签起点
     for (int i = 0; i < YZ_ENTRY_COUNT; i++) {
         const yz_entry_t *e = &YZ_ENTRIES[i];
-        snprintf(buf, sizeof buf, YZ_STR_PHRASE_FMT, YZ_BOOKS[yz_catalog_book_of(i)].phrase_tag, e->phrase);
+        snprintf(buf, sizeof buf, YZ_STR_PHRASE_FMT, YZ_BOOK.phrase_tag, e->phrase);
         bad += text_fits(e->phrase, buf, &yz_zh14, 196, 0);                 // 临帖页底部
         snprintf(buf, sizeof buf, YZ_STR_PREVIEW_PHRASE_FMT, e->phrase);
         bad += text_fits(e->phrase, buf, &yz_zh14, 120, 0);                 // 目录预览
         bad += text_fits(e->source, e->source, &yz_zh14, YZ_CARD_TEXT_W, 0); // 笔法卡出处
+        bad += text_fits(e->pinyin, e->pinyin, &yz_zh18, 72, 0);            // 目录预览拼音
     }
     printf("LAYOUT problems=%d\n", bad);
     return bad;
@@ -227,12 +239,13 @@ int main(int argc, char **argv) {
     yz_ui_show(&b);
     capture("01_home_new");
 
-    // 有进度的主页：若干字已临、两个收藏，停在“左右”卷。
-    for (int i = 0; i < 40; i++) b.prog.count[(i * 7) % YZ_BOOKS[0].entry_count] = (uint8_t)(1 + i % 4);
-    b.prog.sessions[0] = 86;
-    b.prog.seconds[0] = 86 * 60;
-    b.prog.current[0] = 74;   // 法
-    b.prog.fav[74 / 8] |= (uint8_t)(1u << (74 % 8));
+    // 有进度的主页：前几卷临过一部分、两个收藏，停在“建塔”卷的“法”。
+    for (int i = 0; i < 400; i++) b.prog.count[i] = (uint8_t)(1 + i % 4);
+    for (int i = 900; i < 960; i++) b.prog.count[i] = 1;
+    b.prog.sessions = 486;
+    b.prog.seconds = 486 * 60;
+    b.prog.current = 425;   // 法
+    b.prog.fav[425 / 8] |= (uint8_t)(1u << (425 % 8));
     b.prog.fav[57 / 8] |= (uint8_t)(1u << (57 % 8));
     yz_ui_set_battery(12);
     yz_ui_show(&b);
@@ -240,18 +253,20 @@ int main(int argc, char **argv) {
     capture("02_home_progress_lowbat");
     yz_ui_set_battery(76);
 
-    // 目录：从主页进入（定位到“法”），再逐字、跳行、换卷。
+    // 目录：从主页进入（定位到“法”），再逐字、跳行、换卷；页签条随当前卷滑动。
     home_open(YZ_HOME_CATALOG);
-    capture("03_catalog_lr");
+    capture("03_catalog_build");
     for (int i = 0; i < 3; i++) key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
     key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("04_catalog_lr_scrolled");
+    capture("04_catalog_build_scrolled");
     key(YZ_BTN_UP, YZ_EV_LONG);
     key(YZ_BTN_UP, YZ_EV_LONG);
-    key(YZ_BTN_UP, YZ_EV_LONG);
-    capture("05_catalog_title");
-    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    capture("05_catalog_head");
+    for (int i = 0; i < 9; i++) key(YZ_BTN_DOWN, YZ_EV_LONG);
     capture("06_catalog_numbers");
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    key(YZ_BTN_DOWN, YZ_EV_LONG);
+    capture("06b_catalog_lr");
 
     // 临帖：拓本 · 米字格。
     key(YZ_BTN_DOWN, YZ_EV_CLICK);
@@ -275,24 +290,26 @@ int main(int argc, char **argv) {
     clear_toast();
     tick(23 * 1000);
     capture("10_practice_trace_jiu_timer");
-    // 计时结束：自动翻到下一字并继续计时，提示条报本帖总遍数。
+    // 计时结束：自动翻到下一字并继续计时，提示条报累计遍数。
     tick(40 * 1000);
     capture("11_practice_timer_done");
     key(YZ_BTN_DOWN, YZ_EV_LONG);
     clear_toast();
-
-    // 永字：笔法卡最长的一条；无格线。
-    key(YZ_BTN_UP, YZ_EV_LONG);
-    clear_toast();
-    while (yz_book_entry(&b) != 57) key(YZ_BTN_DOWN, YZ_EV_CLICK);
     key(YZ_BTN_UP, YZ_EV_DOUBLE);   // 回到拓本
     clear_toast();
-    capture("12_practice_yong_nogrid");
+
+    // 碑文卷里临帖：偈颂后的小字“其一”、残损的字、全碑最后一字“刻”。
+    home();
+    b.prog.current = 1766;          // 車，其后是小字“其一”
+    home_open(YZ_HOME_CONTINUE);
+    key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("12_practice_note_small");
     key(YZ_BTN_OK, YZ_EV_CLICK);
-    capture("13_practice_yong_card");
+    capture("13_practice_note_card");
     key(YZ_BTN_OK, YZ_EV_CLICK);
-    // 往前翻过本帖第一个字：首尾相接到本帖最后一个字。
-    while (yz_book_entry(&b) != YZ_BOOKS[0].entry_count - 1) key(YZ_BTN_UP, YZ_EV_CLICK);
+    while (yz_book_entry(&b) != 252) key(YZ_BTN_UP, YZ_EV_CLICK);
+    capture("13b_practice_damaged");
+    while (yz_book_entry(&b) != YZ_ENTRY_COUNT - 1) key(YZ_BTN_UP, YZ_EV_CLICK);
     capture("14_practice_last");
 
     // 收藏页签（有收藏）与空收藏。
@@ -302,11 +319,22 @@ int main(int argc, char **argv) {
     home_open(YZ_HOME_FAVORITES);
     capture("16_catalog_fav_empty");
 
-    // 简介五页（多宝塔碑）。
+    // 分卷目录：当前在“题记”；选到“建塔”打开，停在第一个未临的字；滚到分类卷。
+    home_open(YZ_HOME_VOLUMES);
+    capture("17_volumes");
+    while (b.vol_sel != 2) key(YZ_BTN_UP, YZ_EV_CLICK);
+    capture("17b_volumes_build");
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    capture("17c_volumes_open_build");
+    home_open(YZ_HOME_VOLUMES);
+    while (b.vol_sel != YZ_CHAPTER_COUNT - 1) key(YZ_BTN_DOWN, YZ_EV_CLICK);
+    capture("17d_volumes_categories");
+
+    // 简介五页。
     home_open(YZ_HOME_ABOUT);
-    capture("17_about_1");
+    capture("18_about_1");
     key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("18_about_2");
+    capture("18b_about_2");
     key(YZ_BTN_DOWN, YZ_EV_CLICK);
     capture("19_about_3");
     key(YZ_BTN_DOWN, YZ_EV_CLICK);
@@ -324,102 +352,30 @@ int main(int argc, char **argv) {
     key(YZ_BTN_OK, YZ_EV_CLICK);
     capture("22_settings_confirm_reset");
 
-    // 逐字检查：多宝塔碑每个字的临帖页都渲染一次。
-    home_open(YZ_HOME_CATALOG);
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    for (int i = 0; i < YZ_BOOKS[0].entry_count; i++) {
-        key(YZ_BTN_DOWN, YZ_EV_CLICK);
-        settle();
-    }
-    capture("23_practice_after_full_loop");
-
-    // 字帖目录：当前是多宝塔碑；选到颜勤礼碑；打开后回到它的主页。
-    home_open(YZ_HOME_LIBRARY);
-    capture("24_library_duobao");
-    key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("25_library_qinli");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    capture("26_home_qinli");
-
-    // 颜勤礼碑：目录、临帖、笔法卡、描红、简介、来源。
-    home_open(YZ_HOME_CATALOG);
-    capture("27_catalog_qinli_title");
-    key(YZ_BTN_DOWN, YZ_EV_LONG);
-    key(YZ_BTN_DOWN, YZ_EV_LONG);
-    key(YZ_BTN_DOWN, YZ_EV_LONG);
-    for (int i = 0; i < 7; i++) key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
-    capture("28_catalog_qinli_lr_scrolled");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    clear_toast();
-    capture("29_practice_qinli");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    capture("30_practice_qinli_card");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    key(YZ_BTN_UP, YZ_EV_DOUBLE);                 // 描红
-    key(YZ_BTN_UP, YZ_EV_DOUBLE);
-    key(YZ_BTN_UP, YZ_EV_LONG);                   // 米字格
-    clear_toast();
-    key(YZ_BTN_DOWN, YZ_EV_DOUBLE);               // 记一遍
-    clear_toast();
-    capture("31_practice_qinli_marked");
-    home_open(YZ_HOME_ABOUT);
-    capture("32_about_qinli_1");
-    for (int i = 0; i < 4; i++) key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("33_about_qinli_5");
+    // 逐字检查：从全碑第一字临到最后一字，每个字的临帖页都渲染一次。
     home();
-    capture("34_home_qinli_progress");
-
-    // 逐字检查：颜勤礼碑每个字。
-    home_open(YZ_HOME_CATALOG);
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    for (int i = 0; i < YZ_BOOKS[1].entry_count; i++) {
-        key(YZ_BTN_DOWN, YZ_EV_CLICK);
-        settle();
-    }
-    capture("35_practice_qinli_after_full_loop");
-
-    // 回到字帖目录：颜勤礼碑标“当前”，选回多宝塔碑后长按返回（不换帖）。
-    home_open(YZ_HOME_LIBRARY);
-    key(YZ_BTN_UP, YZ_EV_CLICK);
-    capture("36_library_back_to_duobao");
-    key(YZ_BTN_OK, YZ_EV_LONG);
-    capture("37_home_still_qinli");
-
-    // 千字文：字帖目录选第三本 → 主页 → 全文目录（4 列，一行一句）→ 临帖 → 分类卷 → 简介。
-    home_open(YZ_HOME_LIBRARY);
-    while (b.lib_sel != 2) key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("38_library_qianzi");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    capture("39_home_qianzi");
-    home_open(YZ_HOME_CATALOG);
-    capture("40_catalog_qianzi_full");
-    for (int i = 0; i < 9; i++) key(YZ_BTN_DOWN, YZ_EV_DOUBLE);
-    key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("41_catalog_qianzi_full_scrolled");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    capture("42_practice_qianzi");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    capture("43_practice_qianzi_card");
-    key(YZ_BTN_OK, YZ_EV_CLICK);
-    key(YZ_BTN_OK, YZ_EV_LONG);
-    key(YZ_BTN_DOWN, YZ_EV_LONG);
-    capture("44_catalog_qianzi_num");
-    key(YZ_BTN_DOWN, YZ_EV_LONG);
-    capture("45_catalog_qianzi_single");
-    home_open(YZ_HOME_ABOUT);
-    capture("46_about_qianzi_1");
-    for (int i = 0; i < 4; i++) key(YZ_BTN_DOWN, YZ_EV_CLICK);
-    capture("47_about_qianzi_5");
-
-    // 逐字检查：千字文全文 1000 字，从第一字临到最后一字。
-    home();
-    b.prog.current[2] = (uint16_t)YZ_BOOKS[2].first_entry;
+    b.prog.current = 0;
     home_open(YZ_HOME_CONTINUE);
-    for (int i = 0; i < YZ_BOOKS[2].entry_count - 1; i++) {
+    for (int i = 0; i < YZ_ENTRY_COUNT - 1; i++) {
         key(YZ_BTN_DOWN, YZ_EV_CLICK);
         settle();
     }
-    capture("48_practice_qianzi_last");
+    if (yz_book_entry(&b) != YZ_ENTRY_COUNT - 1) {
+        printf("FULL-TEXT walk ended at %d\n", yz_book_entry(&b));
+        missing++;
+    }
+    capture("23_practice_after_full_text");
+    // 分类卷逐卷翻完：每个不同的字也各渲染一次。
+    key(YZ_BTN_OK, YZ_EV_LONG);
+    while (b.tab != YZ_TEXT_CHAPTER_COUNT) key(YZ_BTN_DOWN, YZ_EV_LONG);
+    key(YZ_BTN_OK, YZ_EV_CLICK);
+    for (int i = YZ_TEXT_CHAPTER_COUNT; i < YZ_CHAPTER_COUNT; i++) {
+        for (int k = 0; k < YZ_CHAPTERS[i].count; k++) {
+            key(YZ_BTN_DOWN, YZ_EV_CLICK);
+            settle();
+        }
+    }
+    capture("24_practice_after_categories");
 
     printf("PEAK used=%zu of %u\n", s_peak, (unsigned)LV_MEM_SIZE);
     free(pack_data);

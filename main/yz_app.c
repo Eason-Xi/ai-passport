@@ -14,6 +14,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
+#include "sdkconfig.h"
 
 #include "yz_book.h"
 #include "yz_chime.h"
@@ -34,6 +35,12 @@ static const char *TAG = "yz_app";
 
 _Static_assert((int)YZ_BTN_UP == (int)BSP_BTN_UP && (int)YZ_BTN_DOWN == (int)BSP_BTN_DOWN &&
                    (int)YZ_BTN_OK == (int)BSP_BTN_OK, "按键枚举需与 BSP 一致");
+// 主任务栈要容得下 yz_app_start 里的设置与进度（随全碑字数增长），再加上建页面、解码
+// 第一个字（解码栈约 0.4 KB）、NVS 读取的调用深度；按 4 KB 预留，开机日志会报告实际剩余。
+#define BOOT_STACK_RESERVE 4096
+_Static_assert(CONFIG_ESP_MAIN_TASK_STACK_SIZE >= sizeof(yz_progress_t) + sizeof(yz_cfg_t) + BOOT_STACK_RESERVE,
+               "main task stack too small for yz_app_start: raise CONFIG_ESP_MAIN_TASK_STACK_SIZE");
+
 _Static_assert((int)YZ_EV_PRESS == (int)BSP_BTN_PRESS && (int)YZ_EV_CLICK == (int)BSP_BTN_CLICK &&
                    (int)YZ_EV_DOUBLE == (int)BSP_BTN_DOUBLE && (int)YZ_EV_LONG == (int)BSP_BTN_LONG,
                "按键事件枚举需与 BSP 一致");
@@ -121,6 +128,11 @@ static void app_task(void *arg) {
         if (now - last_battery >= BATTERY_PERIOD_MS) {
             last_battery = now;
             update_battery();
+            static bool s_stack_logged;
+            if (!s_stack_logged) {   // 跑过开机后的第一轮界面与保存，报告一次栈余量
+                s_stack_logged = true;
+                ESP_LOGI(TAG, "应用任务栈剩余 %u 字节", (unsigned)uxTaskGetStackHighWaterMark(NULL));
+            }
         }
     }
 }
@@ -167,6 +179,7 @@ void yz_app_start(bool audio_ok, bool battery_ok) {
     // 按键最后接入：队列、任务、界面都就绪之后才会有事件进来。
     const esp_err_t e = bsp_button_init(on_button, NULL);
     if (e != ESP_OK) ESP_LOGE(TAG, "按键初始化失败: %s", esp_err_to_name(e));
-    ESP_LOGI(TAG, "颜真卿字帖已启动：%u 字，音频 %s，电量 %s", (unsigned)YZ_ENTRY_COUNT,
-             audio_ok ? "可用" : "不可用", battery_ok ? "可用" : "不可用");
+    ESP_LOGI(TAG, "颜真卿字帖已启动：%u 字，音频 %s，电量 %s，主任务栈剩余 %u 字节", (unsigned)YZ_ENTRY_COUNT,
+             audio_ok ? "可用" : "不可用", battery_ok ? "可用" : "不可用",
+             (unsigned)uxTaskGetStackHighWaterMark(NULL));
 }

@@ -1,5 +1,5 @@
-// main/yz_ui_catalog.c —— 目录：章节页签、字格（碑上原字，一般 5×4；千字文全文 4×4，一行一句）、
-// 底部拓本预览与释文。
+// main/yz_ui_catalog.c —— 目录：卷页签（九个碑文卷、五个分类卷与收藏，一次显示七个）、
+// 5×4 字格（碑上原字的释文）、底部拓本预览与释文。
 #include "yz_ui_internal.h"
 
 #define TAB_Y 36
@@ -12,12 +12,13 @@
 #define CELLS (YZ_CATALOG_MAX_COLS * YZ_CATALOG_ROWS)
 #define PREVIEW_Y 230
 
-static lv_obj_t *s_head;
-#define MAX_TABS (YZ_BOOK_MAX_CHAPTERS + 1)
+#define TAB_VISIBLE 7               // 页签条一次显示的页签数
+_Static_assert(YZ_TAB_COUNT >= TAB_VISIBLE, "tab strip needs at least seven tabs");
 
-static lv_obj_t *s_tabs[MAX_TABS];
-static int s_tab_count;
-static int s_cols;                  // 本页字格列数（换卷会重建页面）
+static lv_obj_t *s_head;
+static lv_obj_t *s_tabs[TAB_VISIBLE];
+static int s_tab_first;             // 页签条上第一个页签（换卷会重建页面，所以只在建页时算）
+static int s_cols;                  // 本页字格列数
 static lv_obj_t *s_tab_line;
 static lv_obj_t *s_cells[CELLS];
 static lv_obj_t *s_cell_text[CELLS];
@@ -32,13 +33,13 @@ static lv_obj_t *s_phrase;
 static lv_obj_t *s_count;
 
 static void update(const yz_book_t *book) {
-    lv_label_set_text_fmt(s_head, YZ_STR_CAT_HEAD_FMT, yz_ui_tab_name(book, book->tab), (unsigned)book->list_len);
-    for (int t = 0; t < s_tab_count; t++) {
-        const bool cur = t == book->tab;
+    lv_label_set_text_fmt(s_head, YZ_STR_CAT_HEAD_FMT, yz_ui_tab_name(book->tab), (unsigned)book->list_len);
+    for (int t = 0; t < TAB_VISIBLE; t++) {
+        const bool cur = s_tab_first + t == book->tab;
         lv_obj_set_style_text_color(s_tabs[t], lv_color_hex(cur ? YZ_C_VERMILION : YZ_C_INK_SOFT), 0);
         lv_obj_set_style_text_opa(s_tabs[t], cur ? LV_OPA_COVER : LV_OPA_60, 0);
     }
-    lv_obj_set_x(s_tab_line, TAB_X + book->tab * TAB_W + 3);
+    lv_obj_set_x(s_tab_line, TAB_X + (book->tab - s_tab_first) * TAB_W + 3);
 
     const bool empty = book->list_len == 0;
     for (int c = 0; c < s_cols * YZ_CATALOG_ROWS; c++) {     // 只遍历本页实际建立的字格
@@ -66,7 +67,7 @@ static void update(const yz_book_t *book) {
     if (rows > YZ_CATALOG_ROWS) {
         const int track = CELL * YZ_CATALOG_ROWS;
         int h = track * YZ_CATALOG_ROWS / rows;
-        if (h < 10) h = 10;                      // 千字文全文 250 行：保留可见的最小长度
+        if (h < 10) h = 10;                      // 收藏多时行数很多：保留可见的最小长度
         lv_obj_remove_flag(s_scroll, LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_height(s_scroll, h);
         lv_obj_set_y(s_scroll, GRID_Y + (track - h) * book->first_row / (rows - YZ_CATALOG_ROWS));
@@ -97,10 +98,21 @@ static void update(const yz_book_t *book) {
 static bool build(lv_obj_t *scr, const yz_book_t *book) {
     s_head = yz_ui_label(scr, &yz_zh18, YZ_C_INK, 24, 8);
 
-    s_tab_count = yz_book_tab_count(book);
-    for (int t = 0; t < s_tab_count; t++) {
+    // 当前页签尽量居中；两端还有页签时，在页签条两侧画一道短竖线提示。
+    s_tab_first = book->tab - TAB_VISIBLE / 2;
+    if (s_tab_first > YZ_TAB_COUNT - TAB_VISIBLE) s_tab_first = YZ_TAB_COUNT - TAB_VISIBLE;
+    if (s_tab_first < 0) s_tab_first = 0;
+    for (int t = 0; t < TAB_VISIBLE; t++) {
         s_tabs[t] = yz_ui_label(scr, &yz_zh14, YZ_C_INK_SOFT, TAB_X + t * TAB_W, TAB_Y);
-        lv_label_set_text_static(s_tabs[t], yz_ui_tab_name(book, (uint8_t)t));
+        lv_label_set_text_static(s_tabs[t], yz_ui_tab_name((uint8_t)(s_tab_first + t)));
+    }
+    if (s_tab_first > 0) {
+        lv_obj_t *more = yz_ui_box(scr, TAB_X - 7, TAB_Y + 4, 2, 10, YZ_C_INK_SOFT, 1);
+        lv_obj_set_style_bg_opa(more, LV_OPA_50, 0);
+    }
+    if (s_tab_first + TAB_VISIBLE < YZ_TAB_COUNT) {
+        lv_obj_t *more = yz_ui_box(scr, TAB_X + TAB_VISIBLE * TAB_W + 2, TAB_Y + 4, 2, 10, YZ_C_INK_SOFT, 1);
+        lv_obj_set_style_bg_opa(more, LV_OPA_50, 0);
     }
     s_tab_line = yz_ui_box(scr, TAB_X + 3, TAB_Y + 20, 22, 2, YZ_C_VERMILION, 1);
 
@@ -144,8 +156,8 @@ static bool build(lv_obj_t *scr, const yz_book_t *book) {
 static void forget(void) {
     s_head = s_tab_line = s_scroll = s_empty = s_tile = NULL;
     s_simp = s_pinyin = s_phrase = s_count = NULL;
-    for (int t = 0; t < MAX_TABS; t++) s_tabs[t] = NULL;
-    s_tab_count = 0;
+    for (int t = 0; t < TAB_VISIBLE; t++) s_tabs[t] = NULL;
+    s_tab_first = 0;
     for (int c = 0; c < CELLS; c++) s_cells[c] = s_cell_text[c] = s_cell_fav[c] = s_cell_done[c] = NULL;
     s_cols = 0;
 }

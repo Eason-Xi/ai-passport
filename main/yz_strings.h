@@ -1,6 +1,6 @@
 // main/yz_strings.h —— 界面上所有非 ASCII 文字都集中在这里（另有生成的 yz_catalog_data.c）。
 //
-// 帖名、简介、拓本来源、单字出处等随字帖变化的文字在 tools/yz_catalog.json 里。
+// 帖名、简介、拓本来源、卷名、单字释文与出处等字帖资料在 tools/yz_catalog.json 里。
 // tools/gen_yz_fonts.py 从本文件与 tools/yz_catalog.json 收集字符生成中文字体子集；
 // 在其他源文件里写中文字面量会被 `gen_yz_fonts.py check` 拒绝。改动本文件后需重新生成字体。
 #pragma once
@@ -10,20 +10,19 @@
 #define YZ_STR_HOME_CONTINUE    "继续临帖"
 #define YZ_STR_HOME_CATALOG     "目录选字"
 #define YZ_STR_HOME_FAVORITES   "我的收藏"
-#define YZ_STR_HOME_LIBRARY     "字帖目录"
+#define YZ_STR_HOME_VOLUMES     "分卷目录"
 #define YZ_STR_HOME_ABOUT       "碑帖简介"
 #define YZ_STR_HOME_SETTINGS    "设置"
 #define YZ_STR_HOME_CONT_FMT    "「%s」%u/%u"
 #define YZ_STR_HOME_FAV_FMT     "%u 字"
-#define YZ_STR_HOME_LIB_FMT     "%u 本"
+#define YZ_STR_HOME_VOL_FMT     "%u 卷"
 #define YZ_STR_HOME_STATS_FMT   "已临 %lu 遍 · %lu 分钟"
 
-// ---- 字帖目录 ----
-#define YZ_STR_LIB_TITLE        "字帖目录"
-#define YZ_STR_LIB_META_FMT     "%s · %u字"
-#define YZ_STR_LIB_DONE_FMT     "已临 %u 字"
-#define YZ_STR_LIB_OPEN         "当前"
-#define YZ_STR_LIB_HINT         "确定打开 · 长按确定返回"
+// ---- 分卷目录 ----
+#define YZ_STR_VOL_TITLE        "分卷目录"
+#define YZ_STR_VOL_TOTAL_FMT    "全碑已临 %u / %u 字"
+#define YZ_STR_VOL_COUNT_FMT    "%u/%u"
+#define YZ_STR_VOL_HINT         "确定跳到未临的字 · 长按返回"
 
 // ---- 目录 ----
 #define YZ_STR_FAV_TAB          "收藏"
@@ -35,7 +34,7 @@
 // ---- 临帖 ----
 #define YZ_STR_POS_FMT          "%s %u/%u"
 #define YZ_STR_FAV_MARK         "★"
-#define YZ_STR_PHRASE_FMT       "%s「%s」"    // 前缀取自字帖：“碑文”或“原文”
+#define YZ_STR_PHRASE_FMT       "%s「%s」"    // 前缀取自字帖资料：“碑文”
 #define YZ_STR_PREVIEW_PHRASE_FMT "「%s」"
 #define YZ_STR_TIMER_FMT        "%u:%02u"
 #define YZ_STR_CARD_FOCUS       "笔法"
@@ -79,12 +78,12 @@
 #define YZ_STR_ON               "开"
 #define YZ_STR_OFF              "关"
 #define YZ_STR_PERCENT_FMT      "%u%%"
-#define YZ_STR_RESET_ASK        "本帖"
+#define YZ_STR_RESET_ASK        "全部"
 #define YZ_STR_RESET_CONFIRM    "再按确定"
 #define YZ_STR_SET_HINT         "确定切换 · 长按确定返回"
 
 // ---- 简介（每行不超过 13 个全角字，显式换行：LVGL 不做中文避头尾）----
-// 第 1 页（简介）与第 5 页（拓本来源）的正文来自当前字帖：YZ_BOOKS[b].intro / source_text。
+// 第 1 页（简介）与第 5 页（拓本来源）的正文来自字帖资料：YZ_BOOK.intro / source_text。
 #define YZ_STR_ABOUT_TITLE_1    "碑帖简介"
 #define YZ_STR_ABOUT_TITLE_2    "颜体要诀"
 #define YZ_STR_ABOUT_BODY_2 \
@@ -122,18 +121,18 @@
     "目录  单击\n" \
     "目录  双击\n" \
     "目录  长按上 / 下\n" \
+    "分卷目录  确定\n" \
     "任意页  长按确定\n" \
     "主页  上 / 下\n" \
-    "主页  确定\n" \
     "设置  确定\n" \
     "息屏时  任意键"
 #define YZ_STR_ABOUT_BODY_4R \
     "逐字移动\n" \
     "跳一行\n" \
     "换卷\n" \
+    "跳到未临字\n" \
     "返回上一层\n" \
     "选择\n" \
-    "进入\n" \
     "切换取值\n" \
     "唤醒屏幕"
 #define YZ_STR_ABOUT_TITLE_5    "拓本来源"

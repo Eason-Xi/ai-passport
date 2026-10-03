@@ -101,7 +101,7 @@ static void update(const yz_book_t *book) {
         else lv_obj_add_flag(s_lines[i], LV_OBJ_FLAG_HIDDEN);
     }
 
-    lv_label_set_text_fmt(s_pos, YZ_STR_POS_FMT, yz_ui_tab_name(book, book->tab),
+    lv_label_set_text_fmt(s_pos, YZ_STR_POS_FMT, yz_ui_tab_name(book->tab),
                           (unsigned)(book->pos + 1), (unsigned)book->list_len);
     if (yz_book_is_fav(book, entry)) lv_obj_remove_flag(s_star, LV_OBJ_FLAG_HIDDEN);
     else lv_obj_add_flag(s_star, LV_OBJ_FLAG_HIDDEN);
@@ -111,7 +111,7 @@ static void update(const yz_book_t *book) {
     lv_label_set_text_static(s_simp, e->simp);
     lv_label_set_text_static(s_pinyin, e->pinyin);
     lv_label_set_text_static(s_struct, yz_ui_struct_name(e->structure));
-    lv_label_set_text_fmt(s_phrase, YZ_STR_PHRASE_FMT, YZ_BOOKS[book->prog.book].phrase_tag, e->phrase);
+    lv_label_set_text_fmt(s_phrase, YZ_STR_PHRASE_FMT, YZ_BOOK.phrase_tag, e->phrase);
 
     if (book->timing) {
         const unsigned left_s = (unsigned)((book->timer_left_ms + 999u) / 1000u);

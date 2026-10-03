@@ -33,6 +33,10 @@ CONFIG_LV_USE_THEME_DEFAULT=n
 
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000
+# 主任务栈：yz_app_start 在主任务里读存档（局部的 yz_progress_t 约 2.3 KB）、建第一个页面、
+# 解码第一个拓本字。默认 3584 字节不够，会在开机时栈溢出、反复重启（屏幕闪烁）。
+# app_main 返回后主任务即删除、栈归还堆，这里只是开机时的临时占用。main/yz_app.c 有编译期检查。
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
 # --- 无线 ---
 # 字帖完全离线，不使用 Wi-Fi / 蓝牙：关闭蓝牙以节省 RAM 与 Flash。

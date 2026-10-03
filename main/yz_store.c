@@ -17,7 +17,7 @@ static bool s_ok;
 static bool s_cfg_dirty;
 static bool s_prog_dirty;
 static uint32_t s_changed_ms;
-static uint8_t s_buf[YZ_PROG_READ_MAX];   // 只在应用任务里使用；读取时要容得下旧版 v1 进度
+static uint8_t s_buf[YZ_PROG_BLOB_SIZE];  // 只在应用任务里使用
 
 void yz_store_init(yz_cfg_t *cfg, yz_progress_t *prog) {
     yz_cfg_default(cfg);
@@ -42,13 +42,15 @@ void yz_store_init(yz_cfg_t *cfg, yz_progress_t *prog) {
         yz_cfg_default(cfg);
     }
     len = sizeof(s_buf);
-    if (nvs_get_blob(h, KEY_PROG, s_buf, &len) == ESP_OK && !yz_prog_unpack(prog, s_buf, len)) {
-        ESP_LOGW(TAG, "进度存档无效，从头开始");
+    const esp_err_t pe = nvs_get_blob(h, KEY_PROG, s_buf, &len);
+    if (pe == ESP_ERR_NVS_INVALID_LENGTH || (pe == ESP_OK && !yz_prog_unpack(prog, s_buf, len))) {
+        // 旧固件（三本字帖）的进度格式不同，字下标也对不上新字目，一律从头开始。
+        ESP_LOGW(TAG, "进度存档无效或来自旧版字目，从头开始");
         yz_progress_reset(prog);
     }
     nvs_close(h);
-    ESP_LOGI(TAG, "存档已读取：当前字帖 %u，第 %u 字，本帖累计 %lu 遍", (unsigned)prog->book,
-             (unsigned)prog->current[prog->book] + 1, (unsigned long)prog->sessions[prog->book]);
+    ESP_LOGI(TAG, "存档已读取：第 %u 字，累计 %lu 遍", (unsigned)prog->current + 1,
+             (unsigned long)prog->sessions);
 }
 
 void yz_store_mark(bool cfg_dirty, bool prog_dirty, uint32_t now_ms) {

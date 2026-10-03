@@ -120,14 +120,12 @@ def c_string_literals(text: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def catalog_strings() -> list[str]:
-    """字目 JSON 里会显示在屏幕上的全部文字：帖名、年代、简介、来源、章节名与每个字的资料。"""
-    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    out = []
-    for book in catalog["books"]:
-        out += [book[k] for k in ("name", "name_v", "era", "author", "phrase_tag", "intro", "source_text")]
-        out += [c["name"] for c in book["chapters"]]
-        for entry in book["entries"]:
-            out += [entry[k] for k in ("simp", "trad", "pinyin", "phrase", "source")]
+    """字目 JSON 里会显示在屏幕上的全部文字：帖名、年代、简介、来源、卷名与每个字的资料。"""
+    book = json.loads(CATALOG.read_text(encoding="utf-8"))["book"]
+    out = [book[k] for k in ("name", "name_v", "era", "author", "phrase_tag", "intro", "source_text")]
+    out += [c["name"] for c in book["chapters"]]
+    for entry in book["entries"]:
+        out += [entry[k] for k in ("simp", "trad", "pinyin", "phrase", "source")]
     return out
 
 
@@ -140,11 +138,10 @@ def text_charset() -> list[int]:
 
 def big_charset() -> list[int]:
     points = set(ord(ch) for ch in "0123456789/ ")
-    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    for book in catalog["books"]:
-        points.update(ord(ch) for ch in book["name"])
-        for entry in book["entries"]:
-            points.update(ord(ch) for ch in entry["simp"])
+    book = json.loads(CATALOG.read_text(encoding="utf-8"))["book"]
+    points.update(ord(ch) for ch in book["name"])
+    for entry in book["entries"]:
+        points.update(ord(ch) for ch in entry["simp"])
     return sorted(points)
 
 

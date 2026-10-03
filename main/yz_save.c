@@ -8,7 +8,7 @@
 #define PROG_MAGIC0 'Y'
 #define PROG_MAGIC1 'P'
 #define VERSION 1           // 设置 blob 版本
-#define VERSION_PROG 2      // 进度 blob 版本（v1 可迁移，见 yz_save.h）
+#define VERSION_PROG 3      // 进度 blob 版本（见 yz_save.h）
 
 uint32_t yz_crc32(const uint8_t *data, size_t len) {
     uint32_t crc = 0xFFFFFFFFu;
@@ -79,89 +79,38 @@ size_t yz_prog_pack(const yz_progress_t *prog, uint8_t *buf, size_t cap) {
     *p++ = PROG_MAGIC0;
     *p++ = PROG_MAGIC1;
     *p++ = VERSION_PROG;
-    *p++ = YZ_BOOK_COUNT;
     put_u16(p, YZ_ENTRY_COUNT);
     p += 2;
-    *p++ = prog->book;
-    for (int b = 0; b < YZ_BOOK_COUNT; b++, p += 2) put_u16(p, prog->current[b]);
+    put_u16(p, prog->current);
+    p += 2;
     memcpy(p, prog->count, YZ_ENTRY_COUNT);
     p += YZ_ENTRY_COUNT;
     memcpy(p, prog->fav, YZ_FAV_BYTES);
     p += YZ_FAV_BYTES;
-    for (int b = 0; b < YZ_BOOK_COUNT; b++, p += 4) put_u32(p, prog->sessions[b]);
-    for (int b = 0; b < YZ_BOOK_COUNT; b++, p += 4) put_u32(p, prog->seconds[b]);
+    put_u32(p, prog->sessions);
+    p += 4;
+    put_u32(p, prog->seconds);
+    p += 4;
     put_u32(p, yz_crc32(buf, (size_t)(p - buf)));
     return YZ_PROG_BLOB_SIZE;
 }
 
-// 位图里下标 >= n 的位必须为 0。
-static bool fav_tail_clear(const uint8_t *fav, int n, int bytes) {
-    for (int i = n; i < bytes * 8; i++) {
+bool yz_prog_unpack(yz_progress_t *prog, const uint8_t *buf, size_t len) {
+    if (len != YZ_PROG_BLOB_SIZE || buf[0] != PROG_MAGIC0 || buf[1] != PROG_MAGIC1 || buf[2] != VERSION_PROG) {
+        return false;
+    }
+    if (!crc_ok(buf, len) || get_u16(buf + 3) != YZ_ENTRY_COUNT) return false;
+    const uint16_t current = get_u16(buf + 5);
+    if (current >= YZ_ENTRY_COUNT) return false;
+    const uint8_t *fav = buf + 7 + YZ_ENTRY_COUNT;
+    // 位图里下标 >= YZ_ENTRY_COUNT 的位必须为 0。
+    for (int i = YZ_ENTRY_COUNT; i < YZ_FAV_BYTES * 8; i++) {
         if ((fav[i / 8] >> (i % 8)) & 1u) return false;
     }
+    prog->current = current;
+    memcpy(prog->count, buf + 7, YZ_ENTRY_COUNT);
+    memcpy(prog->fav, fav, YZ_FAV_BYTES);
+    prog->sessions = get_u32(fav + YZ_FAV_BYTES);
+    prog->seconds = get_u32(fav + YZ_FAV_BYTES + 4);
     return true;
-}
-
-// v2 记录了写入时的字帖数 nb 与字数 ne。旧固件字帖较少时（新字帖只追加在末尾），
-// 前 nb 本帖的进度原样保留，其余字帖从零开始；字数必须正好等于前 nb 本帖的字数之和。
-static bool unpack_v2(yz_progress_t *prog, const uint8_t *buf, size_t len) {
-    if (len < 7) return false;
-    const int nb = buf[3];
-    const int ne = get_u16(buf + 4);
-    if (nb == 0 || nb > YZ_BOOK_COUNT) return false;
-    const int expect_ne = nb == YZ_BOOK_COUNT ? YZ_ENTRY_COUNT : YZ_BOOKS[nb].first_entry;
-    const int fav_bytes = (ne + 7) / 8;
-    if (ne != expect_ne || len != (size_t)(3 + 1 + 2 + 1 + 2 * nb + ne + fav_bytes + 8 * nb + 4)) return false;
-
-    const uint8_t *p = buf + 6;
-    yz_progress_t out;
-    memset(&out, 0, sizeof(out));
-    for (int b = 0; b < YZ_BOOK_COUNT; b++) out.current[b] = YZ_BOOKS[b].first_entry;
-    out.book = *p++;
-    if (out.book >= nb) return false;
-    for (int b = 0; b < nb; b++, p += 2) {
-        out.current[b] = get_u16(p);
-        if (yz_catalog_book_of(out.current[b]) != b) return false;
-    }
-    memcpy(out.count, p, (size_t)ne);
-    p += ne;
-    if (!fav_tail_clear(p, ne, fav_bytes)) return false;
-    memcpy(out.fav, p, (size_t)fav_bytes);
-    p += fav_bytes;
-    for (int b = 0; b < nb; b++, p += 4) out.sessions[b] = get_u32(p);
-    for (int b = 0; b < nb; b++, p += 4) out.seconds[b] = get_u32(p);
-    *prog = out;
-    return true;
-}
-
-// v1：'Y' 'P' 1 | u16 字数 n | u16 当前字 | u8×n 遍数 | ceil(n/8) 位图 | u32 遍数 | u32 秒数 | u32 CRC。
-// 旧固件只有第一本字帖，n 不得超过第一本的字数；其余字帖从零开始。
-static bool unpack_v1(yz_progress_t *prog, const uint8_t *buf, size_t len) {
-    if (len < 7) return false;
-    const int n = get_u16(buf + 3);
-    const int fav_bytes = (n + 7) / 8;
-    if (n == 0 || n > YZ_BOOKS[0].entry_count || len != (size_t)(7 + n + fav_bytes + 12)) return false;
-    const int current = get_u16(buf + 5);
-    if (current >= n) return false;
-    const uint8_t *fav = buf + 7 + n;
-    if (!fav_tail_clear(fav, n, fav_bytes)) return false;
-
-    yz_progress_t out;
-    memset(&out, 0, sizeof(out));
-    for (int b = 0; b < YZ_BOOK_COUNT; b++) out.current[b] = YZ_BOOKS[b].first_entry;
-    out.book = 0;
-    out.current[0] = (uint16_t)current;
-    memcpy(out.count, buf + 7, (size_t)n);
-    memcpy(out.fav, fav, (size_t)fav_bytes);
-    out.sessions[0] = get_u32(fav + fav_bytes);
-    out.seconds[0] = get_u32(fav + fav_bytes + 4);
-    *prog = out;
-    return true;
-}
-
-bool yz_prog_unpack(yz_progress_t *prog, const uint8_t *buf, size_t len) {
-    if (len < 3 + 4 || buf[0] != PROG_MAGIC0 || buf[1] != PROG_MAGIC1 || !crc_ok(buf, len)) return false;
-    if (buf[2] == VERSION_PROG) return unpack_v2(prog, buf, len);
-    if (buf[2] == 1) return unpack_v1(prog, buf, len);
-    return false;
 }
