@@ -28,6 +28,7 @@ _Static_assert(BLOCK * 1000 % MN_SAMPLE_RATE == 0, "一块必须是整数毫秒�
 static portMUX_TYPE s_req_mux = portMUX_INITIALIZER_UNLOCKED;
 static mn_cfg_t s_req_cfg;
 static bool s_req_running;
+static bool s_req_countin;
 
 // 音频任务写、LVGL 任务读的节拍事件环形缓冲。
 static portMUX_TYPE s_ring_mux = portMUX_INITIALIZER_UNLOCKED;
@@ -80,10 +81,11 @@ bool mn_audio_pop(int64_t now_us, mn_beat_t *out) {
     return got;
 }
 
-void mn_audio_set(const mn_cfg_t *cfg, bool running) {
+void mn_audio_set(const mn_cfg_t *cfg, bool running, bool countin) {
     taskENTER_CRITICAL(&s_req_mux);
     s_req_cfg = *cfg;
     s_req_running = running;
+    s_req_countin = countin;
     taskEXIT_CRITICAL(&s_req_mux);
     if (s_task) xTaskNotifyGive(s_task);
 }
@@ -135,10 +137,11 @@ static void audio_task(void *arg) {
             vTaskSuspend(NULL);
         }
         mn_cfg_t req;
-        bool run_req;
+        bool run_req, countin_req;
         taskENTER_CRITICAL(&s_req_mux);
         req = s_req_cfg;
         run_req = s_req_running;
+        countin_req = s_req_countin;
         taskEXIT_CRITICAL(&s_req_mux);
 
         if (s_hw_ok && req.volume != applied_volume) {
@@ -152,7 +155,7 @@ static void audio_task(void *arg) {
             ring_clear();
             cur = req;
             const mn_meter_t meter = mn_cfg_meter(&cur);
-            mn_sched_start(&sched, &meter);
+            mn_sched_start_countin(&sched, &meter, countin_req ? MN_COUNTIN_SECONDS : 0);
             mn_voice_reset(&voice);
             running = true;
             set_streaming(true, 0);

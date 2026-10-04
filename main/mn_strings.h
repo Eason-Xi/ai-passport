@@ -26,7 +26,7 @@ static const char *const MN_SOUND_NAME[MN_SOUND_COUNT] = { "电子", "木块", "
 
 // 设置页行标题（下标 = mn_row_t）。
 static const char *const MN_ROW_LABEL[MN_ROW_COUNT] = {
-    "拍号", "首拍重音", "细分", "音色", "音量", "敲击测速",
+    "拍号", "首拍重音", "细分", "音色", "音量", "开始倒数", "敲击测速",
 };
 
 #define MN_STR_SEP " · "
@@ -39,6 +39,7 @@ static const char *const MN_ROW_LABEL[MN_ROW_COUNT] = {
 #define MN_STR_BPM "BPM"
 #define MN_STR_RUNNING "演奏中"
 #define MN_STR_STOPPED "已停止"
+#define MN_STR_COUNTING "准备开始"
 #define MN_STR_AUDIO_FAIL "音频不可用"
 #define MN_STR_SETTINGS "设置"
 

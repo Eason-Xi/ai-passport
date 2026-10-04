@@ -100,6 +100,14 @@ static void beat(uint8_t beat_i, uint8_t sub, uint32_t beat_no, float frac) {
     run((uint32_t)(frac * (float)beat_ms));
 }
 
+// 模拟一个开始倒数音（剩余 remaining 秒），并推进 ms 毫秒。
+static void count(uint8_t remaining, uint32_t ms) {
+    const mn_beat_t b = { .play_us = now_us(), .bpm = g.cfg.bpm, .beat = remaining, .subdiv = g.cfg.subdiv,
+                          .beats = g.cfg.beats, .kind = MN_TICK_COUNT };
+    mn_ui_beat(&b, now_us());
+    run(ms);
+}
+
 static void reset_model(void) {
     mn_cfg_t cfg;
     mn_cfg_default(&cfg);
@@ -129,9 +137,13 @@ int main(int argc, char **argv) {
     mn_ui_show(&g);
     capture("01_main_stopped");
 
-    // 开始播放：首拍重音，摆锤刚离开左极点。
+    // 开始播放：先倒数 3 秒（摆锤摆到左侧待命），然后首拍重音，摆锤刚离开左极点。
     key(MN_BTN_OK, MN_EV_CLICK);
     run(100);
+    count(3, 1000);
+    count(2, 300);
+    capture("01b_countdown");
+    count(1, 1000);
     beat(0, 0, 0, 0.06f);
     capture("02_main_downbeat");
     beat(1, 0, 1, 0.5f);
@@ -178,7 +190,7 @@ int main(int argc, char **argv) {
     key(MN_BTN_UP, MN_EV_PRESS);
     capture("08_settings_edit_subdiv");
     key(MN_BTN_OK, MN_EV_CLICK);
-    for (int i = 0; i < 3; i++) key(MN_BTN_DOWN, MN_EV_PRESS);   // 细分行 → 敲击测速行
+    for (int i = 0; i < 4; i++) key(MN_BTN_DOWN, MN_EV_PRESS);   // 细分行 → 敲击测速行
     if (g.row != MN_ROW_TAP) {
         fprintf(stderr, "preview script: expected tap row, got %u\n", (unsigned)g.row);
         return 3;

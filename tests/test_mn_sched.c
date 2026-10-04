@@ -138,6 +138,45 @@ static void test_render(void) {
     assert(n == 0 && out[0] == 1010 && out[29] == 1039);
 }
 
+// 开始倒数：第 0/1/2 秒倒数音（3/2/1），第 3 秒整第 1 拍；倒数期间改 BPM 不影响倒数时刻。
+static void test_countin(void) {
+    static uint64_t pos[400];
+    static mn_tick_t info[400];
+    mn_sched_t s;
+    mn_meter_t m = { .bpm = 120, .beats = 4, .subdiv = 2, .accent = true };
+    mn_sched_start_countin(&s, &m, MN_COUNTIN_SECONDS);
+    size_t n = collect(&s, 16000u * 10u, 240, pos, info, 400);
+    for (int i = 0; i < 3; i++) {
+        assert(info[i].kind == MN_TICK_COUNT && info[i].beat == 3 - i);
+        assert(pos[i] == (uint64_t)i * MN_COUNTIN_INTERVAL);
+    }
+    const uint64_t first = (uint64_t)MN_COUNTIN_SECONDS * MN_COUNTIN_INTERVAL;
+    assert(info[3].kind == MN_TICK_ACCENT && info[3].beat == 0 && info[3].beat_no == 0 && pos[3] == first);
+    // 倒数之后与不倒数完全相同（整体平移 3 秒），保持零漂移。
+    for (size_t k = 3; k < n; k++) {
+        assert(info[k].kind != MN_TICK_COUNT);
+        assert(pos[k] == first + mn_sched_ideal_pos(k - 3, 120, 2));
+    }
+    assert(n == 3 + 7 * 4);   // 7 秒 × 120 BPM × 2 细分
+
+    // 倒数期间加速到 240 BPM：倒数音时刻不变，第 1 拍仍在第 3 秒，之后按新速度。
+    m.subdiv = 1;
+    mn_sched_start_countin(&s, &m, MN_COUNTIN_SECONDS);
+    mn_tick_t t[16];
+    assert(mn_sched_advance(&s, 20000, t, 16) == 2 && t[1].offset == 16000);
+    m.bpm = 240;
+    mn_sched_set(&s, &m);
+    // [20000, 32001) 含第 3 个倒数音（32000）；[32001, 48000) 没有 tick；第 1 拍在 48000。
+    assert(mn_sched_advance(&s, 12001, t, 16) == 1 && t[0].kind == MN_TICK_COUNT && t[0].offset == 12000);
+    assert(mn_sched_advance(&s, 15999, t, 16) == 0);
+    assert(mn_sched_advance(&s, 20000, t, 16) == 5);   // 48000 起每 4000 样本一拍
+    assert(t[0].kind == MN_TICK_ACCENT && t[0].offset == 0 && t[1].offset == 4000 && t[0].bpm == 240);
+
+    // counts 为 0 等同普通开始。
+    mn_sched_start_countin(&s, &m, 0);
+    assert(mn_sched_advance(&s, 10, t, 16) == 1 && t[0].kind == MN_TICK_ACCENT && t[0].offset == 0);
+}
+
 int main(void) {
     mn_meter_t bad = mn_meter_sanitize((mn_meter_t){ .bpm = 5, .beats = 0, .subdiv = 9 });
     assert(bad.bpm == MN_BPM_MIN && bad.beats == 1 && bad.subdiv == MN_SUBDIV_MAX);
@@ -146,6 +185,7 @@ int main(void) {
     test_block_independent();
     test_changes();
     test_render();
+    test_countin();
     puts("Metronome scheduler tests: PASS");
     return 0;
 }

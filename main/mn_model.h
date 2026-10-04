@@ -4,7 +4,8 @@
 // 执行副作用：通知音频任务、标记保存、刷新界面。这样按键交互可以完整地在主机上测试。
 //
 // 页面与按键（UP / DOWN / OK 三键，事件含义见 bsp_button.h）：
-//   主界面   UP/DOWN 按下 ±1 BPM，长按加速连调、松手即停；OK 单击 开始/停止；
+//   主界面   UP/DOWN 按下 ±1 BPM，长按加速连调、松手即停；OK 单击 开始/停止
+//            （开启"开始倒数"时先倒数 3 秒，倒数中再按 OK 即取消）；
 //            OK 双击 敲击测速；OK 长按 打开设置。
 //   设置     浏览：UP/DOWN 移动选中行；OK 单击 进入编辑（"敲击测速"行则直接进入测速）；
 //            编辑：UP/DOWN 改值（拍号、音量可长按连调）；OK 单击 确认；任意时刻 OK 长按 返回主界面。
@@ -32,6 +33,7 @@ typedef enum {
     MN_ROW_SUBDIV,      // 细分
     MN_ROW_SOUND,       // 音色
     MN_ROW_VOLUME,      // 音量
+    MN_ROW_COUNTIN,     // 开始倒数开关
     MN_ROW_TAP,         // 敲击测速入口
     MN_ROW_COUNT,
 } mn_row_t;
@@ -56,6 +58,7 @@ typedef struct {
     mn_cfg_t cfg;
     mn_page_t page;
     bool running;
+    bool countin_on_start;  // 本次开始播放是否先倒数（只有 OK 单击开始且设置开启时为真）
 
     // 设置页
     uint8_t row;          // mn_row_t

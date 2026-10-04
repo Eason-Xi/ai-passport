@@ -15,11 +15,12 @@ int main(void) {
     mn_cfg_t c;
     mn_cfg_default(&c);
     CHECK(c.bpm == 100 && c.beats == 4 && c.accent == 1 && c.subdiv == 1);
-    CHECK(c.sound == MN_SOUND_WOOD && c.volume == 7);
+    CHECK(c.sound == MN_SOUND_WOOD && c.volume == 7 && c.countin == 1);
     CHECK(mn_cfg_sanitize(&c));
 
     // 往返。
-    mn_cfg_t in = { .bpm = 187, .beats = 7, .accent = 0, .subdiv = 3, .sound = MN_SOUND_COWBELL, .volume = 0 };
+    mn_cfg_t in = { .bpm = 187, .beats = 7, .accent = 0, .subdiv = 3, .sound = MN_SOUND_COWBELL, .volume = 0,
+                    .countin = 0 };
     uint8_t buf[MN_CFG_BLOB_SIZE];
     CHECK(mn_cfg_pack(&in, buf, sizeof buf - 1) == 0);
     CHECK(mn_cfg_pack(&in, buf, sizeof buf) == MN_CFG_BLOB_SIZE);
@@ -48,9 +49,25 @@ int main(void) {
     CHECK(!mn_cfg_unpack(&out, buf, sizeof buf));
 
     // sanitize 逐项回落。
-    wild = (mn_cfg_t){ .bpm = 10, .beats = 13, .accent = 2, .subdiv = 0, .sound = 9, .volume = 11 };
+    wild = (mn_cfg_t){ .bpm = 10, .beats = 13, .accent = 2, .subdiv = 0, .sound = 9, .volume = 11, .countin = 7 };
     CHECK(!mn_cfg_sanitize(&wild));
     CHECK(memcmp(&wild, &def, sizeof def) == 0);
+
+    // v1 旧存档（第 10 字节为保留 0、无开始倒数字段）：读取成功，开始倒数取默认开启。
+    uint8_t v1[MN_CFG_BLOB_SIZE] = { 'M', 'N', 1, 120, 0, 3, 1, 2, MN_SOUND_BEEP, 5, 0 };
+    const uint32_t crc = mn_crc32(v1, 11);
+    for (int i = 0; i < 4; i++) v1[11 + i] = (uint8_t)(crc >> (8 * i));
+    CHECK(mn_cfg_unpack(&out, v1, sizeof v1));
+    CHECK(out.bpm == 120 && out.beats == 3 && out.subdiv == 2 && out.sound == MN_SOUND_BEEP && out.volume == 5);
+    CHECK(out.countin == 1);
+    // 新存档写成 v2，"关闭"能保存下来；未知版本拒绝。
+    mn_cfg_pack(&out, buf, sizeof buf);
+    CHECK(buf[2] == MN_CFG_VERSION);
+    out.countin = 0;
+    mn_cfg_pack(&out, buf, sizeof buf);
+    CHECK(mn_cfg_unpack(&out, buf, sizeof buf) && out.countin == 0);
+    v1[2] = 3;
+    CHECK(!mn_cfg_unpack(&out, v1, sizeof v1));
 
     // 音量映射：0 静音，1–10 单调递增到 100%。
     CHECK(mn_cfg_volume_percent(0) == 0 && mn_cfg_volume_percent(10) == 100);

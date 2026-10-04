@@ -13,6 +13,9 @@
 //   * 细分：在下一拍的拍头生效，保证同一拍内的细分音等距；
 //   * 拍号（每小节拍数）：在下一拍拍头检查，若当前拍序号已超出新拍数则回到第 1 拍；
 //   * 首拍重音开关：立即生效（影响之后发出的 tick 类型）。
+//
+// 开始倒数（count-in）：可选在第一拍之前先发出若干个"倒数音"，每秒一个；最后一个倒数音
+// 之后整 1 秒响起第 1 拍。倒数期间修改 BPM 不影响倒数音的时刻，只决定第 1 拍之后的间隔。
 #pragma once
 
 #include <stdbool.h>
@@ -25,12 +28,15 @@
 #define MN_BEATS_MIN 1u
 #define MN_BEATS_MAX 12u
 #define MN_SUBDIV_MAX 4u        // 1=不细分 2=八分 3=三连音 4=十六分
+#define MN_COUNTIN_SECONDS 3u   // 开始倒数的秒数
+#define MN_COUNTIN_INTERVAL MN_SAMPLE_RATE   // 倒数音间隔：1 秒
 
 // tick 类型，决定播放哪一种 click（也是 mn_sound 的力度档位）。
 typedef enum {
     MN_TICK_ACCENT = 0,  // 小节首拍重音
     MN_TICK_BEAT,        // 普通拍
     MN_TICK_SUB,         // 拍内细分音
+    MN_TICK_COUNT,       // 开始倒数音（tick.beat 为剩余秒数 3 / 2 / 1）
     MN_TICK_KIND_COUNT,
 } mn_tick_kind_t;
 
@@ -46,7 +52,7 @@ typedef struct {
 typedef struct {
     uint32_t offset;  // 块内样本偏移，0..n-1
     uint8_t kind;     // mn_tick_kind_t
-    uint8_t beat;     // 小节内拍序号 0..beats-1
+    uint8_t beat;     // 小节内拍序号 0..beats-1；倒数音为剩余秒数
     uint8_t sub;      // 拍内细分序号 0..subdiv-1
     uint8_t subdiv;   // 该拍生效的细分数
     uint8_t beats;    // 发出该 tick 时的每小节拍数
@@ -69,6 +75,7 @@ typedef struct {
     uint8_t beat;          // 下一个 tick 的拍序号
     uint8_t sub;           // 下一个 tick 的细分序号
     uint32_t beat_no;      // 下一个拍头的拍计数
+    uint8_t count_left;    // 尚未发出的倒数音个数（0 = 倒数结束或未启用）
 } mn_sched_t;
 
 // 把任意参数夹紧到合法范围（越界 BPM、0 拍、5 细分等）。
@@ -77,6 +84,10 @@ mn_meter_t mn_meter_sanitize(mn_meter_t meter);
 // 从头开始：第一个 tick（第 1 拍拍头）落在下一块的第 0 个样本。
 // 绝对位置从 0 重新计数。
 void mn_sched_start(mn_sched_t *s, const mn_meter_t *meter);
+
+// 带倒数的开始：先在第 0、1、2 秒发出 counts 个倒数音（MN_TICK_COUNT），
+// 第 counts 秒整响起第 1 拍。counts 为 0 时等同 mn_sched_start。
+void mn_sched_start_countin(mn_sched_t *s, const mn_meter_t *meter, uint8_t counts);
 
 // 更新参数（可在运行中任意时刻调用，生效时机见文件头说明）。
 void mn_sched_set(mn_sched_t *s, const mn_meter_t *meter);

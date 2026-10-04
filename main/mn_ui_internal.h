@@ -23,6 +23,8 @@ void mn_ui_main_create(lv_obj_t *scr);
 void mn_ui_main_update(const mn_model_t *m);
 void mn_ui_main_beat(const mn_beat_t *b);
 void mn_ui_main_stop(void);
+// 开始倒数：在 BPM 位置显示剩余秒数（琥珀色）；第一拍到来或停止时自动恢复。
+void mn_ui_main_count(uint8_t remaining);
 // 摆杆角度（0.1°）与闪光强度 0..255。
 void mn_ui_main_pendulum(int16_t angle, int flash, bool accent);
 

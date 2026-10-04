@@ -22,7 +22,7 @@ static long long energy_of(const int16_t *x) {
 }
 
 int main(void) {
-    static const int peaks[MN_TICK_KIND_COUNT] = { MN_PEAK_ACCENT, MN_PEAK_BEAT, MN_PEAK_SUB };
+    static const int peaks[MN_TICK_KIND_COUNT] = { MN_PEAK_ACCENT, MN_PEAK_BEAT, MN_PEAK_SUB, MN_PEAK_COUNT };
     // click 必须短于最快 tick 间隔：250 BPM × 4 细分 = 每 tick 960 样本。
     CHECK(MN_CLICK_LEN < (uint32_t)MN_SAMPLE_RATE * 60u / (MN_BPM_MAX * MN_SUBDIV_MAX));
     for (uint8_t s = 0; s < MN_SOUND_COUNT; s++) {
@@ -44,6 +44,18 @@ int main(void) {
         // 力度区分：重音能量 > 普通拍 > 细分音。
         CHECK(energy_of(clicks[MN_TICK_ACCENT]) > energy_of(clicks[MN_TICK_BEAT]));
         CHECK(energy_of(clicks[MN_TICK_BEAT]) > energy_of(clicks[MN_TICK_SUB]));
+    }
+    // 倒数提示音与音色无关，且与任何节拍音都不同。
+    int16_t c0[MN_CLICK_LEN], c1[MN_CLICK_LEN];
+    mn_sound_render(MN_SOUND_BEEP, MN_TICK_COUNT, c0);
+    mn_sound_render(MN_SOUND_COWBELL, MN_TICK_COUNT, c1);
+    CHECK(memcmp(c0, c1, sizeof c0) == 0);
+    for (uint8_t s = 0; s < MN_SOUND_COUNT; s++) {
+        for (uint8_t k = 0; k < MN_TICK_COUNT; k++) {
+            int16_t x[MN_CLICK_LEN];
+            mn_sound_render(s, k, x);
+            CHECK(memcmp(x, c0, sizeof x) != 0);
+        }
     }
     // 不同音色的波形不同；越界参数按 0 处理。
     int16_t a[MN_CLICK_LEN], b[MN_CLICK_LEN];

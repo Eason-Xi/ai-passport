@@ -57,12 +57,18 @@ static void test_main_page(void) {
     key(MN_BTN_DOWN, MN_EV_PRESS);
     key(MN_BTN_DOWN, MN_EV_DOUBLE);
     CHECK(m.cfg.bpm == 99);
-    // OK 单击开始 / 停止；OK 按下本身无动作。
+    // OK 单击开始 / 停止；OK 按下本身无动作。默认开启开始倒数。
     CHECK(key(MN_BTN_OK, MN_EV_PRESS) == 0);
     fx = click(MN_BTN_OK);
-    CHECK(m.running && (fx & MN_FX_RUN));
+    CHECK(m.running && (fx & MN_FX_RUN) && m.countin_on_start);
+    click(MN_BTN_OK);   // 倒数中再按 OK 即停止（取消倒数）
+    CHECK(!m.running && !m.countin_on_start);
+    // 关闭开始倒数后直接开始。
+    m.cfg.countin = 0;
     click(MN_BTN_OK);
-    CHECK(!m.running);
+    CHECK(m.running && !m.countin_on_start);
+    click(MN_BTN_OK);
+    m.cfg.countin = 1;
     // 边界夹紧。
     m.cfg.bpm = 250;
     CHECK(key(MN_BTN_UP, MN_EV_PRESS) == 0 && m.cfg.bpm == 250);
@@ -156,6 +162,15 @@ static void test_settings(void) {
     CHECK(fx == 0);   // 到底后不再产生保存
     fx = key(MN_BTN_UP, MN_EV_PRESS);
     CHECK(m.cfg.volume == 1 && (fx & MN_FX_VOLUME));
+    click(MN_BTN_OK);
+    // 开始倒数开关：开 ↔ 关，只刷新界面并保存，不通知音频。
+    key(MN_BTN_DOWN, MN_EV_PRESS);
+    CHECK(m.row == MN_ROW_COUNTIN);
+    click(MN_BTN_OK);
+    fx = key(MN_BTN_UP, MN_EV_PRESS);
+    CHECK(m.cfg.countin == 0 && (fx & MN_FX_SAVE) && !(fx & (MN_FX_METER | MN_FX_RUN)));
+    key(MN_BTN_DOWN, MN_EV_PRESS);
+    CHECK(m.cfg.countin == 1);
     // 编辑中 OK 长按直接返回主界面。
     long_press(MN_BTN_OK);
     CHECK(m.page == MN_PAGE_MAIN && !m.editing);
@@ -190,6 +205,7 @@ static void test_tap(void) {
     CHECK(m.page == MN_PAGE_TAP);
     fx = advance(MN_TAP_DONE_SHOW_MS + 20);
     CHECK(m.page == MN_PAGE_MAIN && m.running && (fx & MN_FX_RUN));
+    CHECK(!m.countin_on_start);   // 测速后恢复播放不再倒数
 
     // 少于 3 下：6 s 后放弃，BPM 不变。
     click(MN_BTN_OK);   // 停止

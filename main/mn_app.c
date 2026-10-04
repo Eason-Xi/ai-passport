@@ -90,7 +90,7 @@ static void anim_cb(lv_timer_t *timer) {
 
 static void apply(mn_fx_t fx) {
     if (fx & (MN_FX_RUN | MN_FX_METER | MN_FX_SOUND | MN_FX_VOLUME)) {
-        mn_audio_set(&s_model.cfg, s_model.running);
+        mn_audio_set(&s_model.cfg, s_model.running, s_model.countin_on_start);
     }
     if (fx & MN_FX_SAVE) mn_store_mark(now_ms());
     if (!(fx & (MN_FX_SCREEN | MN_FX_REFRESH | MN_FX_RUN | MN_FX_TAP_FLASH))) return;
@@ -143,7 +143,7 @@ static void power_off(const char *reason) {
     ESP_LOGI(TAG, "自动关机：%s", reason);
     if (s_model.running) {
         s_model.running = false;
-        mn_audio_set(&s_model.cfg, false);
+        mn_audio_set(&s_model.cfg, false, false);
     }
     for (uint32_t waited = 0; !mn_audio_quiet(150) && waited < QUIET_WAIT_MS; waited += 50) {
         vTaskDelay(pdMS_TO_TICKS(50));
@@ -190,7 +190,7 @@ static void low_battery_power_off(void) {
     ESP_LOGW(TAG, "电量过低，准备关机");
     if (s_model.running) {
         s_model.running = false;
-        mn_audio_set(&s_model.cfg, false);
+        mn_audio_set(&s_model.cfg, false, false);
     }
     mn_power_wake(&s_power, now_ms());
     if (bsp_lvgl_lock(LVGL_LOCK_MS)) {
@@ -251,7 +251,7 @@ void mn_app_start(bool audio_ok, bool battery_ok) {
         return;
     }
     if (!mn_audio_start(audio_ok)) ESP_LOGE(TAG, "音频任务启动失败，节拍器无法运行");
-    mn_audio_set(&s_model.cfg, false);
+    mn_audio_set(&s_model.cfg, false, false);
 
     if (!bsp_lvgl_lock(1000)) {
         ESP_LOGE(TAG, "获取 LVGL 锁失败，界面无法建立");

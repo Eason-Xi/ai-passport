@@ -176,6 +176,13 @@ void mn_ui_tap_flash(int64_t now_us) {
 void mn_ui_beat(const mn_beat_t *b, int64_t now_us) {
     (void)now_us;
     if (!s_running) return;
+    if (b->kind == MN_TICK_COUNT) {
+        // 倒数音：显示剩余秒数并闪一下（设置面板的指示灯也跟着闪），摆杆停在左侧待命。
+        mn_ui_main_count(b->beat);
+        s_flash_us = b->play_us;
+        s_flash_accent = true;
+        return;
+    }
     mn_ui_main_beat(b);
     if (b->sub != 0) return;
     s_have_beat = true;

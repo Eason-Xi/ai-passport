@@ -19,7 +19,7 @@ the moment each click actually leaves the speaker, so what you see always matche
 ## Quick start
 
 1. Flash `build/FoloToy-AI-Passport-full.bin` to the device (see [Flash the firmware](#flash-the-firmware)); it boots straight into the metronome.
-2. Press **UP / DOWN** to change the tempo, or hold to change it quickly; press **OK** to start or stop.
+2. Press **UP / DOWN** to change the tempo, or hold to change it quickly; press **OK** to start (after a 3-second count-in) or stop.
 3. **Long-press OK** to open settings for meter, subdivision, sound, and volume; **double-press OK** to tap a tempo along with music.
 
 ## Features
@@ -29,6 +29,7 @@ the moment each click actually leaves the speaker, so what you see always matche
 | Tempo | 30–250 BPM; each press changes ±1, holding accelerates (single steps first, then jumps to multiples of 5 after about 2 s) and stops on release |
 | Meter and accent | 1–12 beats per bar; the downbeat accent can be turned on or off and its beat dot is amber |
 | Subdivision | None / eighths / triplets / sixteenths; subdivision clicks are softer than beats |
+| Count-in | Pressing OK to start shows 3, 2, 1 with a cue tone each second, and the first beat lands exactly when the third second ends; press OK again to cancel; can be turned off in settings |
 | Tap tempo | Tap any key along with music; averages up to the last 8 intervals and applies 2.5 s after the last tap |
 | Sounds | Electronic beep, wood block, and cowbell, all synthesized by the firmware, each at three strengths (accent / beat / subdivision) |
 | Volume | Levels 0–10; level 0 mutes the sound while the on-screen beat keeps running |
@@ -45,7 +46,7 @@ the moment each click actually leaves the speaker, so what you see always matche
 
 | Screen | UP / DOWN | OK click | OK double | OK long |
 | --- | --- | --- | --- | --- |
-| Main | Press ±1 BPM; hold to accelerate | Start / stop | Open tap tempo | Open settings |
+| Main | Press ±1 BPM; hold to accelerate | Start (with count-in) / stop; cancels a running count-in | Open tap tempo | Open settings |
 | Settings (browse) | Move the selection up or down | Edit the row (the tap-tempo row opens tap tempo) | — | Back to main |
 | Settings (edit) | Change the value (beats and volume repeat while held) | Confirm | — | Back to main |
 | Tap tempo | Any key press is one tap | (also counts as a tap) | — | Cancel without changing the tempo |
@@ -61,8 +62,8 @@ button hints.
 
 The panel slides up from the bottom of the screen. The metronome **keeps playing**, so every
 change is audible immediately, and a small indicator at the top right of the panel flashes on each
-beat. It contains meter, downbeat accent, subdivision, sound, and volume, plus the entry to tap
-tempo.
+beat. It contains meter, downbeat accent, subdivision, sound, volume, and count-in, plus the entry
+to tap tempo.
 
 ### Tap tempo
 
@@ -94,6 +95,7 @@ On first power-on, or after flashing the merged image:
 | Subdivision | None |
 | Sound | Wood block |
 | Volume | 7 |
+| Count-in | On |
 
 ### Tempo terms
 
@@ -157,6 +159,8 @@ debug files archived under `build/firmware/<sha256 of full.bin>/`. To run only t
   time its write returned. A 20 ms UI timer pops events whose audible time has arrived and only
   then lights the beat dot and flashes the pendulum bob. The pendulum follows a cosine path and
   reaches an extreme on every beat.
+- **Count-in:** also timed in samples: cue tones land at 0, 1, and 2 s and the first beat at
+  exactly 3 s; tempo changes during the count-in do not move the cues.
 - **Parameter changes:** BPM changes reschedule from the previous tick immediately; subdivision
   changes apply at the next beat; reducing the beat count wraps to beat 1 at the next beat.
 - **Saving never interrupts the sound:** writing Flash pauses the cache and could starve the audio
@@ -219,7 +223,7 @@ Run a firmware build once first so the LVGL sources are downloaded into `managed
   with staged power saving, low-battery detection, the auto power-off order contract, and Chinese
   glyph coverage.
 - **Firmware build:** builds with ESP-IDF 5.5.3 without warnings, and the merged image passes verification.
-- **Device:** the core metronome features were tested as a whole on a FoloToy AI Passport and work; sleep, auto power-off, key power-on, and low-battery protection have not been tested on the device yet.
+- **Device:** the core metronome features were tested as a whole on a FoloToy AI Passport and work; sleep, auto power-off, key power-on, low-battery protection, and the count-in have not been tested on the device yet.
 
 ## Known limitations
 

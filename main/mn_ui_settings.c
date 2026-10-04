@@ -12,8 +12,8 @@
 
 #define PANEL_Y 36              // 刚好盖住主界面的速度术语，只露出顶栏
 #define PANEL_H (320 - PANEL_Y)
-#define ROW_Y0 44
-#define ROW_H 34
+#define ROW_Y0 42
+#define ROW_H 31                // 7 行 + 底部提示刚好放进面板
 #define ROW_X 12
 #define ROW_W 216
 #define LED_D 10
@@ -46,7 +46,7 @@ void mn_ui_settings_open(lv_obj_t *scr, bool animate) {
 
     for (int i = 0; i < MN_ROW_COUNT; i++) {
         s_rows[i] = mn_ui_box(s_panel, ROW_X, ROW_Y0 + i * ROW_H, ROW_W, ROW_H - 4, -1, 10);
-        s_marks[i] = mn_ui_box(s_rows[i], 0, 7, 3, ROW_H - 18, MN_C_BEAT, 2);
+        s_marks[i] = mn_ui_box(s_rows[i], 0, 6, 3, ROW_H - 16, MN_C_BEAT, 2);
         s_labels[i] = mn_ui_label(s_rows[i], MN_FONT_BODY, MN_C_TEXT_DIM, MN_ROW_LABEL[i]);
         lv_obj_align(s_labels[i], LV_ALIGN_LEFT_MID, 12, 0);
         s_values[i] = mn_ui_label(s_rows[i], MN_FONT_BODY, MN_C_TEXT, "");
@@ -93,6 +93,7 @@ static void value_text(const mn_cfg_t *c, int row, char *buf, size_t len) {
     switch (row) {
     case MN_ROW_BEATS: snprintf(buf, len, "%u/4", (unsigned)c->beats); break;
     case MN_ROW_ACCENT: snprintf(buf, len, "%s", c->accent ? MN_STR_ON : MN_STR_OFF); break;
+    case MN_ROW_COUNTIN: snprintf(buf, len, "%s", c->countin ? MN_STR_ON : MN_STR_OFF); break;
     case MN_ROW_SUBDIV: snprintf(buf, len, "%s", MN_SUBDIV_NAME[c->subdiv - 1]); break;
     case MN_ROW_SOUND: snprintf(buf, len, "%s", MN_SOUND_NAME[c->sound]); break;
     case MN_ROW_VOLUME:

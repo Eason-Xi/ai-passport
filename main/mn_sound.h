@@ -25,7 +25,9 @@ typedef enum {
 #define MN_PEAK_ACCENT 22000
 #define MN_PEAK_BEAT 16500
 #define MN_PEAK_SUB 9000
+#define MN_PEAK_COUNT 12000   // 开始倒数提示音：所有音色共用，比节拍轻、音高更高
 
 // 把音色 sound、力度 kind（mn_tick_kind_t）的 click 写入 out[0..MN_CLICK_LEN)。
+// kind 为 MN_TICK_COUNT 时输出与音色无关的倒数提示音（C7 + 八度泛音的柔和"嘀"）。
 // sound / kind 越界时按 0 处理。纯函数，可在任意任务调用；内部使用浮点，只应在初始化时调用。
 void mn_sound_render(uint8_t sound, uint8_t kind, int16_t out[MN_CLICK_LEN]);

@@ -24,7 +24,9 @@ bool mn_audio_start(bool hw_ok);
 
 // 下发最新设置与运行状态（拷贝快照，立即返回，可在应用任务中随时调用）。
 // BPM / 拍号 / 细分 / 重音按 mn_sched 的规则生效；音色与音量在下一块生效。
-void mn_audio_set(const mn_cfg_t *cfg, bool running);
+// countin 只在"停止 → 运行"的那一次起作用：为真时先发出 3 个每秒一次的倒数音，
+// 第 3 秒整响起第 1 拍（节拍事件里 kind = MN_TICK_COUNT，beat = 剩余秒数）。
+void mn_audio_set(const mn_cfg_t *cfg, bool running, bool countin);
 
 // LVGL 上下文调用：取出一个发声时刻已到（play_us <= now_us）的节拍事件。没有则返回 false。
 bool mn_audio_pop(int64_t now_us, mn_beat_t *out);

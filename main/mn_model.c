@@ -65,6 +65,10 @@ static mn_fx_t adjust_row(mn_model_t *m, int dir) {
         c->volume = clamp_u8(c->volume + dir, 0, MN_VOLUME_MAX);
         fx = MN_FX_VOLUME;
         break;
+    case MN_ROW_COUNTIN:
+        c->countin = !c->countin;
+        fx = MN_FX_REFRESH;   // 只影响下一次开始，不必通知音频
+        break;
     default:
         return 0;
     }
@@ -122,6 +126,7 @@ static mn_fx_t leave_tap(mn_model_t *m) {
     m->tap_done = false;
     if (m->tap_resume) {
         m->running = true;
+        m->countin_on_start = false;   // 测速后恢复播放，不再倒数
         fx |= MN_FX_RUN;
     }
     return fx;
@@ -138,6 +143,7 @@ static mn_fx_t key_main(mn_model_t *m, mn_btn_t btn, mn_ev_t ev, uint32_t now_ms
     switch (ev) {
     case MN_EV_CLICK:
         m->running = !m->running;
+        m->countin_on_start = m->running && m->cfg.countin;
         return MN_FX_RUN | MN_FX_REFRESH;
     case MN_EV_DOUBLE:
         return enter_tap(m, now_ms);

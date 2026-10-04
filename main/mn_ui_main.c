@@ -41,6 +41,23 @@ static uint8_t s_beats;           // 当前节拍点数量
 static uint8_t s_subdiv;          // 当前细分点数量
 static bool s_accent;
 static int s_lit_beat = -1;       // 亮着的拍，-1 表示全灭
+static uint8_t s_count;           // 正在显示的倒数秒数，0 表示未在倒数
+static uint16_t s_bpm_val;        // 最近一次设置的 BPM（倒数结束后恢复显示）
+static bool s_running;
+static bool s_muted;
+
+// 状态行：倒数中只显示"准备开始"（琥珀色）；否则"BPM · 演奏中 / 已停止"，静音时加后缀。
+static void paint_state(void) {
+    if (s_count) {
+        lv_label_set_text(s_state, MN_STR_COUNTING);
+        lv_obj_set_style_text_color(s_state, lv_color_hex(MN_C_ACCENT), 0);
+        return;
+    }
+    const char *state = s_running ? MN_STR_RUNNING : MN_STR_STOPPED;
+    if (s_muted) lv_label_set_text_fmt(s_state, MN_STR_BPM MN_STR_SEP "%s" MN_STR_SEP MN_STR_MUTE, state);
+    else lv_label_set_text_fmt(s_state, MN_STR_BPM MN_STR_SEP "%s", state);
+    lv_obj_set_style_text_color(s_state, lv_color_hex(s_running ? MN_C_BEAT : MN_C_TEXT_DIM), 0);
+}
 static int s_lit_sub = -1;
 static int16_t s_last_angle = 32767;
 static int s_last_flash = -1;
@@ -142,11 +159,15 @@ void mn_ui_main_update(const mn_model_t *m) {
     const mn_cfg_t *c = &m->cfg;
     const uint8_t term = mn_tempo_term(c->bpm);
     lv_label_set_text_fmt(s_term, "%s" MN_STR_SEP "%s", MN_TEMPO_IT[term], MN_TEMPO_ZH[term]);
-    lv_label_set_text_fmt(s_bpm, "%u", (unsigned)c->bpm);
-    const char *state = m->running ? MN_STR_RUNNING : MN_STR_STOPPED;
-    if (c->volume) lv_label_set_text_fmt(s_state, MN_STR_BPM MN_STR_SEP "%s", state);
-    else lv_label_set_text_fmt(s_state, MN_STR_BPM MN_STR_SEP "%s" MN_STR_SEP MN_STR_MUTE, state);
-    lv_obj_set_style_text_color(s_state, lv_color_hex(m->running ? MN_C_BEAT : MN_C_TEXT_DIM), 0);
+    s_bpm_val = c->bpm;
+    s_running = m->running;
+    if (!m->running) s_count = 0;
+    if (s_count == 0) {
+        lv_label_set_text_fmt(s_bpm, "%u", (unsigned)c->bpm);
+        lv_obj_set_style_text_color(s_bpm, lv_color_hex(MN_C_TEXT), 0);
+    }
+    s_muted = c->volume == 0;
+    paint_state();
     lv_label_set_text(s_hint, m->running ? MN_STR_HINT_RUNNING : MN_STR_HINT_STOPPED);
 
     s_accent = c->accent != 0;
@@ -159,7 +180,25 @@ void mn_ui_main_update(const mn_model_t *m) {
     paint_dots();
 }
 
+// 倒数结束：恢复 BPM 数字与运行状态文字。
+static void end_count(void) {
+    if (!s_count) return;
+    s_count = 0;
+    lv_label_set_text_fmt(s_bpm, "%u", (unsigned)s_bpm_val);
+    lv_obj_set_style_text_color(s_bpm, lv_color_hex(MN_C_TEXT), 0);
+    paint_state();
+}
+
+void mn_ui_main_count(uint8_t remaining) {
+    if (!s_running || remaining == 0) return;
+    s_count = remaining;
+    lv_label_set_text_fmt(s_bpm, "%u", (unsigned)remaining);
+    lv_obj_set_style_text_color(s_bpm, lv_color_hex(MN_C_ACCENT), 0);
+    paint_state();
+}
+
 void mn_ui_main_beat(const mn_beat_t *b) {
+    end_count();
     if (b->beats != s_beats) layout_dots(b->beats);
     if (b->subdiv != s_subdiv) layout_subs(b->subdiv);
     s_lit_beat = b->beat;
@@ -168,6 +207,7 @@ void mn_ui_main_beat(const mn_beat_t *b) {
 }
 
 void mn_ui_main_stop(void) {
+    end_count();
     s_lit_beat = -1;
     s_lit_sub = -1;
     paint_dots();

@@ -26,19 +26,19 @@ typedef struct {
 static const recipe_t RECIPES[MN_SOUND_COUNT] = {
     [MN_SOUND_BEEP] = {
         // 重音 G6、普通拍 C6、细分 A5：音高区分明显，适合电子乐与练习。
-        .base_hz = { 1568.0f, 1046.5f, 880.0f },
+        .base_hz = { 1568.0f, 1046.5f, 880.0f, 0.0f },
         .partials = { { 1.0f, 1.0f, 14.0f }, { 2.0f, 0.08f, 8.0f } },
     },
     [MN_SOUND_WOOD] = {
         // 木块：主分音快速衰减，叠加木条类非谐和分音与 1.5 ms 敲击噪声。
-        .base_hz = { 1200.0f, 880.0f, 880.0f },
+        .base_hz = { 1200.0f, 880.0f, 880.0f, 0.0f },
         .partials = { { 1.0f, 1.0f, 9.0f }, { 2.76f, 0.35f, 5.0f }, { 5.4f, 0.12f, 3.0f } },
         .noise_amp = 0.4f,
         .noise_ms = 1.5f,
     },
     [MN_SOUND_COWBELL] = {
         // 牛铃：540 / 800 Hz 一对主分音（重音整体升高约大三度），衰减较长。
-        .base_hz = { 675.0f, 540.0f, 540.0f },
+        .base_hz = { 675.0f, 540.0f, 540.0f, 0.0f },
         .partials = { { 1.0f, 1.0f, 30.0f }, { 1.4815f, 0.8f, 30.0f }, { 3.0f, 0.15f, 12.0f },
                       { 4.444f, 0.12f, 12.0f } },
         .noise_amp = 0.15f,
@@ -46,7 +46,13 @@ static const recipe_t RECIPES[MN_SOUND_COUNT] = {
     },
 };
 
-static const int16_t PEAKS[MN_TICK_KIND_COUNT] = { MN_PEAK_ACCENT, MN_PEAK_BEAT, MN_PEAK_SUB };
+static const int16_t PEAKS[MN_TICK_KIND_COUNT] = { MN_PEAK_ACCENT, MN_PEAK_BEAT, MN_PEAK_SUB, MN_PEAK_COUNT };
+
+// 倒数提示音：高而柔和的"嘀"，与三种节拍音色都明显不同。
+static const recipe_t COUNT_RECIPE = {
+    .base_hz = { 2093.0f, 2093.0f, 2093.0f, 2093.0f },
+    .partials = { { 1.0f, 1.0f, 22.0f }, { 2.0f, 0.12f, 10.0f } },
+};
 
 // 确定性噪声：相同输入永远得到相同波形（便于测试与复现）。
 static uint32_t xorshift32(uint32_t *state) {
@@ -73,7 +79,7 @@ static float edge_envelope(uint32_t i) {
 void mn_sound_render(uint8_t sound, uint8_t kind, int16_t out[MN_CLICK_LEN]) {
     if (sound >= MN_SOUND_COUNT) sound = 0;
     if (kind >= MN_TICK_KIND_COUNT) kind = 0;
-    const recipe_t *r = &RECIPES[sound];
+    const recipe_t *r = kind == MN_TICK_COUNT ? &COUNT_RECIPE : &RECIPES[sound];
     const float base = r->base_hz[kind];
     const float dt = 1.0f / (float)MN_SAMPLE_RATE;
     const uint32_t noise_len = (uint32_t)(r->noise_ms * (float)MN_SAMPLE_RATE / 1000.0f);

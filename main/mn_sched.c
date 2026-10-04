@@ -34,6 +34,11 @@ void mn_sched_start(mn_sched_t *s, const mn_meter_t *meter) {
     compute_step(s);
 }
 
+void mn_sched_start_countin(mn_sched_t *s, const mn_meter_t *meter, uint8_t counts) {
+    mn_sched_start(s, meter);
+    s->count_left = counts;
+}
+
 void mn_sched_set(mn_sched_t *s, const mn_meter_t *meter) {
     const mn_meter_t m = mn_meter_sanitize(*meter);
     const bool bpm_changed = m.bpm != s->cur.bpm;
@@ -57,6 +62,22 @@ size_t mn_sched_advance(mn_sched_t *s, uint32_t n, mn_tick_t *out, size_t max) {
     const uint64_t end = s->pos + n;
     size_t count = 0;
     while (s->next_tick < end) {
+        if (s->count_left) {
+            // 倒数音：固定每秒一个，不受 BPM 影响；不计入 has_last，倒数期间改 BPM 不会重排。
+            if (count < max) {
+                out[count++] = (mn_tick_t){
+                    .offset = (uint32_t)(s->next_tick - s->pos),
+                    .kind = MN_TICK_COUNT,
+                    .beat = s->count_left,
+                    .subdiv = s->cur.subdiv,
+                    .beats = s->cur.beats,
+                    .bpm = s->cur.bpm,
+                };
+            }
+            s->count_left--;
+            s->next_tick += MN_COUNTIN_INTERVAL;
+            continue;
+        }
         if (s->sub == 0) {
             // 拍头：细分与拍数的变更在这里生效。
             if (s->beat >= s->cur.beats) s->beat = 0;

@@ -7,6 +7,7 @@
 void mn_cfg_default(mn_cfg_t *cfg) {
     *cfg = (mn_cfg_t){
         .bpm = 100, .beats = 4, .accent = 1, .subdiv = 1, .sound = MN_SOUND_WOOD, .volume = 7,
+        .countin = 1,
     };
 }
 
@@ -20,6 +21,7 @@ bool mn_cfg_sanitize(mn_cfg_t *cfg) {
     if (cfg->subdiv < 1 || cfg->subdiv > MN_SUBDIV_MAX) { cfg->subdiv = def.subdiv; ok = false; }
     if (cfg->sound >= MN_SOUND_COUNT) { cfg->sound = def.sound; ok = false; }
     if (cfg->volume > MN_VOLUME_MAX) { cfg->volume = def.volume; ok = false; }
+    if (cfg->countin > 1) { cfg->countin = def.countin; ok = false; }
     return ok;
 }
 
@@ -41,7 +43,7 @@ size_t mn_cfg_pack(const mn_cfg_t *cfg, uint8_t *buf, size_t cap) {
     buf[7] = cfg->subdiv;
     buf[8] = cfg->sound;
     buf[9] = cfg->volume;
-    buf[10] = 0;   // 保留
+    buf[10] = cfg->countin;
     const uint32_t crc = mn_crc32(buf, 11);
     for (int i = 0; i < 4; i++) buf[11 + i] = (uint8_t)(crc >> (8 * i));
     return MN_CFG_BLOB_SIZE;
@@ -49,13 +51,16 @@ size_t mn_cfg_pack(const mn_cfg_t *cfg, uint8_t *buf, size_t cap) {
 
 bool mn_cfg_unpack(mn_cfg_t *cfg, const uint8_t *buf, size_t len) {
     mn_cfg_default(cfg);
-    if (len != MN_CFG_BLOB_SIZE || buf[0] != 'M' || buf[1] != 'N' || buf[2] != MN_CFG_VERSION) return false;
+    if (len != MN_CFG_BLOB_SIZE || buf[0] != 'M' || buf[1] != 'N') return false;
+    if (buf[2] != MN_CFG_VERSION && buf[2] != MN_CFG_VERSION_V1) return false;
     uint32_t crc = 0;
     for (int i = 0; i < 4; i++) crc |= (uint32_t)buf[11 + i] << (8 * i);
     if (crc != mn_crc32(buf, 11)) return false;
     mn_cfg_t got = {
         .bpm = (uint16_t)(buf[3] | (buf[4] << 8)),
         .beats = buf[5], .accent = buf[6], .subdiv = buf[7], .sound = buf[8], .volume = buf[9],
+        // v1 的该字节是保留 0：迁移时取默认值（开启），不能误读成"关闭"。
+        .countin = buf[2] == MN_CFG_VERSION_V1 ? 1 : buf[10],
     };
     if (!mn_cfg_sanitize(&got)) return false;
     *cfg = got;
