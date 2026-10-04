@@ -1,0 +1,117 @@
+// main/mn_model.h —— 节拍器应用状态机（纯逻辑，无 ESP-IDF / LVGL 依赖）。
+//
+// 只有应用任务调用这里的函数（单线程）。每个入口返回一组 effect 标志，由应用任务负责
+// 执行副作用：通知音频任务、标记保存、刷新界面。这样按键交互可以完整地在主机上测试。
+//
+// 页面与按键（UP / DOWN / OK 三键，事件含义见 bsp_button.h）：
+//   主界面   UP/DOWN 按下 ±1 BPM，长按加速连调、松手即停；OK 单击 开始/停止；
+//            OK 双击 敲击测速；OK 长按 打开设置。
+//   设置     浏览：UP/DOWN 移动选中行；OK 单击 进入编辑（"敲击测速"行则直接进入测速）；
+//            编辑：UP/DOWN 改值（拍号、音量可长按连调）；OK 单击 确认；任意时刻 OK 长按 返回主界面。
+//            节拍器在设置中继续运行，改动立即可听。
+//   敲击测速 任意键按下 = 敲击；最后一次敲击 2.5 s 后（至少 3 下）自动应用并提示"已设定"，
+//            0.9 s 后返回；6 s 无有效敲击则不改动直接返回；OK 长按 取消。
+//            进入时暂停播放，返回时恢复原播放状态。
+#pragma once
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "mn_cfg.h"
+#include "mn_tap.h"
+
+// 与 bsp_btn_t / bsp_btn_ev_t 数值一致（mn_app.c 用 _Static_assert 保证）。
+typedef enum { MN_BTN_UP = 0, MN_BTN_DOWN, MN_BTN_OK, MN_BTN_COUNT } mn_btn_t;
+typedef enum { MN_EV_PRESS = 0, MN_EV_CLICK, MN_EV_DOUBLE, MN_EV_LONG, MN_EV_RELEASE } mn_ev_t;
+
+typedef enum { MN_PAGE_MAIN = 0, MN_PAGE_SETTINGS, MN_PAGE_TAP } mn_page_t;
+
+typedef enum {
+    MN_ROW_BEATS = 0,   // 拍号（每小节拍数）
+    MN_ROW_ACCENT,      // 首拍重音
+    MN_ROW_SUBDIV,      // 细分
+    MN_ROW_SOUND,       // 音色
+    MN_ROW_VOLUME,      // 音量
+    MN_ROW_TAP,         // 敲击测速入口
+    MN_ROW_COUNT,
+} mn_row_t;
+
+typedef uint16_t mn_fx_t;
+#define MN_FX_RUN (1u << 0)        // running 改变：通知音频开始 / 停止
+#define MN_FX_METER (1u << 1)      // BPM / 拍号 / 细分 / 重音改变：通知音频
+#define MN_FX_SOUND (1u << 2)      // 音色改变
+#define MN_FX_VOLUME (1u << 3)     // 音量改变
+#define MN_FX_SAVE (1u << 4)       // 设置改变，需要（择机）保存
+#define MN_FX_SCREEN (1u << 5)     // 页面切换：重建页面
+#define MN_FX_REFRESH (1u << 6)    // 页面内容刷新
+#define MN_FX_TAP_FLASH (1u << 7)  // 敲击反馈动画
+
+#define MN_TAP_APPLY_IDLE_MS 2500u   // 最后一次敲击后多久自动应用
+#define MN_TAP_MIN_TAPS 3u           // 自动应用所需的最少敲击次数
+#define MN_TAP_GIVEUP_MS 6000u       // 无有效结果时多久放弃返回
+#define MN_TAP_DONE_SHOW_MS 900u     // "已设定"提示停留时长
+#define MN_REPEAT_GUARD_MS 15000u    // 长按连调的保护上限（万一丢失 RELEASE 事件）
+
+typedef struct {
+    mn_cfg_t cfg;
+    mn_page_t page;
+    bool running;
+
+    // 设置页
+    uint8_t row;          // mn_row_t
+    bool editing;
+
+    // 敲击测速
+    mn_tap_t tap;
+    mn_page_t tap_return; // 结束后返回的页面
+    bool tap_resume;      // 结束后是否恢复播放
+    bool tap_done;        // 已应用，正在显示"已设定"
+    uint16_t tap_result;
+    uint32_t tap_enter_ms;
+    uint32_t tap_last_ms;
+    uint32_t tap_done_ms;
+
+    // 长按连调
+    bool rep_active;
+    int8_t rep_dir;       // +1 / -1
+    uint8_t rep_btn;      // 触发连调的按键，等它的 RELEASE
+    uint32_t rep_n;       // 下一次自动步进的序号
+    uint32_t rep_due_ms;  // 下一次自动步进的时间
+    uint32_t rep_start_ms;
+} mn_model_t;
+
+void mn_model_init(mn_model_t *m, const mn_cfg_t *cfg);
+
+// 处理一个按键事件。now_ms 为单调毫秒时间；t_us 为按键回调里记录的 µs 时间戳（测速用）。
+mn_fx_t mn_model_key(mn_model_t *m, mn_btn_t btn, mn_ev_t ev, uint32_t now_ms, int64_t t_us);
+
+// 周期调用（长按连调、测速超时）。
+mn_fx_t mn_model_tick(mn_model_t *m, uint32_t now_ms);
+
+// 距下一次需要调用 mn_model_tick 的毫秒数（不超过 max_ms），用作应用任务的队列等待超时。
+uint32_t mn_model_wait_ms(const mn_model_t *m, uint32_t now_ms, uint32_t max_ms);
+
+// ---------------------------------------------------------------------------
+// 空闲降低背光：停止状态下 60 s 无按键降到 10%；任意键先唤醒屏幕，
+// 唤醒用的这次按键（含随后的 RELEASE 和延迟到达的 CLICK / DOUBLE）被吞掉，不触发功能。
+// ---------------------------------------------------------------------------
+
+#define MN_DIM_AFTER_MS 60000u
+#define MN_BACKLIGHT_ON 100u
+#define MN_BACKLIGHT_DIM 10u
+#define MN_WAKE_SWALLOW_MS 400u
+
+typedef struct {
+    uint32_t last_ms;
+    bool dimmed;
+    int8_t wake_btn;       // 正在被吞掉的唤醒按键，-1 表示无
+    bool wake_released;
+    uint32_t release_ms;
+} mn_power_t;
+
+void mn_power_init(mn_power_t *p, uint32_t now_ms);
+// 返回 true 表示这个事件被唤醒逻辑吞掉，不应再交给 mn_model_key。
+bool mn_power_key(mn_power_t *p, mn_btn_t btn, mn_ev_t ev, uint32_t now_ms);
+// busy（正在播放）时不降背光并重新计时。返回背光是否需要改变。
+bool mn_power_tick(mn_power_t *p, uint32_t now_ms, bool busy);
+uint8_t mn_power_backlight(const mn_power_t *p);

@@ -66,6 +66,19 @@ run_static_checks() {
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
+    # 乐器节拍器：纯逻辑模块（调度、音色、测速、术语/布局、设置、状态机）逐个测试；
+    # 字体子集覆盖与 UI 字面量约束。
+    local mn_sources=(main/mn_sched.c main/mn_sound.c main/mn_tap.c main/mn_tempo.c
+        main/mn_layout.c main/mn_cfg.c main/mn_crc32.c main/mn_model.c)
+    local mn_test
+    for mn_test in sched sound tap tempo cfg model; do
+        "${CC:-cc}" -std=c11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -Imain -Itests \
+            "tests/test_mn_${mn_test}.c" "${mn_sources[@]}" -lm \
+            -o "${test_dir}/test_mn_${mn_test}"
+        "${test_dir}/test_mn_${mn_test}"
+    done
+    python3 tools/gen_metronome_fonts.py check
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_metronome_fonts.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py

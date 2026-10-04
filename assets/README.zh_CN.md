@@ -15,6 +15,17 @@
 - 添加字库前评估 Flash 与内部 RAM 影响；ESP32-C3 无 PSRAM。
 - 不提交许可不允许分发的字库。
 
+| 文件 | 字号 / bpp | 字符范围 | 用途 |
+| --- | --- | --- | --- |
+| [`fonts/mn_zh14.c`](fonts/mn_zh14.c) | 14 px，4 bpp | `main/mn_strings.h` 全部字符串字面量 + 可打印 ASCII（180 个字形） | 节拍器操作提示、顶栏、小标签 |
+| [`fonts/mn_zh18.c`](fonts/mn_zh18.c) | 18 px，4 bpp | 与 `mn_zh14` 相同 | 节拍器速度术语、设置行、标题 |
+| [`fonts/mn_num88.c`](fonts/mn_num88.c) | 88 px，4 bpp | `0`–`9` 与 `-`（11 个字形） | 节拍器 BPM 大号数字与测速占位符 |
+
+- 来源：思源黑体 Source Han Sans SC 2.005 Regular（`SourceHanSansSC-Regular.otf`，SIL Open Font License 1.1，<https://github.com/adobe-fonts/source-han-sans>）。不提交 OTF 本身，其 SHA-256 记录在 [`fonts/mn_fonts.manifest.json`](fonts/mn_fonts.manifest.json)。
+- 转换器：`lv_font_conv` 1.5.3，参数 `--bpp 4 --no-compress --no-kerning --format lvgl --lv-include lvgl.h`；每个字体的完整命令与码点区间都记录在 manifest 中。
+- 修改任何界面文案后重新生成：`python3 tools/gen_metronome_fonts.py generate --lv-font-conv <lv_font_conv> --font <SourceHanSansSC-Regular.otf>`。`python3 tools/gen_metronome_fonts.py check`（由 `tools/validate.sh` 执行）会在已提交字体、manifest 或 `main/mn_font_glyphs.h` 与文案不一致时失败。
+- `main/CMakeLists.txt` 通过 `target_sources` 引入 `assets/fonts/mn_*.c`；固件启动时运行 `mn_fonts_selfcheck()`，把缺字或占位框字形写入日志。
+
 ## 图片（images）
 
 可复用的源图与生成的显示资产放在 `images/`。
@@ -25,6 +36,7 @@
 | [`images/readme-hardware-specs.png`](images/readme-hardware-specs.png) | 2172 × 724，PNG RGBA | 保留为可选技术参考图，不再用于首页主视觉。于 2026-09-17 使用内置图像生成工具为本仓库生成；已根据文档中的硬件能力契约核对图中的六项标签与参数。 |
 | [`images/logo-wordmark.png`](images/logo-wordmark.png) | 1648 × 336，PNG RGBA | 从仓库原始 `images/logo.png` 中精确裁切并去除背景的黑色字标；用于中英文项目 README 的浅色主题。 |
 | [`images/logo-wordmark-dark.png`](images/logo-wordmark-dark.png) | 1648 × 336，PNG RGBA | 提取字标的白色版本；README 使用 `<picture>` 在 GitHub 深色主题下显示。 |
+| [`images/metronome-preview.png`](images/metronome-preview.png) | 1020 × 344，PNG RGB | 节拍器 README 预览图：演奏中、7/4 三连音、设置编辑中、敲击测速四个画面，由 `tools/render_metronome_preview.py` 在主机上用真实 LVGL 界面代码与字体渲染后拼接，屏幕圆角按 BSP 遮挡；固件不使用。 |
 
 - 使用描述性命名，并记录尺寸、像素格式、转换步骤与目标路径。
 - 优先采用适合 240 × 320 RGB565 显示的格式，并纳入 Flash 与内部 RAM 考量。
