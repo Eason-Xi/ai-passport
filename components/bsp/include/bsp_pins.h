@@ -52,6 +52,9 @@
 // ============================================================================
 #define BSP_BTN_ADC_UNIT     ADC_UNIT_1
 #define BSP_BTN_ADC_CHANNEL  ADC_CHANNEL_0    // GPIO0
+// ADC 节点所在 GPIO，也是本板唯一可用的按键深睡唤醒脚（ESP32-C3 GPIO0–5 支持深睡 GPIO 唤醒）。
+// 任意键按下时节点电压 ≤ 约 0.7 V（含深睡时 IDF 打开的内部上拉），低于数字输入低电平门限。
+#define BSP_BTN_GPIO         0
 #define BSP_BTN_COUNT        3
 
 // 按键判定时序(ms):由 BSP 显式下发给 button 组件,不依赖它的 Kconfig 默认值。

@@ -11,6 +11,15 @@ static int create_calls, callback_calls, fail_create, fail_callback;
 static int fail_adc, fail_channel, fail_cal, fail_read, fail_convert, fail_delete;
 static int raw_mv, reads, events, releases;
 static int64_t clock_us;
+static int gpio_level = 1, gpio_configs, fail_gpio;
+static gpio_config_t last_gpio;
+esp_err_t gpio_config(const gpio_config_t *cfg) {
+    // 深睡准备必须在 ADC 与按键全部释放之后才改引脚功能。
+    assert(!adc_live && !cal_live && !live_buttons);
+    ++gpio_configs; last_gpio = *cfg;
+    return fail_gpio ? ESP_FAIL : ESP_OK;
+}
+int gpio_get_level(int gpio_num) { assert(gpio_num == BSP_BTN_GPIO); return gpio_level; }
 
 esp_err_t adc_oneshot_new_unit(const adc_oneshot_unit_init_cfg_t *cfg, adc_oneshot_unit_handle_t *h) {
     assert(cfg->unit_id == BSP_BTN_ADC_UNIT && !adc_live);
@@ -140,6 +149,33 @@ int main(void) {
     fail_delete = 1; button_cleanup();
     assert(adc_live && cal_live && live_buttons == BSP_BTN_COUNT);
     assert(bsp_button_init(event_cb, &events) == ESP_ERR_INVALID_STATE);
+    fail_delete = 0; button_cleanup(); retry_success();
+
+    // 深睡准备：释放 ADC 与按键，按键节点改为带上拉的数字输入，并回填电平。
+    reset_faults();
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);
+    int level = -1;
+    assert(bsp_button_prepare_deep_sleep(&level) == ESP_OK && level == 1);
+    assert_clean();
+    assert(gpio_configs == 1 && last_gpio.pin_bit_mask == (1ULL << BSP_BTN_GPIO));
+    assert(last_gpio.mode == GPIO_MODE_INPUT && last_gpio.pull_up_en == GPIO_PULLUP_ENABLE);
+    assert(last_gpio.pull_down_en == GPIO_PULLDOWN_DISABLE);
+    const int before = events;
+    cb_click(NULL, (void *)(intptr_t)BSP_BTN_OK); assert(events == before);   // 回调已停用
+    // 有键按住时回填 0，由调用方推迟入睡；放弃入睡后可重新初始化。
+    gpio_level = 0;
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);
+    assert(bsp_button_prepare_deep_sleep(&level) == ESP_OK && level == 0);
+    retry_success();
+    // 引脚配置失败如实上报。
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);
+    fail_gpio = 1;
+    assert(bsp_button_prepare_deep_sleep(NULL) == ESP_FAIL);
+    fail_gpio = 0; assert_clean();
+    // 删除按键失败时不改引脚功能。
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);
+    fail_delete = 1; const int configs = gpio_configs;
+    assert(bsp_button_prepare_deep_sleep(&level) == ESP_ERR_INVALID_STATE && gpio_configs == configs);
     fail_delete = 0; button_cleanup(); retry_success();
     puts("BSP button fault-injection tests: PASS");
 }
