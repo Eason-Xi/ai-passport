@@ -19,7 +19,7 @@ Store reusable font files and generated font sources in `fonts/`.
 
 | File | Size / bpp | Characters | Use |
 | --- | --- | --- | --- |
-| [`fonts/mn_zh14.c`](fonts/mn_zh14.c) | 14 px, 4 bpp | All string literals in `main/mn_strings.h` plus printable ASCII (180 glyphs) | Metronome hints, top bar, small labels |
+| [`fonts/mn_zh14.c`](fonts/mn_zh14.c) | 14 px, 4 bpp | All string literals in `main/mn_strings.h` plus printable ASCII (190 glyphs) | Metronome hints, top bar, small labels |
 | [`fonts/mn_zh18.c`](fonts/mn_zh18.c) | 18 px, 4 bpp | Same character set as `mn_zh14` | Metronome tempo term, settings rows, titles |
 | [`fonts/mn_num88.c`](fonts/mn_num88.c) | 88 px, 4 bpp | `0`–`9` and `-` (11 glyphs) | Metronome BPM numerals and the tap-tempo placeholder |
 

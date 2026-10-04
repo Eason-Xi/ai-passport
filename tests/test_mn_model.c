@@ -222,26 +222,77 @@ static void test_power(void) {
     now = 0;
     mn_power_init(&p, now);
     CHECK(mn_power_backlight(&p) == MN_BACKLIGHT_ON);
-    // 播放中不降背光。
-    CHECK(!mn_power_tick(&p, 70000, true));
-    CHECK(!mn_power_tick(&p, 70000 + MN_DIM_AFTER_MS - 1, false));
-    CHECK(mn_power_tick(&p, 70000 + MN_DIM_AFTER_MS, false));
-    CHECK(mn_power_backlight(&p) == MN_BACKLIGHT_DIM);
-    // 唤醒：这次按键的 PRESS / LONG / RELEASE / 延迟 CLICK 全部吞掉。
+    // 播放中不降级，并从停止时刻重新计时。
+    CHECK(!mn_power_tick(&p, 900000, true));
+    const uint32_t stop = 900000;
+    CHECK(!mn_power_tick(&p, stop + MN_DIM_AFTER_MS - 1, false));
+    // 60 s 调暗 → 2 min 熄屏 → 10 min 请求关机，逐级只报告一次。
+    CHECK(mn_power_tick(&p, stop + MN_DIM_AFTER_MS, false));
+    CHECK(p.level == MN_POWER_DIM && mn_power_backlight(&p) == MN_BACKLIGHT_DIM);
+    CHECK(!mn_power_tick(&p, stop + MN_DIM_AFTER_MS + 1000, false));
+    CHECK(mn_power_tick(&p, stop + MN_SCREEN_OFF_AFTER_MS, false));
+    CHECK(p.level == MN_POWER_SCREEN_OFF && mn_power_backlight(&p) == MN_BACKLIGHT_OFF);
+    CHECK(!mn_power_tick(&p, stop + MN_POWER_OFF_AFTER_MS - 1, false));
+    CHECK(mn_power_tick(&p, stop + MN_POWER_OFF_AFTER_MS, false));
+    CHECK(p.level == MN_POWER_SHUTDOWN && mn_power_backlight(&p) == MN_BACKLIGHT_OFF);
+    // 关机被取消：回到正常亮度并重新计时。
+    mn_power_wake(&p, stop + MN_POWER_OFF_AFTER_MS);
+    CHECK(p.level == MN_POWER_ON && mn_power_backlight(&p) == MN_BACKLIGHT_ON);
+    CHECK(!mn_power_tick(&p, stop + MN_POWER_OFF_AFTER_MS + MN_DIM_AFTER_MS - 1, false));
+
+    // 一次跳过多级（任务被耽搁）：直接进入对应等级。
+    mn_power_init(&p, 0);
+    CHECK(mn_power_tick(&p, MN_SCREEN_OFF_AFTER_MS + 5, false) && p.level == MN_POWER_SCREEN_OFF);
+
+    // 熄屏时唤醒：这次按键的 PRESS / LONG / RELEASE / 延迟 CLICK 全部吞掉。
     now = 200000;
     CHECK(mn_power_key(&p, MN_BTN_OK, MN_EV_PRESS, now));
-    CHECK(mn_power_backlight(&p) == MN_BACKLIGHT_ON);
+    CHECK(p.level == MN_POWER_ON && mn_power_backlight(&p) == MN_BACKLIGHT_ON);
     CHECK(mn_power_key(&p, MN_BTN_OK, MN_EV_LONG, now + 500));
     CHECK(mn_power_key(&p, MN_BTN_OK, MN_EV_RELEASE, now + 600));
     CHECK(mn_power_key(&p, MN_BTN_OK, MN_EV_CLICK, now + 780));
     // 之后的正常按键照常传递。
     CHECK(!mn_power_key(&p, MN_BTN_OK, MN_EV_PRESS, now + 2000));
     CHECK(!mn_power_key(&p, MN_BTN_OK, MN_EV_CLICK, now + 2200));
-    // 唤醒后立即按其它键：不吞。
+    // 调暗时唤醒后立即按其它键：不吞。
     mn_power_tick(&p, now + 2200 + MN_DIM_AFTER_MS, false);
+    CHECK(p.level == MN_POWER_DIM);
     CHECK(mn_power_key(&p, MN_BTN_UP, MN_EV_PRESS, now + 70000));
     CHECK(!mn_power_key(&p, MN_BTN_DOWN, MN_EV_PRESS, now + 70100));
     CHECK(!mn_power_key(&p, MN_BTN_UP, MN_EV_RELEASE, now + 70200));
+    // 按键重新计时：刚按过键不会关机。
+    CHECK(!mn_power_tick(&p, now + 70200 + MN_DIM_AFTER_MS - 1, false));
+}
+
+static void test_lowbatt(void) {
+    mn_lowbatt_t b;
+    mn_lowbatt_init(&b);
+    // 连续 3 次 ≤3% 才触发。
+    CHECK(!mn_lowbatt_feed(&b, 3, 3400, false));
+    CHECK(!mn_lowbatt_feed(&b, 2, 3390, false));
+    CHECK(mn_lowbatt_feed(&b, 2, 3385, false));
+    // 中途回到 4% 清零重计。
+    mn_lowbatt_init(&b);
+    CHECK(!mn_lowbatt_feed(&b, 1, 3300, false));
+    CHECK(!mn_lowbatt_feed(&b, 4, 3420, false));
+    CHECK(!mn_lowbatt_feed(&b, 1, 3300, false));
+    CHECK(!mn_lowbatt_feed(&b, 1, 3300, false));
+    CHECK(mn_lowbatt_feed(&b, 0, 3290, false));
+    // 连接电脑 USB：不触发。
+    mn_lowbatt_init(&b);
+    for (int i = 0; i < 5; i++) CHECK(!mn_lowbatt_feed(&b, 1, 3300, true));
+    // 电压上升超过 30 mV（插着充电头）：不触发。
+    mn_lowbatt_init(&b);
+    CHECK(!mn_lowbatt_feed(&b, 2, 3350, false));
+    CHECK(!mn_lowbatt_feed(&b, 2, 3370, false));
+    CHECK(!mn_lowbatt_feed(&b, 2, 3420, false));   // +70 mV → 判为充电，重新观察
+    CHECK(b.count == 0);
+    // 读数不可用：永不触发。
+    mn_lowbatt_init(&b);
+    for (int i = 0; i < 5; i++) CHECK(!mn_lowbatt_feed(&b, -1, -1, false));
+    // 电压不可用但电量持续过低：仍按电量判定。
+    for (int i = 0; i < 2; i++) CHECK(!mn_lowbatt_feed(&b, 1, -1, false));
+    CHECK(mn_lowbatt_feed(&b, 1, -1, false));
 }
 
 int main(void) {
@@ -250,6 +301,7 @@ int main(void) {
     test_settings();
     test_tap();
     test_power();
+    test_lowbatt();
     puts("Metronome app model tests: PASS");
     return 0;
 }

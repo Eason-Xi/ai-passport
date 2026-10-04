@@ -79,6 +79,7 @@ run_static_checks() {
     done
     python3 tools/gen_metronome_fonts.py check
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_metronome_fonts.py
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_metronome_power_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py

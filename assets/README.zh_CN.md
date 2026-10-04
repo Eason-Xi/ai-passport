@@ -17,7 +17,7 @@
 
 | 文件 | 字号 / bpp | 字符范围 | 用途 |
 | --- | --- | --- | --- |
-| [`fonts/mn_zh14.c`](fonts/mn_zh14.c) | 14 px，4 bpp | `main/mn_strings.h` 全部字符串字面量 + 可打印 ASCII（180 个字形） | 节拍器操作提示、顶栏、小标签 |
+| [`fonts/mn_zh14.c`](fonts/mn_zh14.c) | 14 px，4 bpp | `main/mn_strings.h` 全部字符串字面量 + 可打印 ASCII（190 个字形） | 节拍器操作提示、顶栏、小标签 |
 | [`fonts/mn_zh18.c`](fonts/mn_zh18.c) | 18 px，4 bpp | 与 `mn_zh14` 相同 | 节拍器速度术语、设置行、标题 |
 | [`fonts/mn_num88.c`](fonts/mn_num88.c) | 88 px，4 bpp | `0`–`9` 与 `-`（11 个字形） | 节拍器 BPM 大号数字与测速占位符 |
 

@@ -50,8 +50,8 @@ void mn_store_mark(uint32_t now_ms) {
     s_changed_ms = now_ms;
 }
 
-void mn_store_tick(const mn_cfg_t *cfg, uint32_t now_ms, bool quiet) {
-    if (!s_ok || !s_dirty || !quiet || now_ms - s_changed_ms < SAVE_DELAY_MS) return;
+// 写入设置 blob 并提交；失败时保留脏标记，稍后重试。
+static void save_now(const mn_cfg_t *cfg, uint32_t now_ms) {
     nvs_handle_t h;
     esp_err_t e = nvs_open(NAMESPACE, NVS_READWRITE, &h);
     if (e == ESP_OK) {
@@ -68,4 +68,14 @@ void mn_store_tick(const mn_cfg_t *cfg, uint32_t now_ms, bool quiet) {
         ESP_LOGW(TAG, "保存失败（%s），稍后重试", esp_err_to_name(e));
         s_changed_ms = now_ms;
     }
+}
+
+void mn_store_tick(const mn_cfg_t *cfg, uint32_t now_ms, bool quiet) {
+    if (!s_ok || !s_dirty || !quiet || now_ms - s_changed_ms < SAVE_DELAY_MS) return;
+    save_now(cfg, now_ms);
+}
+
+void mn_store_flush(const mn_cfg_t *cfg) {
+    if (!s_ok || !s_dirty) return;
+    save_now(cfg, s_changed_ms);
 }

@@ -92,18 +92,31 @@ mn_fx_t mn_model_tick(mn_model_t *m, uint32_t now_ms);
 uint32_t mn_model_wait_ms(const mn_model_t *m, uint32_t now_ms, uint32_t max_ms);
 
 // ---------------------------------------------------------------------------
-// 空闲降低背光：停止状态下 60 s 无按键降到 10%；任意键先唤醒屏幕，
-// 唤醒用的这次按键（含随后的 RELEASE 和延迟到达的 CLICK / DOUBLE）被吞掉，不触发功能。
+// 空闲省电（只在停止状态下计时，播放中不计）：
+//   60 s 无按键 → 背光降到 10%；2 min → 熄屏（背光关闭，状态保留）；
+//   10 min → 请求自动关机（应用执行深度睡眠，任意键唤醒后重新开机）。
+// 调暗或熄屏时任意键先唤醒屏幕，唤醒用的这次按键（含随后的 RELEASE 和延迟
+// 到达的 CLICK / DOUBLE）被吞掉，不触发功能。
 // ---------------------------------------------------------------------------
 
 #define MN_DIM_AFTER_MS 60000u
+#define MN_SCREEN_OFF_AFTER_MS 120000u
+#define MN_POWER_OFF_AFTER_MS 600000u
 #define MN_BACKLIGHT_ON 100u
 #define MN_BACKLIGHT_DIM 10u
+#define MN_BACKLIGHT_OFF 0u
 #define MN_WAKE_SWALLOW_MS 400u
 
+typedef enum {
+    MN_POWER_ON = 0,       // 正常亮度
+    MN_POWER_DIM,          // 调暗
+    MN_POWER_SCREEN_OFF,   // 熄屏
+    MN_POWER_SHUTDOWN,     // 请求自动关机
+} mn_power_level_t;
+
 typedef struct {
-    uint32_t last_ms;
-    bool dimmed;
+    uint32_t last_ms;      // 最近一次按键（或播放中）的时间
+    uint8_t level;         // mn_power_level_t
     int8_t wake_btn;       // 正在被吞掉的唤醒按键，-1 表示无
     bool wake_released;
     uint32_t release_ms;
@@ -112,6 +125,31 @@ typedef struct {
 void mn_power_init(mn_power_t *p, uint32_t now_ms);
 // 返回 true 表示这个事件被唤醒逻辑吞掉，不应再交给 mn_model_key。
 bool mn_power_key(mn_power_t *p, mn_btn_t btn, mn_ev_t ev, uint32_t now_ms);
-// busy（正在播放）时不降背光并重新计时。返回背光是否需要改变。
+// busy（正在播放）时不降级并重新计时。返回等级是否改变（背光需更新，或进入 SHUTDOWN）。
+// 等级只会随空闲时间升高；回到 MN_POWER_ON 只能通过按键或 mn_power_wake。
 bool mn_power_tick(mn_power_t *p, uint32_t now_ms, bool busy);
+// 关机被取消（例如入睡时有键按住）等情况下回到正常亮度并重新计时。
+void mn_power_wake(mn_power_t *p, uint32_t now_ms);
 uint8_t mn_power_backlight(const mn_power_t *p);
+
+// ---------------------------------------------------------------------------
+// 低电量自动关机：电量计读数 ≤ 3% 连续 3 次（应用每 10 s 读一次）才判定，
+// 避免单次读数抖动误关机。以下情况视为外部供电、不判定：
+//   * 连接着电脑 USB（usb_host 为真）；
+//   * 低电量期间电池电压比第一次低电量读数上升超过 30 mV（插着充电头在充电）。
+// 读数不可用（-1）时清零计数，永不触发。
+// ---------------------------------------------------------------------------
+
+#define MN_LOWBATT_SOC 3
+#define MN_LOWBATT_SAMPLES 3u
+#define MN_LOWBATT_RISE_MV 30
+#define MN_LOWBATT_NOTICE_MS 3000u   // 关机前提示停留时长
+
+typedef struct {
+    uint8_t count;     // 连续低电量读数次数
+    int first_mv;      // 本轮第一次低电量时的电池电压（-1 未知）
+} mn_lowbatt_t;
+
+void mn_lowbatt_init(mn_lowbatt_t *b);
+// 喂入一次读数；返回 true 表示应当提示并关机。
+bool mn_lowbatt_feed(mn_lowbatt_t *b, int soc, int mv, bool usb_host);

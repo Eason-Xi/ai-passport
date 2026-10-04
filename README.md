@@ -34,7 +34,8 @@ the moment each click actually leaves the speaker, so what you see always matche
 | Volume | Levels 0–10; level 0 mutes the sound while the on-screen beat keeps running |
 | Tempo term | Italian tempo term and its Chinese name for the current BPM; see the table below |
 | Persistence | All settings are saved automatically and restored at the next power-on |
-| Power saving | After 60 s without input while stopped, the backlight dims to 10%; any key wakes it, and the waking press does not trigger an action |
+| Sleep and auto power-off | When stopped and idle: dims after 60 s, turns the screen off after 2 min, and powers off after 10 min; the timer does not run while playing. Any key turns the screen back on (that press triggers nothing), and any key powers the device back on |
+| Low-battery protection | At 3% battery or below, a low-battery notice appears and the device powers off 3 s later; this does not happen while connected to a computer over USB or while charging |
 | Battery | Battery level at the top right, red at 20% or below; hidden when the fuel gauge cannot be read |
 | Offline | No Wi-Fi or Bluetooth; Bluetooth is disabled in the firmware |
 
@@ -71,6 +72,16 @@ tempo.
    and the previous screen returns with the previous playing state restored.
 4. With fewer than 3 taps and no tap for 6 s, it returns without changing the tempo. Long-press OK
    to cancel at any time.
+
+### Sleep, power-off, and power-on
+
+- When the metronome is stopped and left alone, the screen dims after 60 s, turns off after
+  2 min, and the device powers off after 10 min. It never sleeps or powers off while playing.
+- While dimmed or off, any key first turns the screen back on; that press does not change the
+  tempo or start playback.
+- After power-off, press any key to power on again; all settings are kept. The device's power
+  key also works.
+- When the battery is nearly empty, a notice appears and the device powers off; charge it soon.
 
 ### Default settings
 
@@ -170,7 +181,7 @@ debug files archived under `build/firmware/<sha256 of full.bin>/`. To run only t
 | `main/mn_app.*`, `main/main.c` | Application task and firmware entry point |
 | `main/mn_ui*.c`, `main/mn_theme.h` | UI and palette |
 | `main/mn_strings.h`, `main/mn_fonts.*` | All Chinese UI text (single source) and the font self-check |
-| `components/bsp` | Reused board support; this branch adds the `BSP_BTN_RELEASE` key event and exposes the I2S DMA queue size |
+| `components/bsp` | Reused board support; this branch adds the `BSP_BTN_RELEASE` key event and `bsp_button_prepare_deep_sleep()` for key wake from deep sleep, and exposes the I2S DMA queue size |
 | `tests/test_mn_*.c`, `tests/test_metronome_fonts.py` | Host tests |
 | `tools/gen_metronome_fonts.py` | Chinese font subset generation and checks |
 | `tools/render_metronome_preview.py` | Renders every screen on a computer and reports the peak LVGL pool usage |
@@ -205,9 +216,10 @@ Run a firmware build once first so the LVGL sources are downloaded into `managed
   for each of 7 BPM values × 4 subdivisions, parameter-change boundaries, block-size
   independence), click synthesis (zero start and end, no clipping, distinct strengths), tap tempo,
   tempo terms and layout, the settings record and corruption detection, the screen state machine
-  with dimming and wake, and Chinese glyph coverage.
+  with staged power saving, low-battery detection, the auto power-off order contract, and Chinese
+  glyph coverage.
 - **Firmware build:** builds with ESP-IDF 5.5.3 without warnings, and the merged image passes verification.
-- **Device:** tested as a whole on a FoloToy AI Passport; the features work.
+- **Device:** the core metronome features were tested as a whole on a FoloToy AI Passport and work; sleep, auto power-off, key power-on, and low-battery protection have not been tested on the device yet.
 
 ## Known limitations
 
@@ -219,6 +231,12 @@ Run a firmware build once first so the LVGL sources are downloaded into `managed
 - Tap-tempo accuracy is limited by the 5 ms button polling: single intervals jitter by about
   ±5 ms, and the average is within about ±1 BPM.
 - All three keys share one ADC input, so key combinations are not supported.
+- "Power-off" shuts down the peripherals and enters deep sleep; it does not cut power, which is
+  controlled by the device's separate power key. A small standby current remains and has not been measured.
+- Key power-on relies on a low-level wake on the key input; the OK key has the smallest voltage
+  margin, and reliable wake from it needs on-device confirmation.
+- The device has no charging-status signal: a computer USB connection is detected directly; with
+  only a charger connected, charging is inferred from the battery voltage rising during low battery.
 
 ## License
 

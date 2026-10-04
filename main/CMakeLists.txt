@@ -5,7 +5,7 @@ file(GLOB MN_SOURCES "${CMAKE_CURRENT_LIST_DIR}/mn_*.c")
 idf_component_register(
     SRCS "main.c" ${MN_SOURCES}
     INCLUDE_DIRS "."
-    REQUIRES bsp esp_timer nvs_flash esp_hw_support heap
+    REQUIRES bsp esp_timer nvs_flash esp_hw_support heap esp_driver_usb_serial_jtag
 )
 
 # 中文字体子集（tools/gen_metronome_fonts.py 生成，见 assets/README）。

@@ -32,3 +32,8 @@ bool mn_audio_pop(int64_t now_us, mn_beat_t *out);
 // 音频已静止至少 quiet_ms 毫秒（未在播放，且最后一块 PCM 已播完）。
 // 应用据此决定能否写 Flash：写 Flash 会暂停 Cache，播放中写入会让 I2S 断流爆音。
 bool mn_audio_quiet(uint32_t quiet_ms);
+
+// 关机前调用（应用已停止播放且 mn_audio_quiet 为真）：让音频任务永久停止访问 codec / I2S，
+// 之后才能安全执行 bsp_audio_sleep() 等终端关闭步骤。等待任务确认最多 timeout_ms，
+// 返回是否已确认。调用后本次运行内不能再恢复音频。
+bool mn_audio_halt(uint32_t timeout_ms);

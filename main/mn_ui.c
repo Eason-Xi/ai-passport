@@ -21,6 +21,7 @@ static lv_obj_t *s_batt_body;
 static lv_obj_t *s_batt_fill;
 static lv_obj_t *s_batt_tip;
 static bool s_audio_ok = true;
+static lv_obj_t *s_notice;        // 低电量关机提示（lv_layer_top 上）
 
 // 节拍动画状态（只在 LVGL 上下文读写）。
 static bool s_running;
@@ -144,6 +145,26 @@ void mn_ui_update(const mn_model_t *m) {
     mn_ui_main_update(m);
     if (mn_ui_settings_is_open()) mn_ui_settings_update(m);
     if (mn_ui_tap_is_open()) mn_ui_tap_update(m);
+}
+
+void mn_ui_lowbatt_notice(bool show) {
+    if (!show) {
+        if (s_notice) lv_obj_delete(s_notice);
+        s_notice = NULL;
+        return;
+    }
+    if (s_notice) return;
+    s_notice = mn_ui_box(lv_layer_top(), 0, 0, MN_SCREEN_W, MN_SCREEN_H, MN_C_BG, 0);
+    // 空电池图标：红色外框 + 极短的红色电量条。
+    lv_obj_t *body = mn_ui_box(s_notice, 120 - 36, 104, 72, 36, -1, 6);
+    lv_obj_set_style_border_width(body, 3, 0);
+    lv_obj_set_style_border_color(body, lv_color_hex(MN_C_DANGER), 0);
+    mn_ui_box(body, 5, 5, 9, 20, MN_C_DANGER, 2);
+    mn_ui_box(s_notice, 120 + 37, 114, 5, 16, MN_C_DANGER, 2);
+    lv_obj_t *title = mn_ui_label(s_notice, MN_FONT_BODY, MN_C_DANGER, MN_STR_LOWBATT_TITLE);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 168);
+    lv_obj_t *hint = mn_ui_label(s_notice, MN_FONT_SMALL, MN_C_TEXT_DIM, MN_STR_LOWBATT_HINT);
+    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, 204);
 }
 
 void mn_ui_tap_flash(int64_t now_us) {

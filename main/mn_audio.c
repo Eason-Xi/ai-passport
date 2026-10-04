@@ -37,6 +37,8 @@ static uint8_t s_ring_count;
 
 static TaskHandle_t s_task;
 static bool s_hw_ok;
+static volatile bool s_halt;      // 应用请求永久停手（关机前）
+static volatile bool s_halted;    // 音频任务已确认停手
 // 以下两项由 s_req_mux 保护：int64 在 32 位 RISC-V 上不是原子读写。
 static bool s_streaming;           // 正在写 PCM
 static int64_t s_quiet_since_us;   // 最后一块 PCM 预计播完的时刻
@@ -127,6 +129,11 @@ static void audio_task(void *arg) {
     TickType_t wake = xTaskGetTickCount();
 
     for (;;) {
+        if (s_halt) {
+            // 关机流程接管外设：不再触碰 codec / I2S，挂起等待深睡。
+            s_halted = true;
+            vTaskSuspend(NULL);
+        }
         mn_cfg_t req;
         bool run_req;
         taskENTER_CRITICAL(&s_req_mux);
@@ -201,6 +208,14 @@ static void audio_task(void *arg) {
         }
         written += BLOCK;
     }
+}
+
+bool mn_audio_halt(uint32_t timeout_ms) {
+    if (!s_task) return true;
+    s_halt = true;
+    xTaskNotifyGive(s_task);
+    for (uint32_t waited = 0; !s_halted && waited < timeout_ms; waited += 10) vTaskDelay(pdMS_TO_TICKS(10));
+    return s_halted;
 }
 
 bool mn_audio_start(bool hw_ok) {

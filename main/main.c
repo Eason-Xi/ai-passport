@@ -10,6 +10,7 @@
 #include "bsp_pins.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_sleep.h"
 
 #include "mn_app.h"
 
@@ -17,6 +18,9 @@ static const char *TAG = "main";
 
 void app_main(void) {
     ESP_LOGI(TAG, "乐器节拍器启动");
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO) {
+        ESP_LOGI(TAG, "自动关机后由按键唤醒，重新开机");
+    }
 
     bsp_i2c_init();
     bsp_i2c_scan();

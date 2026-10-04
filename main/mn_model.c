@@ -265,19 +265,20 @@ uint32_t mn_model_wait_ms(const mn_model_t *m, uint32_t now_ms, uint32_t max_ms)
     return wait;
 }
 
-// ---- 背光 ----
+// ---- 空闲省电 ----
 
 void mn_power_init(mn_power_t *p, uint32_t now_ms) {
     memset(p, 0, sizeof *p);
     p->last_ms = now_ms;
+    p->level = MN_POWER_ON;
     p->wake_btn = -1;
 }
 
 bool mn_power_key(mn_power_t *p, mn_btn_t btn, mn_ev_t ev, uint32_t now_ms) {
-    if (p->dimmed) {
+    if (p->level != MN_POWER_ON) {
         p->last_ms = now_ms;
-        if (ev != MN_EV_PRESS) return true;   // 熄屏期间只认按下来唤醒
-        p->dimmed = false;
+        if (ev != MN_EV_PRESS) return true;   // 调暗 / 熄屏期间只认按下来唤醒
+        p->level = MN_POWER_ON;
         p->wake_btn = (int8_t)btn;
         p->wake_released = false;
         return true;
@@ -307,13 +308,48 @@ bool mn_power_tick(mn_power_t *p, uint32_t now_ms, bool busy) {
         p->last_ms = now_ms;
         return false;
     }
-    if (!p->dimmed && now_ms - p->last_ms >= MN_DIM_AFTER_MS) {
-        p->dimmed = true;
-        return true;
-    }
-    return false;
+    const uint32_t idle = now_ms - p->last_ms;
+    uint8_t target = MN_POWER_ON;
+    if (idle >= MN_POWER_OFF_AFTER_MS) target = MN_POWER_SHUTDOWN;
+    else if (idle >= MN_SCREEN_OFF_AFTER_MS) target = MN_POWER_SCREEN_OFF;
+    else if (idle >= MN_DIM_AFTER_MS) target = MN_POWER_DIM;
+    if (target <= p->level) return false;
+    p->level = target;
+    return true;
+}
+
+void mn_power_wake(mn_power_t *p, uint32_t now_ms) {
+    p->level = MN_POWER_ON;
+    p->last_ms = now_ms;
+    p->wake_btn = -1;
 }
 
 uint8_t mn_power_backlight(const mn_power_t *p) {
-    return p->dimmed ? MN_BACKLIGHT_DIM : MN_BACKLIGHT_ON;
+    switch (p->level) {
+    case MN_POWER_ON: return MN_BACKLIGHT_ON;
+    case MN_POWER_DIM: return MN_BACKLIGHT_DIM;
+    default: return MN_BACKLIGHT_OFF;
+    }
+}
+
+// ---- 低电量 ----
+
+void mn_lowbatt_init(mn_lowbatt_t *b) {
+    b->count = 0;
+    b->first_mv = -1;
+}
+
+bool mn_lowbatt_feed(mn_lowbatt_t *b, int soc, int mv, bool usb_host) {
+    if (usb_host || soc < 0 || soc > MN_LOWBATT_SOC) {
+        mn_lowbatt_init(b);
+        return false;
+    }
+    if (b->count == 0) b->first_mv = mv;
+    if (mv >= 0 && b->first_mv >= 0 && mv > b->first_mv + MN_LOWBATT_RISE_MV) {
+        // 电压在上升：多半插着充电头，重新观察。
+        mn_lowbatt_init(b);
+        return false;
+    }
+    if (b->count < 255) b->count++;
+    return b->count >= MN_LOWBATT_SAMPLES;
 }

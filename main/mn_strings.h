@@ -55,3 +55,6 @@ static const char *const MN_ROW_LABEL[MN_ROW_COUNT] = {
 #define MN_STR_TAP_WAIT "停下后自动应用"
 #define MN_STR_TAP_DONE "已设定"
 #define MN_STR_TAP_CANCEL "长按 OK 取消"
+
+#define MN_STR_LOWBATT_TITLE "电量过低"
+#define MN_STR_LOWBATT_HINT "即将自动关机，请及时充电"

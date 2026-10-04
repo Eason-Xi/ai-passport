@@ -21,6 +21,8 @@ void mn_ui_show(const mn_model_t *m);
 void mn_ui_update(const mn_model_t *m);
 // 电量百分比；-1 表示不可用（隐藏）。
 void mn_ui_set_battery(int soc);
+// 低电量关机提示：全屏覆盖在所有页面之上；show 为假时移除。
+void mn_ui_lowbatt_notice(bool show);
 // 敲击测速页的敲击闪光。
 void mn_ui_tap_flash(int64_t now_us);
 

@@ -226,6 +226,9 @@ int main(int argc, char **argv) {
     mn_ui_set_battery(15);
     mn_ui_show(&g);
     capture("15_audio_fail_low_battery");
+    mn_ui_lowbatt_notice(true);
+    capture("16_low_battery_notice");
+    mn_ui_lowbatt_notice(false);
 
     printf("PEAK used=%zu of %u\n", s_peak, (unsigned)LV_MEM_SIZE);
     return missing ? 2 : 0;

@@ -15,3 +15,5 @@ void mn_store_init(mn_cfg_t *cfg);
 void mn_store_mark(uint32_t now_ms);
 // 周期调用：已标记、距最后一次修改 ≥ 1.5 s、且 quiet（音频静止）时写入。
 void mn_store_tick(const mn_cfg_t *cfg, uint32_t now_ms, bool quiet);
+// 关机前调用：有未保存的修改就立即写入（不等 1.5 s）。调用方保证音频已静止。
+void mn_store_flush(const mn_cfg_t *cfg);
