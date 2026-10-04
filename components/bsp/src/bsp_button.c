@@ -6,6 +6,7 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
+#include "driver/gpio.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 
@@ -216,4 +217,29 @@ int bsp_button_read_mv(void) {
     if (adc_oneshot_read(s_adc, BSP_BTN_ADC_CHANNEL, &raw) != ESP_OK) return -1;
     if (adc_cali_raw_to_voltage(s_cali, raw, &mv) != ESP_OK) return -1;
     return mv;
+}
+
+esp_err_t bsp_button_prepare_deep_sleep(int *level) {
+    // 先删按键 driver 再删 ADC（button_cleanup 已保证顺序）；回滚不完整时不碰该脚。
+    button_cleanup();
+    if (s_adc || s_cali) return ESP_ERR_INVALID_STATE;
+    for (int i = 0; i < BSP_BTN_COUNT; i++) {
+        if (s_btn[i]) return ESP_ERR_INVALID_STATE;
+    }
+    const gpio_config_t io = {
+        .pin_bit_mask = 1ULL << BSP_BTN_GPIO,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    const esp_err_t e = gpio_config(&io);
+    if (e != ESP_OK) {
+        ESP_LOGE(TAG, "按键节点改为数字输入失败: %s", esp_err_to_name(e));
+        return e;
+    }
+    const int lv = gpio_get_level(BSP_BTN_GPIO);
+    if (level) *level = lv;
+    ESP_LOGI(TAG, "按键已释放供深睡唤醒，GPIO%d 当前电平 %d", BSP_BTN_GPIO, lv);
+    return ESP_OK;
 }

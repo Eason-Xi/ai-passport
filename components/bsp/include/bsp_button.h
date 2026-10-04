@@ -28,6 +28,15 @@ typedef void (*bsp_btn_cb_t)(bsp_btn_t btn, bsp_btn_ev_t ev, void *user);
 // ADC 校准失败时返回错误而不是把无效电压解码为按键，修正故障后可重试。
 esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user);
 
+// 终端深睡前调用：停止按键轮询，释放共享 ADC unit 与校准句柄，并把按键节点
+// （BSP_BTN_GPIO）改为带上拉的数字输入，供 esp_deep_sleep_enable_gpio_wakeup()
+// 以低电平唤醒——任意键按下都会把该脚拉到数字低电平。
+// ⚠ ADC 占用该脚时数字电平恒读 0，不先释放就会入睡即醒。
+// level 非空时回填当前电平：1 = 无键按下；0 = 有键按住，调用方应推迟入睡。
+// 调用后按键回调不再触发；若放弃入睡，再次调用 bsp_button_init() 即可恢复。
+// 阻塞时间很短（删除按键与 ADC 句柄），不得在按键回调里调用。
+esp_err_t bsp_button_prepare_deep_sleep(int *level);
+
 // 读当前 ADC 原始电压(mV)。松开时约 3300;按住某键时约为该键的分压值。
 // ★ 换了分压/上拉阻值后,用它测出自己的三档电压,再改 bsp_pins.h 的 BSP_BTN_MV_TABLE。
 // 读取失败返回 -1。
