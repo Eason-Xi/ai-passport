@@ -223,7 +223,7 @@ Run a firmware build once first so the LVGL sources are downloaded into `managed
   with staged power saving, low-battery detection, the auto power-off order contract, and Chinese
   glyph coverage.
 - **Firmware build:** builds with ESP-IDF 5.5.3 without warnings, and the merged image passes verification.
-- **Device:** the core metronome features were tested as a whole on a FoloToy AI Passport and work; sleep, auto power-off, key power-on, low-battery protection, and the count-in have not been tested on the device yet.
+- **Device:** the current version, including sleep, auto power-off, key power-on, low-battery protection, and the count-in, passed testing on a FoloToy AI Passport; no item-by-item measurements were recorded.
 
 ## Known limitations
 
@@ -238,7 +238,7 @@ Run a firmware build once first so the LVGL sources are downloaded into `managed
 - "Power-off" shuts down the peripherals and enters deep sleep; it does not cut power, which is
   controlled by the device's separate power key. A small standby current remains and has not been measured.
 - Key power-on relies on a low-level wake on the key input; the OK key has the smallest voltage
-  margin, and reliable wake from it needs on-device confirmation.
+  margin, so if OK does not power the device on, press UP / DOWN or the power key instead.
 - The device has no charging-status signal: a computer USB connection is detected directly; with
   only a charger connected, charging is inferred from the battery voltage rising during low battery.
 
