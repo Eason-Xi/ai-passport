@@ -257,6 +257,52 @@ def red_mask(rgb):  # pragma: no cover - 依赖 numpy
     return hue_red & (sat > 0.25) & (mx > 60)
 
 
+# 居中时不计入的零星石花：不足全字墨量 SPECK_SHARE，且离主体笔画超过 SPECK_GAP 个字格。
+SPECK_SHARE = 0.03
+SPECK_GAP = 0.06
+
+
+def ink_center(alpha, cell):  # pragma: no cover - 依赖 numpy/scipy
+    """主体笔画外接框的中心（连续坐标 x, y）；没有笔画时返回 None。
+
+    切字框会带进被 erase 擦掉的邻字残片、离字较远的石花，按框心居中会把字推偏。这里先取
+    墨量够大的连通域作主体，再把贴近主体的小块（点画、断笔）并进来，远处的石花不参与；
+    石花本身仍保留在字形里。
+    """
+    import numpy as np
+    from scipy import ndimage as ndi
+
+    ink = alpha > 0.25
+    lab, n = ndi.label(ink, structure=np.ones((3, 3), dtype=bool))
+    if n == 0:
+        return None
+    areas = ndi.sum(ink, lab, range(1, n + 1))
+    boxes = ndi.find_objects(lab)
+    total = float(areas.sum())
+    inside = [k for k in range(n) if areas[k] >= SPECK_SHARE * total] or [int(np.argmax(areas))]
+    rest = [k for k in range(n) if k not in inside]
+    gap = SPECK_GAP * cell
+
+    def bbox(ks):
+        return (min(boxes[k][1].start for k in ks), min(boxes[k][0].start for k in ks),
+                max(boxes[k][1].stop for k in ks), max(boxes[k][0].stop for k in ks))
+
+    grown = True
+    while grown and rest:
+        grown = False
+        x0, y0, x1, y1 = bbox(inside)
+        for k in list(rest):
+            ys, xs = boxes[k]
+            dx = max(x0 - xs.stop, xs.start - x1, 0)
+            dy = max(y0 - ys.stop, ys.start - y1, 0)
+            if max(dx, dy) <= gap:
+                inside.append(k)
+                rest.remove(k)
+                grown = True
+    x0, y0, x1, y1 = bbox(inside)
+    return (x0 + x1) / 2.0, (y0 + y1) / 2.0
+
+
 def process_glyph(rgb, entry, cell):  # pragma: no cover - 依赖 numpy/scipy/PIL
     import numpy as np
     from PIL import Image
@@ -302,9 +348,10 @@ def process_glyph(rgb, entry, cell):  # pragma: no cover - 依赖 numpy/scipy/PI
     keep = ndi.binary_dilation(keep, structure=np.ones((5, 5), dtype=bool)) & ~void
     alpha *= keep
 
-    # 按统一字格缩放（保留字与字的相对大小），以像素框中心居中。
+    # 按统一字格缩放（保留字与字的相对大小），以主体笔画的外接框居中（米字格中心对准字的中心）。
     scale = min(STORE_SIZE * 0.97 / cell, (STORE_SIZE - 6) / max(x1 - x0, y1 - y0))
-    cx, cy = (bx0 + bx1) / 2.0, (by0 + by1) / 2.0
+    center = ink_center(alpha, cell)
+    cx, cy = center if center else ((bx0 + bx1) / 2.0, (by0 + by1) / 2.0)
     img = Image.fromarray((alpha * 255).astype(np.uint8), "L")
     nw, nh = max(1, round(w * scale)), max(1, round(h * scale))
     img = img.resize((nw, nh), Image.LANCZOS)

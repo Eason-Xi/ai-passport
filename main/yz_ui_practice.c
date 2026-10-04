@@ -1,6 +1,7 @@
 // main/yz_ui_practice.c —— 临帖页：格子里的拓本原字、简体与拼音、碑文语境、计时进度、笔法卡。
 //
 // 三种底色：拓本（黑底白字，碑石原貌）、墨迹（宣纸黑字）、描红（宣纸浅朱字，可对着描摹笔顺）。
+#include "yz_glyph.h"
 #include "yz_ui_internal.h"
 
 #define GRID_BORDER 2
@@ -20,12 +21,16 @@ static const palette_t PALETTES[YZ_INK_COUNT] = {
                        YZ_C_INK, YZ_C_INK_SOFT, YZ_C_VERMILION, LV_OPA_60 },
 };
 
-// 格线端点（相对 200×200 格子）。lv_line 只保存指针，所以必须是静态数据。
-#define G0 1
-#define G1 (YZ_GRID_SIZE - 2)
-#define GM (YZ_GRID_SIZE / 2)
-#define T1 (YZ_GRID_SIZE / 3)
-#define T2 (YZ_GRID_SIZE * 2 / 3)
+// 格线端点。子对象的坐标从边框内侧的内容区算起（200 − 2×2 = 196 px），所以格线按内容区
+// 计算，中线才会和居中的字形（176 px 画布，内容区中心）对齐；按整格 200 px 算会向右下偏 2 px。
+// lv_line 只保存指针，所以必须是静态数据。
+#define GC (YZ_GRID_SIZE - 2 * GRID_BORDER)
+#define G0 0
+#define G1 (GC - 1)
+#define GM (GC / 2)
+#define T1 (GC / 3)
+#define T2 (GC * 2 / 3)
+_Static_assert((GC - YZ_GLYPH_SIZE) % 2 == 0, "glyph must sit exactly centered in the grid content area");
 static const lv_point_precise_t P_H[] = { { G0, GM }, { G1, GM } };
 static const lv_point_precise_t P_V[] = { { GM, G0 }, { GM, G1 } };
 static const lv_point_precise_t P_D1[] = { { G0, G0 }, { G1, G1 } };

@@ -1,5 +1,5 @@
-// tests/test_yz_glyph.c —— 字形包解码：真实字形包逐字解码（与浮点双线性参考实现逐像素比对），
-// 以及手工构造的原尺寸 / 缩小尺寸字形包与各种损坏数据。
+// tests/test_yz_glyph.c —— 字形包解码：真实字形包逐字解码（与浮点双线性参考实现逐像素比对）、
+// 每个字都居中在画布（即米字格）中心，以及手工构造的原尺寸 / 缩小尺寸字形包与各种损坏数据。
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
@@ -66,6 +66,103 @@ static void reference(const uint8_t *src, size_t len, int store, uint8_t *dst) {
     }
 }
 
+// ---- 居中检查：与 tools/gen_yz_assets.py 的 ink_center() 同一规则，在显示尺寸上计算 ----
+
+#define INK_MIN 64              // alpha > 0.25 算笔画
+#define SPECK_SHARE_PCT 3       // 不足全字墨量 3% 的连通域……
+#define SPECK_GAP 10            // ……且离主体超过约 6% 字格（显示尺寸约 10 px）的，不参与居中
+#define MAX_COMPS 1024
+
+typedef struct {
+    int area, x0, y0, x1, y1;   // 外接框，x1 / y1 不含
+} comp_t;
+
+static int16_t s_label[YZ_GLYPH_PIXELS];
+static uint16_t s_queue[YZ_GLYPH_PIXELS];
+static comp_t s_comps[MAX_COMPS];
+
+// 主体笔画外接框的中心相对画布中心的偏移（显示像素，乘 2 以保留半像素）。
+static void ink_offset2(const uint8_t *px, int *dx2, int *dy2) {
+    const int n = YZ_GLYPH_SIZE;
+    memset(s_label, 0, sizeof s_label);
+    int count = 0, total = 0;
+    for (int start = 0; start < YZ_GLYPH_PIXELS; start++) {
+        if (px[start] <= INK_MIN || s_label[start]) continue;
+        CHECK(count < MAX_COMPS);
+        comp_t *c = &s_comps[count++];
+        *c = (comp_t){ 0, n, n, 0, 0 };
+        int head = 0, tail = 0;
+        s_queue[tail++] = (uint16_t)start;
+        s_label[start] = (int16_t)count;
+        while (head < tail) {
+            const int p = s_queue[head++], x = p % n, y = p / n;
+            c->area++;
+            if (x < c->x0) c->x0 = x;
+            if (y < c->y0) c->y0 = y;
+            if (x + 1 > c->x1) c->x1 = x + 1;
+            if (y + 1 > c->y1) c->y1 = y + 1;
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    const int nx = x + dx, ny = y + dy;
+                    if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+                    const int q = ny * n + nx;
+                    if (px[q] > INK_MIN && !s_label[q]) {
+                        s_label[q] = (int16_t)count;
+                        s_queue[tail++] = (uint16_t)q;
+                    }
+                }
+            }
+        }
+        total += c->area;
+    }
+    CHECK(count > 0);
+    static uint8_t in[MAX_COMPS];
+    int x0 = n, y0 = n, x1 = 0, y1 = 0;
+    for (int k = 0; k < count; k++) {
+        in[k] = (uint8_t)(s_comps[k].area * 100 >= SPECK_SHARE_PCT * total);
+    }
+    for (bool grown = true; grown;) {
+        grown = false;
+        x0 = y0 = n;
+        x1 = y1 = 0;
+        for (int k = 0; k < count; k++) {
+            if (!in[k]) continue;
+            if (s_comps[k].x0 < x0) x0 = s_comps[k].x0;
+            if (s_comps[k].y0 < y0) y0 = s_comps[k].y0;
+            if (s_comps[k].x1 > x1) x1 = s_comps[k].x1;
+            if (s_comps[k].y1 > y1) y1 = s_comps[k].y1;
+        }
+        for (int k = 0; k < count; k++) {
+            if (in[k]) continue;
+            const comp_t *c = &s_comps[k];
+            int gx = x0 - c->x1 > c->x0 - x1 ? x0 - c->x1 : c->x0 - x1;
+            int gy = y0 - c->y1 > c->y0 - y1 ? y0 - c->y1 : c->y0 - y1;
+            gx = gx < 0 ? 0 : gx;
+            gy = gy < 0 ? 0 : gy;
+            if ((gx > gy ? gx : gy) <= SPECK_GAP) {
+                in[k] = 1;
+                grown = true;
+            }
+        }
+    }
+    *dx2 = x0 + x1 - n;
+    *dy2 = y0 + y1 - n;
+}
+
+static void test_ink_offset(void) {
+    // 一个居中的方块加一个远处的小石花：石花不影响居中；贴近主体的小点（点画）算进主体。
+    static uint8_t px[YZ_GLYPH_PIXELS];
+    memset(px, 0, sizeof px);
+    for (int y = 48; y < 128; y++) memset(px + y * YZ_GLYPH_SIZE + 48, 255, 80);
+    px[5 * YZ_GLYPH_SIZE + 170] = 255;
+    int dx2, dy2;
+    ink_offset2(px, &dx2, &dy2);
+    CHECK(dx2 == 0 && dy2 == 0);
+    for (int y = 130; y < 136; y++) memset(px + y * YZ_GLYPH_SIZE + 80, 255, 6);   // 贴在下方 2 px 的小点
+    ink_offset2(px, &dx2, &dy2);
+    CHECK(dx2 == 0 && dy2 == 8);
+}
+
 static void test_real_pack(const char *path) {
     size_t size;
     uint8_t *data = load(path, &size);
@@ -85,6 +182,13 @@ static void test_real_pack(const char *path) {
         CHECK(ink > YZ_GLYPH_PIXELS / 200);
         CHECK(ink < YZ_GLYPH_PIXELS * 6 / 10);
         CHECK(bright > 0);
+        // 字的中心对准米字格中心：主体笔画外接框偏离画布中心不超过 3 个显示像素。
+        int dx2, dy2;
+        ink_offset2(s_out, &dx2, &dy2);
+        if (abs(dx2) > 6 || abs(dy2) > 6) {
+            fprintf(stderr, "第 %d 字（%s）偏离中心 (%.1f, %.1f) px\n", i, YZ_ENTRIES[i].trad, dx2 / 2.0, dy2 / 2.0);
+            CHECK(abs(dx2) <= 6 && abs(dy2) <= 6);
+        }
         // 每隔 50 个字与参考实现逐像素比对（定点取整误差不超过 1）。
         if (i % 50 == 0 || i == pack.count - 1) {
             const uint8_t *rec = data + 12 + (size_t)i * 8;
@@ -189,6 +293,7 @@ static void test_synthetic(void) {
 int main(int argc, char **argv) {
     CHECK(argc == 2);
     test_synthetic();
+    test_ink_offset();
     test_real_pack(argv[1]);
     printf("test_yz_glyph: PASS\n");
     return 0;
