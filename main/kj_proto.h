@@ -1,0 +1,113 @@
+// main/kj_proto.h —— 限定猜拳的无线帧格式（ESP-NOW 载荷）。纯 C，主机测试见 tests/test_kj_proto.c。
+//
+// 所有帧都以 6 字节头开始：'K' 'J' 版本 类型 赌局号(2 字节小端)。
+//   ROOM  庄家每秒广播：阶段、人数、空闲选手位图、电脑选手位图（编号 1..128 → 位 0..127）
+//   HELLO 选手每 1.5 s 广播心跳（附近的选手据此按信号强弱排序对手）；收到新视图后单播给庄家作确认
+//   REQ   选手 → 庄家单播请求（入座 / 挑战 / 应战 / 出牌…），带序号，庄家去重
+//   VIEW  庄家 → 选手单播视图（只含自己的手牌，对手只透露"是否已出牌"）
+// 可靠性由应用层负责：请求按序号重发直到视图里的 ack_seq 追上；视图按版本号重发直到 HELLO 确认。
+#pragma once
+
+#include "kj_rules.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#define KJ_PROTO_VERSION 1
+#define KJ_FRAME_HEADER  6
+#define KJ_FRAME_MAX     64
+#define KJ_BITMAP_BYTES  (KJ_MAX_PLAYERS / 8)
+
+typedef enum {
+    KJ_F_ROOM = 1,
+    KJ_F_HELLO = 2,
+    KJ_F_REQ = 3,
+    KJ_F_VIEW = 4,
+} kj_frame_type_t;
+
+typedef enum {
+    KJ_OP_JOIN = 1,
+    KJ_OP_CHALLENGE,   // arg = 对手编号
+    KJ_OP_CANCEL,
+    KJ_OP_ACCEPT,
+    KJ_OP_DECLINE,
+    KJ_OP_PLAY,        // arg = kj_card_t
+    KJ_OP_WITHDRAW,
+    KJ_OP_COUNT,
+} kj_op_t;
+
+#define KJ_HELLO_JOINED 0x01
+
+typedef struct {
+    uint8_t phase;
+    uint16_t game_id;
+    uint16_t phase_ver;
+    uint8_t seated;
+    uint8_t online;
+    uint8_t avail[KJ_BITMAP_BYTES];   // 当前可被挑战的选手
+    uint8_t bots[KJ_BITMAP_BYTES];    // 电脑选手
+} kj_room_t;
+
+typedef struct {
+    uint8_t no;
+    uint8_t flags;
+    uint16_t view_ver;
+} kj_hello_t;
+
+typedef struct {
+    uint16_t seq;
+    uint8_t op;
+    uint8_t arg;
+} kj_req_t;
+
+typedef struct {
+    uint8_t type;
+    uint16_t room;
+    union {
+        kj_room_t room_info;
+        kj_hello_t hello;
+        kj_req_t req;
+        kj_view_t view;
+    } u;
+} kj_frame_t;
+
+// 编码到 buf，返回长度；cap 不足返回 0。
+size_t kj_proto_encode(const kj_frame_t *f, uint8_t *buf, size_t cap);
+// 解码并校验魔数 / 版本 / 长度 / 类型；失败返回 false。
+bool kj_proto_decode(const uint8_t *buf, size_t len, kj_frame_t *out);
+
+static inline bool kj_bit_get(const uint8_t *bm, uint8_t no)
+{
+    if (no == 0 || no > KJ_MAX_PLAYERS) return false;
+    return (bm[(no - 1) / 8] >> ((no - 1) % 8)) & 1u;
+}
+
+static inline void kj_bit_set(uint8_t *bm, uint8_t no)
+{
+    if (no == 0 || no > KJ_MAX_PLAYERS) return;
+    bm[(no - 1) / 8] |= (uint8_t)(1u << ((no - 1) % 8));
+}
+
+// 待发送帧队列（纯逻辑层产出，平台层负责实际发送）。
+typedef struct {
+    uint8_t mac[6];
+    uint8_t broadcast;
+    uint8_t len;
+    uint8_t data[KJ_FRAME_MAX];
+} kj_out_t;
+
+#define KJ_OUTBOX_MAX 24
+
+typedef struct {
+    kj_out_t items[KJ_OUTBOX_MAX];
+    int count;
+    int dropped;
+} kj_outbox_t;
+
+static inline void kj_outbox_clear(kj_outbox_t *o) { o->count = 0; o->dropped = 0; }
+// mac == NULL 表示广播。队列满或编码失败返回 false。
+bool kj_outbox_push(kj_outbox_t *o, const uint8_t *mac, const kj_frame_t *f);
+
+// 序号比较（16 位回绕）：a 比 b 新返回 > 0。
+static inline int kj_seq_diff(uint16_t a, uint16_t b) { return (int16_t)(uint16_t)(a - b); }

@@ -54,13 +54,31 @@ run_static_checks() {
         tests/test_bsp_audio_recovery.c components/bsp/src/bsp_es8311_sleep_check.c \
         -o "${test_dir}/test_bsp_audio_recovery"
     "${test_dir}/test_bsp_audio_recovery"
+    # 去除未用段：GNU ld 用 --gc-sections，macOS ld64 用 -dead_strip。
+    local gc_flag="-Wl,--gc-sections"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        gc_flag="-Wl,-dead_strip"
+    fi
     for demo in audio low_power ble wifi; do
         "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
             -ffunction-sections -fdata-sections -Itests/demo_stubs -Imain \
-            "tests/test_demo_${demo}_runtime.c" -Wl,--gc-sections \
+            "tests/test_demo_${demo}_runtime.c" "${gc_flag}" \
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
+    # 限定猜拳：规则 / 协议 / 庄家 / 选手 / 界面状态机 / 看板协议 / 持久化，
+    # 以及多设备丢包联机仿真；字体子集覆盖与应用约束。
+    local kj_sources=(main/kj_rules.c main/kj_proto.c main/kj_server.c main/kj_client.c
+        main/kj_flow.c main/kj_model.c main/kj_board.c main/kj_persist.c)
+    local kj_test
+    for kj_test in rules proto server client flow board persist sim; do
+        "${CC:-cc}" -std=c11 -O1 -Wall -Wextra -Werror -Imain -Itests \
+            "tests/test_kj_${kj_test}.c" "${kj_sources[@]}" \
+            -o "${test_dir}/test_kj_${kj_test}"
+        "${test_dir}/test_kj_${kj_test}"
+    done
+    python3 tools/gen_kj_fonts.py check
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_kj_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py

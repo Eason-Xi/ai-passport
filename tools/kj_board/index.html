@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>限定猜拳 · 庄家看板</title>
+<!--
+  限定猜拳（《赌博默示录》）庄家看板 —— 只给庄家 / 观众看，不要让选手看到。
+  用 Chrome 或 Edge 直接打开本文件，点"连接庄家设备"，选择庄家那台 AI Passport 的 USB 串口。
+  协议见 main/kj_board.h：设备每行输出 "@KJ {json}"，看板写回 "@KJ start|end|new|reset|bot+|bot-|sync|kick N"。
+  不需要联网、不加载任何外部资源。"演示"按钮用内置模拟数据预览界面（不连设备）。
+-->
+<style>
+:root {
+  --bg: #0d0b0a; --panel: #1b1613; --panel2: #231c18; --line: #3a3029; --text: #f3ebdd; --muted: #9c8f7e;
+  --dim: #5e544a; --red: #d0232c; --red-dark: #4a0f13; --gold: #f2c230; --green: #3fb56b; --blue: #7f9cb3;
+  --card: #f2e7cf; --ink: #1e1915;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font: 14px/1.45 -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+button { font: inherit; color: inherit; cursor: pointer; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 20px;
+  border-bottom: 1px solid var(--line); background: #110e0c; position: sticky; top: 0; z-index: 5; }
+h1 { margin: 0; font-size: 20px; letter-spacing: 1px; }
+h1 b { color: var(--red); }
+.sub { color: var(--muted); font-size: 12px; }
+.grow { flex: 1; }
+.btn { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; }
+.btn:hover:not(:disabled) { border-color: var(--muted); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--red); border-color: var(--red); }
+.btn.gold { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+.status { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dim); display: inline-block; }
+.dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.dot.warn { background: var(--gold); }
+main { padding: 16px 20px 40px; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 320px; }
+@media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.panel h2 { margin: 0 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; letter-spacing: 1px; }
+/* 船上的电子公告板：全场剩余牌数 */
+.ship { display: grid; grid-template-columns: repeat(3, 1fr) repeat(4, minmax(0, .8fr)); gap: 10px; }
+@media (max-width: 760px) { .ship { grid-template-columns: repeat(3, 1fr); } }
+.tile { background: #120f0d; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: center; }
+.tile .k { color: var(--muted); font-size: 12px; }
+.tile .v { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tile.card .v { color: var(--text); }
+.tile .hand { font-size: 22px; filter: grayscale(1) contrast(1.4); }
+.tile.stars .v { color: var(--gold); }
+.tile.out .v { color: var(--red); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.toolbar .spacer { flex: 1; }
+select, input[type=number] { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font: inherit; }
+label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); cursor: pointer; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.pl { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; position: relative; }
+.pl.duel { border-color: var(--gold); }
+.pl.challenged, .pl.challenging { border-color: #8a6a2a; }
+.pl.cleared { border-color: var(--gold); background: #261f10; }
+.pl.out, .pl.failed { opacity: .62; }
+.pl.offline .no::after { content: " · 离线"; color: var(--red); font-size: 12px; font-weight: 400; }
+.pl .top { display: flex; align-items: baseline; gap: 8px; }
+.pl .no { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pl .name { flex: 1; min-width: 0; color: var(--text); background: transparent; border: 0; border-bottom: 1px dashed transparent;
+  font: inherit; font-size: 15px; padding: 0; outline: none; text-overflow: ellipsis; }
+.pl .name:hover, .pl .name:focus { border-bottom-color: var(--dim); }
+.pl .name::placeholder { color: var(--dim); }
+.badge { font-size: 12px; padding: 1px 8px; border-radius: 10px; background: #2b241f; color: var(--muted); white-space: nowrap; }
+.badge.idle { color: var(--green); }
+.badge.duel { background: #3b2e12; color: var(--gold); }
+.badge.challenging, .badge.challenged { color: var(--gold); }
+.badge.cleared { background: var(--gold); color: #1a1410; }
+.badge.out { background: var(--red-dark); color: #ff9a9a; }
+.badge.failed { background: #3a1614; color: #e0827a; }
+.badge.bot { background: #2e3a44; color: var(--blue); }
+.meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; margin-top: 2px; white-space: nowrap; }
+.meta.small { color: var(--dim); font-size: 11px; margin-top: 0; }
+.stars { color: var(--gold); font-size: 18px; letter-spacing: 1px; margin: 6px 0 4px; min-height: 26px; }
+.stars.zero { color: var(--dim); }
+.hand3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.hc { background: var(--card); color: var(--ink); border-radius: 8px; padding: 4px 6px 6px; text-align: center; }
+.hc.zero { background: #3a332d; color: #6b6158; }
+.hc .g { font-size: 20px; line-height: 1.2; filter: grayscale(1) contrast(1.3); }
+.hc .n { font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
+.pips { display: flex; gap: 3px; justify-content: center; margin-top: 2px; }
+.pips i { width: 7px; height: 7px; border-radius: 2px; background: #6f5f44; display: block; }
+.pips i.off { background: rgba(0, 0, 0, .1); }
+.hc.zero .pips i { background: rgba(255, 255, 255, .08); }
+.duelrow { margin-top: 8px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; min-height: 24px; }
+.duelrow .lock { color: var(--gold); font-weight: 700; }
+.duelrow .lock .g { filter: grayscale(1) contrast(1.3); font-size: 18px; vertical-align: -2px; }
+.kick { position: absolute; top: 8px; right: 8px; background: transparent; border: 0; color: var(--dim); font-size: 13px; display: none; }
+.pl:hover .kick { display: block; }
+.kick:hover { color: var(--red); }
+.empty { color: var(--muted); padding: 40px 10px; text-align: center; }
+.log { max-height: 70vh; overflow: auto; display: flex; flex-direction: column; gap: 6px; }
+.ev { font-size: 13px; padding: 6px 8px; background: #151210; border-radius: 8px; border-left: 3px solid var(--line); }
+.ev .t { color: var(--dim); font-size: 11px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+.ev.result { border-left-color: var(--gold); }
+.ev.cleared { border-left-color: var(--gold); background: #231c0e; }
+.ev.eliminated, .ev.failed { border-left-color: var(--red); }
+.ev .g { filter: grayscale(1) contrast(1.3); }
+.hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
+.timer { font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; }
+.timer.warn { color: var(--red); }
+#cover { position: fixed; inset: 0; background: #0d0b0a; display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px; z-index: 50; color: var(--muted); }
+#cover b { font-size: 46px; color: var(--red); letter-spacing: 6px; }
+#unsupported { display: none; background: var(--red-dark); color: #ffd6d6; padding: 10px 20px; }
+</style>
+</head>
+<body>
+<div id="unsupported">当前浏览器不支持 Web Serial。请用电脑上的 Chrome 或 Edge 打开本文件（也可以先点"演示"预览界面）。</div>
+<header>
+  <div>
+    <h1>限定<b>猜拳</b> · 庄家看板</h1>
+    <div class="sub">只给庄家 / 观众看 · 按 H 键一键遮挡</div>
+  </div>
+  <span class="status"><span id="dot" class="dot"></span><span id="conn">未连接</span></span>
+  <span class="status">赌局 <b id="room">----</b></span>
+  <span class="status">阶段 <b id="phase">—</b></span>
+  <span class="status">已进行 <span id="elapsed" class="timer">00:00</span></span>
+  <span class="grow"></span>
+  <button class="btn primary" id="connect">连接庄家设备</button>
+  <button class="btn" id="demo">演示</button>
+  <button class="btn" id="hide">遮挡 (H)</button>
+</header>
+<main>
+  <section style="display:grid; gap:16px; min-width:0">
+    <div class="panel">
+      <h2>全场公告板</h2>
+      <div class="ship">
+        <div class="tile card"><div class="hand">✊</div><div class="v" id="t-r">0</div><div class="k">石头剩余</div></div>
+        <div class="tile card"><div class="hand">✌️</div><div class="v" id="t-s">0</div><div class="k">剪刀剩余</div></div>
+        <div class="tile card"><div class="hand">✋</div><div class="v" id="t-p">0</div><div class="k">布剩余</div></div>
+        <div class="tile stars"><div class="k">全场星星</div><div class="v" id="t-stars">0</div></div>
+        <div class="tile"><div class="k">仍在场</div><div class="v" id="t-active">0</div></div>
+        <div class="tile"><div class="k">过关</div><div class="v" id="t-cleared" style="color:var(--gold)">0</div></div>
+        <div class="tile out"><div class="k">出局 / 失败</div><div class="v" id="t-out">0</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <button class="btn gold" data-cmd="start" id="b-start">开始赌局</button>
+        <button class="btn" data-cmd="end" data-confirm="结束赌局？仍有手牌的人将判负。" id="b-end">结束赌局</button>
+        <button class="btn" data-cmd="new" data-confirm="开始新一局？所有人回到入座状态并清空手牌。" id="b-new">新一局</button>
+        <button class="btn" data-cmd="bot+">+ 电脑选手</button>
+        <button class="btn" data-cmd="bot-">− 电脑选手</button>
+        <button class="btn" data-cmd="reset" data-confirm="清空所有选手？他们需要重新入座。">清空</button>
+        <span class="spacer"></span>
+        <label class="chk">时限 <input type="number" id="limit" min="0" max="600" value="0" style="width:64px"> 分钟</label>
+        <span class="timer" id="countdown" title="时限到达后自动结束赌局"></span>
+      </div>
+      <div class="toolbar">
+        <label class="chk"><input type="checkbox" id="showLock" checked> 显示暗牌（对决中已扣下的牌）</label>
+        <label class="chk"><input type="checkbox" id="hideDone"> 隐藏已离场</label>
+        <span class="spacer"></span>
+        <label class="chk">排序
+          <select id="sort">
+            <option value="no">编号</option>
+            <option value="stars">星星</option>
+            <option value="cards">剩余手牌</option>
+            <option value="status">状态</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty">还没有选手。先连接庄家设备，让选手在自己的设备上选择"我是选手 · 加入赌局"。</div>
+      <div class="hint">点选手名字可以改名（只保存在这台电脑上）。鼠标移到卡片上可以移出该选手。</div>
+    </div>
+  </section>
+  <aside class="panel">
+    <h2>对局记录</h2>
+    <div class="log" id="log"></div>
+  </aside>
+</main>
+<div id="cover"><b>限定猜拳</b><div>看板已遮挡 · 按 H 键或点击恢复</div></div>
+<script>
+"use strict";
+const HAND = { r: "✊", s: "✌️", p: "✋" };
+const CARD_NAME = { r: "石头", s: "剪刀", p: "布" };
+const STATUS = { waiting: "等待开局", idle: "空闲", challenging: "发起挑战", challenged: "被挑战",
+  duel: "对决中", cleared: "过关", out: "出局", failed: "失败" };
+const STATUS_ORDER = { duel: 0, challenging: 1, challenged: 1, idle: 2, waiting: 3, cleared: 4, failed: 5, out: 6 };
+const PHASE = { lobby: "等待入座", run: "进行中", ended: "已结束" };
+const EVENT_TEXT = {
+  join: e => `${no(e.a)} 入座`, rejoin: e => `${no(e.a)} 重新连上`, bot: e => `${no(e.a)} 电脑选手入座`,
+  remove: e => `${no(e.a)} 离开赌局`, start: () => "赌局开始：每人 石头/剪刀/布 各 4 张、星星 3 颗",
+  end: () => "赌局结束：仍有手牌的人判负", new: () => "新一局：所有人回到入座状态", reset: () => "清空所有选手",
+  challenge: e => `${no(e.a)} 向 ${no(e.b)} 发起挑战`, cancel: e => `${no(e.a)} 撤回了对 ${no(e.b)} 的挑战`,
+  decline: e => `${no(e.a)} 拒绝了 ${no(e.b)} 的挑战`, timeout: e => `${no(e.a)} → ${no(e.b)} 的挑战超时`,
+  accept: e => `${no(e.b)} 应战 ${no(e.a)}，对决 #${e.duel} 开始`,
+  lock: e => `${no(e.a)} 扣下暗牌` + (showLock() && e.ca ? `（<span class="g">${HAND[e.ca]}</span>）` : ""),
+  result: e => `${no(e.a)} <span class="g">${HAND[e.ca] || "?"}</span> vs <span class="g">${HAND[e.cb] || "?"}</span> ${no(e.b)} → ` +
+    (e.w ? `<b>${no(e.w)} 胜</b>` : "平局"),
+  withdraw: e => `${no(e.a)} 放弃了与 ${no(e.b)} 的对决`, abort: e => `${no(e.a)} 断线，对决作废`,
+  cleared: e => `<b>${no(e.a)} 过关！</b>`, eliminated: e => `${no(e.a)} 星星输光，出局`,
+  failed: e => `${no(e.a)} 失败`,
+};
+
+const state = { room: "----", phase: "", phaseMs: 0, phaseAt: 0, players: new Map(), game: null, connected: false };
+let port = null, writer = null, demoTimer = null, endSent = false;
+
+const $ = id => document.getElementById(id);
+const showLock = () => $("showLock").checked;
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]); }
+function pad(n) { return String(n).padStart(2, "0"); }
+function store(key, val) { try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); } catch (e) { return null; } }
+function nameOf(p) { return p && p.id ? (store(`kj-name-${p.id}`) || "") : ""; }
+function no(n) {
+  if (!n) return "—";
+  const p = state.players.get(n);
+  const nm = nameOf(p);
+  return `<b>${pad(n)}号</b>` + (nm ? `(${esc(nm)})` : "");
+}
+function fmtTime(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s = sec % 60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+// ---------------------------------------------------------------- 协议解析
+function handleLine(line) {
+  const i = line.indexOf("@KJ {");
+  if (i < 0) return;
+  let msg;
+  try { msg = JSON.parse(line.slice(i + 4)); } catch (e) { return; }
+  switch (msg.t) {
+    case "hello":
+      if (state.room !== msg.room) { state.players.clear(); clearLog(); }
+      state.room = msg.room;
+      break;
+    case "g":
+      state.game = msg;
+      state.room = msg.room;
+      if (state.phase !== msg.phase) endSent = false;
+      state.phase = msg.phase;
+      state.phaseMs = msg.phase_ms;
+      state.phaseAt = performance.now();
+      break;
+    case "p":
+      if (msg.gone) state.players.delete(msg.no);
+      else state.players.set(msg.no, msg);
+      break;
+    case "e":
+      if (msg.k === "reset") state.players.clear();
+      addLog(msg);
+      break;
+    case "ack":
+      if (!msg.ok) addNote(`命令 ${msg.cmd} 未执行：${({ invalid: "当前阶段不能这样做（开局至少需要 2 人）", busy: "对方正忙", full: "赌局已满" })[msg.err] || msg.err}`);
+      break;
+  }
+  scheduleRender();
+}
+
+// ---------------------------------------------------------------- 渲染
+let renderPending = false;
+function scheduleRender() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => { renderPending = false; render(); });
+}
+
+function pips(n) {
+  let h = "";
+  for (let i = 0; i < 4; i++) h += `<i class="${i < n ? "" : "off"}"></i>`;
+  return `<div class="pips">${h}</div>`;
+}
+
+function starText(n) {
+  if (!n) return "☆";
+  return n <= 8 ? "★".repeat(n) : `★ × ${n}`;
+}
+
+function render() {
+  $("room").textContent = state.room;
+  $("phase").textContent = PHASE[state.phase] || "—";
+  const g = state.game;
+  const list = [...state.players.values()];
+  let tot = { r: 0, s: 0, p: 0 }, stars = 0, active = 0, cleared = 0, out = 0;
+  for (const p of list) {
+    stars += p.stars;
+    if (p.st === "cleared") cleared++;
+    else if (p.st === "out" || p.st === "failed") out++;
+    else { active++; tot.r += p.r; tot.s += p.s; tot.p += p.p; }
+  }
+  $("t-r").textContent = tot.r; $("t-s").textContent = tot.s; $("t-p").textContent = tot.p;
+  $("t-stars").textContent = stars; $("t-active").textContent = active;
+  $("t-cleared").textContent = cleared; $("t-out").textContent = out;
+  $("b-start").disabled = state.phase !== "lobby" || !canSend();
+  $("b-end").disabled = state.phase !== "run" || !canSend();
+
+  const sort = $("sort").value;
+  const hideDone = $("hideDone").checked;
+  const total = p => p.r + p.s + p.p;
+  list.sort((a, b) => {
+    if (sort === "stars") return b.stars - a.stars || a.no - b.no;
+    if (sort === "cards") return total(b) - total(a) || a.no - b.no;
+    if (sort === "status") return (STATUS_ORDER[a.st] - STATUS_ORDER[b.st]) || a.no - b.no;
+    return a.no - b.no;
+  });
+  const grid = $("grid");
+  const focused = document.activeElement && document.activeElement.classList.contains("name") ? document.activeElement.dataset.id : null;
+  if (focused) return;   // 正在改名时不重绘，避免打断输入
+  const html = [];
+  for (const p of list) {
+    if (hideDone && ["cleared", "out", "failed"].includes(p.st)) continue;
+    const t = total(p);
+    const cls = ["pl", p.st, p.on ? "" : "offline"].join(" ");
+    let duel = "";
+    if (p.st === "duel") {
+      const lock = p.lock ? (showLock() ? `<span class="lock">已出 <span class="g">${HAND[p.lock]}</span> ${CARD_NAME[p.lock]}</span>` : `<span class="lock">已扣暗牌</span>`) : "思考中…";
+      duel = `<span>对决 vs ${pad(p.peer)}号</span>${lock}`;
+    } else if (p.st === "challenging") duel = `<span>等 ${pad(p.peer)}号 应战…</span>`;
+    else if (p.st === "challenged") duel = `<span>${pad(p.peer)}号 发来挑战</span>`;
+    else if (p.st === "failed") duel = `<span>${p.fin === "timeup" ? "时间到，手牌未出完" : "手牌出完，星星不足"}</span>`;
+    else if (p.st === "cleared") duel = `<span>携 ${p.stars} ★ 离场</span>`;
+    html.push(`<div class="${cls}">
+      <button class="kick" data-kick="${p.no}" title="移出该选手">移出</button>
+      <div class="top"><span class="no">${pad(p.no)}</span>
+        <input class="name" data-id="${esc(p.id)}" placeholder="${p.bot ? "电脑选手" : "点此填写名字"}" value="${esc(nameOf(p))}" ${p.bot ? "disabled" : ""}>
+        ${p.bot ? '<span class="badge bot">电脑</span>' : ""}<span class="badge ${p.st}">${STATUS[p.st] || p.st}</span></div>
+      <div class="meta"><span>${p.w}胜 ${p.l}负 ${p.d}平</span><span>手牌 ${t} 张</span></div>
+      <div class="meta small"><span>${p.bot ? "庄家内置" : `设备 ${esc(p.id)}`}</span><span>${p.bot ? "" : (p.on ? `信号 ${p.rssi} dBm` : "离线")}</span></div>
+      <div class="stars ${p.stars ? "" : "zero"}">${starText(p.stars)}</div>
+      <div class="hand3">
+        ${["r", "s", "p"].map(k => `<div class="hc ${p[k] ? "" : "zero"}"><div class="g">${HAND[k]}</div><div class="n">${p[k]}</div>${pips(p[k])}</div>`).join("")}
+      </div>
+      <div class="duelrow">${duel}</div>
+    </div>`);
+  }
+  grid.innerHTML = html.join("");
+  $("empty").style.display = list.length ? "none" : "block";
+}
+
+function tickClock() {
+  let sec = 0;
+  if (state.phaseAt) sec = (state.phaseMs + (performance.now() - state.phaseAt)) / 1000;
+  $("elapsed").textContent = fmtTime(sec);
+  const limit = Number($("limit").value) || 0;
+  const cd = $("countdown");
+  if (limit > 0 && state.phase === "run") {
+    const left = limit * 60 - sec;
+    cd.textContent = `剩余 ${fmtTime(left)}`;
+    cd.classList.toggle("warn", left < 300);
+    if (left <= 0 && !endSent) { endSent = true; send("end"); addNote("时限到，已自动结束赌局"); }
+  } else cd.textContent = "";
+}
+
+// ---------------------------------------------------------------- 日志
+function clearLog() { $("log").innerHTML = ""; }
+function addLog(e) {
+  if (e.k === "rejoin") return;
+  const f = EVENT_TEXT[e.k];
+  if (!f) return;
+  const d = document.createElement("div");
+  d.className = `ev ${e.k}`;
+  const now = new Date();
+  d.innerHTML = `<span class="t">${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}</span>${f(e)}`;
+  const log = $("log");
+  log.prepend(d);
+  while (log.children.length > 200) log.lastChild.remove();
+}
+function addNote(text) {
+  const d = document.createElement("div");
+  d.className = "ev failed";
+  d.textContent = text;
+  $("log").prepend(d);
+}
+
+// ---------------------------------------------------------------- 串口
+function canSend() { return !!writer || !!demoTimer; }
+async function send(cmd) {
+  if (demoTimer) { demo.command(cmd); return; }
+  if (!writer) return;
+  try { await writer.write(new TextEncoder().encode(`@KJ ${cmd}\n`)); } catch (e) { addNote(`发送失败：${e.message}`); }
+}
+
+async function connect() {
+  if (!("serial" in navigator)) { $("unsupported").style.display = "block"; return; }
+  stopDemo();
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+  } catch (e) { if (e.name !== "NotFoundError") addNote(`无法打开串口：${e.message}`); return; }
+  writer = port.writable.getWriter();
+  setConn(true, "已连接");
+  send("sync");
+  readLoop();
+}
+
+async function readLoop() {
+  const decoder = new TextDecoder();
+  let buf = "";
+  try {
+    while (port && port.readable) {
+      const reader = port.readable.getReader();
+      try {
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let nl;
+          while ((nl = buf.indexOf("\n")) >= 0) { handleLine(buf.slice(0, nl).replace(/\r$/, "")); buf = buf.slice(nl + 1); }
+          if (buf.length > 8192) buf = "";
+        }
+      } finally { reader.releaseLock(); }
+    }
+  } catch (e) { addNote(`串口断开：${e.message}`); }
+  writer = null;
+  setConn(false, "已断开");
+}
+
+function setConn(on, text) {
+  state.connected = on;
+  $("dot").className = "dot" + (on ? " on" : "");
+  $("conn").textContent = text;
+  $("connect").textContent = on ? "已连接" : "连接庄家设备";
+  scheduleRender();
+}
+
+// ---------------------------------------------------------------- 演示：内置模拟（与设备同样的行协议）
+const demo = (() => {
+  let players = [], phase = "lobby", phaseStart = 0, duelId = 0, t0 = 0;
+  const now = () => performance.now() - t0;
+  const emit = obj => handleLine("@KJ " + JSON.stringify(obj));
+  const rnd = n => Math.floor(Math.random() * n);
+  const cards = ["r", "s", "p"];
+  function mk(no, bot) { return { t: "p", no, bot: bot ? 1 : 0, on: 1, st: phase === "run" ? "idle" : "waiting", r: phase === "run" ? 4 : 0, s: phase === "run" ? 4 : 0, p: phase === "run" ? 4 : 0, stars: phase === "run" ? 3 : 0, peer: 0, lock: "", duel: 0, w: 0, l: 0, d: 0, fin: "", rssi: -40 - rnd(40), id: bot ? "000000" : (0xa00000 + no * 2731).toString(16).slice(-6) }; }
+  function game() {
+    const tot = [0, 0, 0]; let stars = 0, duels = 0;
+    for (const p of players) { stars += p.stars; if (p.st === "duel") duels++; if (!["cleared", "out", "failed"].includes(p.st)) { tot[0] += p.r; tot[1] += p.s; tot[2] += p.p; } }
+    emit({ t: "g", room: "D3M0", phase, gid: 1, seated: players.length, online: players.length, duels: duels / 2, cleared: 0, out: 0, failed: 0, bots: 0, cards: tot, stars, phase_ms: Math.round(now() - phaseStart), ms: Math.round(now()) });
+  }
+  const push = p => emit(p);
+  const total = p => p.r + p.s + p.p;
+  function finalize(p) {
+    if (p.stars === 0) { p.st = "out"; emit({ t: "e", k: "eliminated", a: p.no, b: 0 }); }
+    else if (total(p) === 0) { p.st = p.stars >= 3 ? "cleared" : "failed"; if (p.st === "failed") p.fin = "nocards"; emit({ t: "e", k: p.st === "cleared" ? "cleared" : "failed", a: p.no, b: 0 }); }
+  }
+  function step() {
+    if (phase !== "run") { game(); return; }
+    const idle = players.filter(p => p.st === "idle");
+    if (idle.length >= 2 && Math.random() < 0.5) {
+      const a = idle.splice(rnd(idle.length), 1)[0], b = idle[rnd(idle.length)];
+      a.st = "challenging"; b.st = "challenged"; a.peer = b.no; b.peer = a.no;
+      emit({ t: "e", k: "challenge", a: a.no, b: b.no }); push(a); push(b);
+    }
+    for (const b of players.filter(p => p.st === "challenged")) {
+      if (Math.random() < 0.5) continue;
+      const a = players.find(p => p.no === b.peer);
+      if (Math.random() < 0.15) { a.st = b.st = "idle"; a.peer = b.peer = 0; emit({ t: "e", k: "decline", a: b.no, b: a.no }); push(a); push(b); continue; }
+      duelId++; a.st = b.st = "duel"; a.duel = b.duel = duelId; emit({ t: "e", k: "accept", a: a.no, b: b.no, duel: duelId }); push(a); push(b);
+    }
+    for (const p of players.filter(p => p.st === "duel" && !p.lock)) {
+      if (Math.random() < 0.4) continue;
+      const have = cards.filter(c => p[c] > 0); p.lock = have[rnd(have.length)];
+      emit({ t: "e", k: "lock", a: p.no, b: p.peer, ca: p.lock }); push(p);
+      const q = players.find(x => x.no === p.peer);
+      if (q.lock) {
+        const beats = { r: "s", s: "p", p: "r" };
+        p[p.lock]--; q[q.lock]--;
+        let w = 0;
+        if (beats[p.lock] === q.lock) { p.stars++; q.stars--; p.w++; q.l++; w = p.no; }
+        else if (beats[q.lock] === p.lock) { q.stars++; p.stars--; q.w++; p.l++; w = q.no; }
+        else { p.d++; q.d++; }
+        emit({ t: "e", k: "result", a: q.no, b: p.no, ca: q.lock, cb: p.lock, w, duel: p.duel });
+        for (const x of [p, q]) { x.lock = ""; x.peer = 0; x.duel = 0; x.st = "idle"; finalize(x); push(x); }
+      }
+    }
+    game();
+  }
+  return {
+    start() {
+      t0 = performance.now(); phase = "lobby"; phaseStart = 0; players = []; duelId = 0;
+      emit({ t: "hello", app: "limited-rps", fw: "demo", room: "D3M0", max: 128, cards: 4, stars: 3 });
+      for (let i = 1; i <= 10; i++) { const p = mk(i, i > 8); players.push(p); push(p); emit({ t: "e", k: i > 8 ? "bot" : "join", a: i, b: 0 }); }
+      setTimeout(() => this.command("start"), 1200);
+    },
+    step,
+    command(cmd) {
+      if (cmd === "start" && phase === "lobby") { phase = "run"; phaseStart = now(); for (const p of players) { Object.assign(p, { st: "idle", r: 4, s: 4, p: 4, stars: 3 }); push(p); } emit({ t: "e", k: "start", a: 0, b: 0 }); }
+      else if (cmd === "end" && phase === "run") { phase = "ended"; phaseStart = now(); for (const p of players) { if (!["cleared", "out"].includes(p.st)) { p.st = "failed"; p.fin = "timeup"; p.lock = ""; push(p); } } emit({ t: "e", k: "end", a: 0, b: 0 }); }
+      else if (cmd === "new") { phase = "lobby"; phaseStart = now(); for (const p of players) { Object.assign(p, mk(p.no, p.bot)); push(p); } emit({ t: "e", k: "new", a: 0, b: 0 }); }
+      else if (cmd === "bot+") { const n = players.length + 1; const p = mk(n, true); players.push(p); push(p); emit({ t: "e", k: "bot", a: n, b: 0 }); }
+      else if (cmd === "bot-") { const i = players.map(p => p.bot && ["idle", "waiting"].includes(p.st)).lastIndexOf(true); if (i >= 0) { const p = players.splice(i, 1)[0]; emit({ t: "p", no: p.no, gone: 1 }); emit({ t: "e", k: "remove", a: p.no, b: 0 }); } }
+      else if (cmd === "reset") { for (const p of players) emit({ t: "p", no: p.no, gone: 1 }); players = []; phase = "lobby"; emit({ t: "e", k: "reset", a: 0, b: 0 }); }
+      else if (cmd.startsWith("kick ")) { const n = Number(cmd.slice(5)); const i = players.findIndex(p => p.no === n && !["duel", "challenging", "challenged"].includes(p.st)); if (i >= 0) { players.splice(i, 1); emit({ t: "p", no: n, gone: 1 }); emit({ t: "e", k: "remove", a: n, b: 0 }); } }
+      else emit({ t: "ack", cmd: cmd.split(" ")[0], arg: 0, ok: 0, err: "invalid" });
+      game();
+    },
+  };
+})();
+
+function startDemo() {
+  if (writer) return;
+  stopDemo();
+  state.players.clear(); clearLog();
+  demo.start();
+  demoTimer = setInterval(demo.step, 700);
+  $("dot").className = "dot warn"; $("conn").textContent = "演示数据（未连接设备）";
+  $("demo").textContent = "停止演示";
+}
+function stopDemo() {
+  if (!demoTimer) return;
+  clearInterval(demoTimer); demoTimer = null;
+  $("demo").textContent = "演示";
+  setConn(false, "未连接");
+}
+
+// ---------------------------------------------------------------- 交互
+document.querySelectorAll("[data-cmd]").forEach(b => b.addEventListener("click", () => {
+  if (b.dataset.confirm && !confirm(b.dataset.confirm)) return;
+  send(b.dataset.cmd);
+}));
+$("grid").addEventListener("click", e => {
+  const k = e.target.closest("[data-kick]");
+  if (k && confirm(`把 ${pad(k.dataset.kick)}号 移出赌局？`)) send(`kick ${k.dataset.kick}`);
+});
+$("grid").addEventListener("change", e => {
+  if (!e.target.classList.contains("name")) return;
+  store(`kj-name-${e.target.dataset.id}`, e.target.value.trim().slice(0, 16));
+});
+$("grid").addEventListener("focusout", () => setTimeout(scheduleRender, 0));
+$("connect").addEventListener("click", () => { if (!writer) connect(); });
+$("demo").addEventListener("click", () => demoTimer ? stopDemo() : startDemo());
+const cover = $("cover");
+function toggleCover() { cover.style.display = cover.style.display === "flex" ? "none" : "flex"; }
+$("hide").addEventListener("click", toggleCover);
+cover.addEventListener("click", toggleCover);
+document.addEventListener("keydown", e => { if ((e.key === "h" || e.key === "H") && !(e.target instanceof HTMLInputElement)) toggleCover(); });
+for (const id of ["showLock", "hideDone", "sort"]) $(id).addEventListener("change", scheduleRender);
+for (const id of ["showLock", "hideDone", "sort", "limit"]) {
+  const v = store(`kj-opt-${id}`);
+  if (v !== null) { if ($(id).type === "checkbox") $(id).checked = v === "1"; else $(id).value = v; }
+  $(id).addEventListener("change", () => store(`kj-opt-${id}`, $(id).type === "checkbox" ? ($(id).checked ? "1" : "0") : $(id).value));
+}
+if (!("serial" in navigator)) $("unsupported").style.display = "block";
+setInterval(tickClock, 500);
+render();
+if (new URLSearchParams(location.search).has("demo")) startDemo();
+</script>
+</body>
+</html>
