@@ -1,10 +1,11 @@
 // main/kj_flow.h —— 选手 / 庄家设备的界面状态机：由协议状态推导当前页面，
-// 把三个按键翻译成请求或本地动作，并产出提示音、toast。纯 C，主机测试见 tests/test_kj_flow.c。
+// 把三个按键翻译成请求或本地动作，并产出提示音、toast；另有首页、设置、登记昵称、配网页的按键处理。
+// 纯 C，主机测试见 tests/test_kj_flow.c。
 //
 // 按键约定（全应用统一）：
 //   ▲ / ▼ 按下   在列表 / 牌之间移动（按下即响应）
 //   OK   单击   确认当前页面的主要动作
-//   OK   长按   返回 / 撤回 / 拒绝 / 放弃（每页底部有提示）
+//   OK   长按   返回 / 撤回 / 拒绝 / 放弃（每页底部有提示）；唯一例外是手牌页的长按 = 碰拳
 #pragma once
 
 #include "kj_client.h"
@@ -33,6 +34,12 @@ typedef enum {
     KJ_PAGE_REVEAL,      // 亮牌结算
     KJ_PAGE_FINAL,       // 过关 / 出局 / 失败
     KJ_PAGE_HOST,        // 庄家面板
+    KJ_PAGE_BUMP,        // 已碰拳，等庄家配对
+    KJ_PAGE_MATCHED,     // 碰拳配对成功，倒计时后开打
+    KJ_PAGE_SETTINGS,    // 设置：昵称 / 重新配网 / 本机信息
+    KJ_PAGE_REGISTER,    // 扫码登记昵称
+    KJ_PAGE_PROVISION,   // 配网：设备开热点，手机网页里选 Wi-Fi
+    KJ_PAGE_HOST_ROSTER, // 庄家的选手名单
     KJ_PAGE_COUNT,
 } kj_page_t;
 
@@ -49,6 +56,8 @@ typedef enum {
     KJ_CUE_OUT,          // 出局 / 失败
     KJ_CUE_NOTICE,       // toast
     KJ_CUE_ERROR,
+    KJ_CUE_BUMP,         // 碰拳
+    KJ_CUE_MATCH,        // 碰拳配对成功
     KJ_CUE_COUNT,
 } kj_cue_t;
 
@@ -57,12 +66,14 @@ typedef enum {
     KJ_TOAST_DECLINED, KJ_TOAST_CANCELLED, KJ_TOAST_TIMEOUT, KJ_TOAST_WITHDRAWN, KJ_TOAST_ABORTED,
     KJ_TOAST_BUSY, KJ_TOAST_NOT_RUNNING, KJ_TOAST_NO_CARD, KJ_TOAST_INVALID, KJ_TOAST_FULL,
     KJ_TOAST_KICKED, KJ_TOAST_NO_REPLY, KJ_TOAST_RESTORED, KJ_TOAST_NEED_TWO, KJ_TOAST_DONE,
-    KJ_TOAST_RADIO_FAIL,
+    KJ_TOAST_RADIO_FAIL, KJ_TOAST_BUMP_ALONE, KJ_TOAST_BUMP_CROWD, KJ_TOAST_MATCH_CANCELLED,
+    KJ_TOAST_NAME_UPDATED, KJ_TOAST_NEED_HUB, KJ_TOAST_OLD_FW, KJ_TOAST_NO_WIFI,
     KJ_TOAST_COUNT,
 } kj_toast_t;
 
 #define KJ_TOAST_MS        2600
 #define KJ_REVEAL_AUTO_MS  12000   // 亮牌页无人操作也会在这么久后自动收起
+#define KJ_BUMP_LOCAL_MS    2500   // 发出碰拳后最多这么久没有结果就回到手牌页
 
 typedef enum {
     KJ_ACT_NONE = 0,
@@ -72,7 +83,22 @@ typedef enum {
     KJ_ACT_TO_TITLE,     // 回到选择角色
     KJ_ACT_ROLE,         // 首页选定角色：arg = 0 选手 / 1 庄家
     KJ_ACT_HOST_CMD,     // 庄家命令：cmd
+    KJ_ACT_SETTINGS,     // 首页 → 设置
+    KJ_ACT_SET_ITEM,     // 设置页选定一项：arg = kj_settings_item_t
+    KJ_ACT_BACK,         // 返回首页（设置 / 登记）
+    KJ_ACT_REG_REFRESH,  // 登记页：换一个二维码
+    KJ_ACT_PROV_SKIP,    // 配网页：先跳过
 } kj_action_kind_t;
+
+typedef enum {
+    KJ_SET_NAME = 0,     // 登记 / 修改昵称
+    KJ_SET_WIFI,         // 重新配网
+    KJ_SET_BACK,
+    KJ_SET_COUNT,
+} kj_settings_item_t;
+
+#define KJ_TITLE_ITEMS 3   // 选手 / 庄家 / 设置
+#define KJ_ROSTER_ROWS 5   // 庄家名单一屏显示的行数
 
 typedef struct {
     uint8_t kind;
@@ -94,18 +120,21 @@ typedef struct {
 } kj_player_ctx_t;
 
 typedef enum {
-    KJ_HM_START = 0, KJ_HM_END, KJ_HM_NEW, KJ_HM_BOT_ADD, KJ_HM_BOT_DEL, KJ_HM_RESET, KJ_HM_COUNT,
+    KJ_HM_START = 0, KJ_HM_END, KJ_HM_NEW, KJ_HM_BOT_ADD, KJ_HM_BOT_DEL, KJ_HM_RESET, KJ_HM_ROSTER, KJ_HM_COUNT,
 } kj_host_item_t;
 
 typedef struct {
-    // 首页
+    // 首页 / 设置
     uint8_t title_sel;
+    uint8_t settings_sel;
     // 选手
     uint8_t room_sel;
     uint8_t opp_sel;
     uint8_t opp_no;            // 记住选中的编号：列表重新排序时选中项不跳
     uint8_t card_sel;
     bool picking;              // 在选择对手页
+    bool bump_pending;         // 刚发出碰拳、庄家还没回结果（先显示碰拳页）
+    uint32_t bump_since;
     uint16_t shown_res_duel;   // 已经看过的亮牌（对决编号）
     bool reveal_active;
     uint32_t reveal_since;
@@ -121,6 +150,8 @@ typedef struct {
     // 庄家
     uint8_t host_sel;
     int8_t host_confirm;       // 等待确认的菜单项，-1 = 无
+    bool host_roster;          // 正在看选手名单
+    uint8_t roster_first;      // 名单滚动位置（第一行的序号）
 } kj_flow_t;
 
 void kj_flow_init(kj_flow_t *f, uint8_t title_sel);
@@ -128,17 +159,22 @@ void kj_flow_toast(kj_flow_t *f, kj_toast_t t, uint32_t now_ms);
 kj_toast_t kj_flow_active_toast(const kj_flow_t *f, uint32_t now_ms);
 kj_toast_t kj_flow_toast_for_notice(uint8_t notice);
 
-// 首页
+// 首页（▲▼ 在三项间移动，OK 选定）、设置页、登记页、配网页
 kj_action_t kj_flow_title_key(kj_flow_t *f, kj_key_t key);
+kj_action_t kj_flow_settings_key(kj_flow_t *f, kj_key_t key);
+kj_action_t kj_flow_register_key(kj_flow_t *f, kj_key_t key);
+kj_action_t kj_flow_provision_key(kj_flow_t *f, kj_key_t key);
 
 // 选手：每轮调用，返回应显示的页面，*cue 写入需要播放的提示音（可为 NULL）。
 kj_page_t kj_flow_player_update(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_cue_t *cue);
 kj_action_t kj_flow_player_key(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_key_t key);
+// 请求没能发出（已有未确认的请求）时调用：撤销本地的"碰拳中"。
+void kj_flow_bump_rejected(kj_flow_t *f);
 // 当前出牌页可选的牌（跳过已用完的）；没有可选返回 KJ_CARD_NONE。
 uint8_t kj_flow_valid_card(const kj_view_t *v, uint8_t preferred, int direction);
 
-// 庄家
+// 庄家（面板菜单；选中"选手名单"后 ▲▼ 滚动名单，OK / 长按回到面板）
 bool kj_flow_host_item_enabled(kj_host_item_t item, const kj_game_t *g);
 kj_action_t kj_flow_host_key(kj_flow_t *f, const kj_game_t *g, kj_key_t key, uint32_t now_ms);
-// 每轮调用：选中项不可用时顺延到下一个可用项；确认中的项失效时取消确认。
+// 每轮调用：选中项不可用时顺延到下一个可用项；确认中的项失效时取消确认；名单滚动位置收敛。
 void kj_flow_host_sync(kj_flow_t *f, const kj_game_t *g);

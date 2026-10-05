@@ -37,14 +37,31 @@ CONFIG_LV_TXT_ENC_UTF8=y
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000
 
+# 二维码（登记昵称、配网热点）。不要打开 CONFIG_LV_BIN_DECODER_RAM_LOAD：
+# 打开后 I1 格式的二维码画布会被整幅转成 ARGB8888（约 100 KB），关闭时按行解码。
+CONFIG_LV_USE_QRCODE=y
+
 # --- 无线 ---
-# 限定猜拳只用 ESP-NOW（Wi-Fi STA，不连路由器）：关闭蓝牙，省 RAM 与 Flash。
+# 限定猜拳经现场 Wi-Fi + 电脑 hub 联机（UDP 小包）；配网用 SoftAP 网页，不用蓝牙：关闭蓝牙省 RAM 与 Flash。
 CONFIG_BT_ENABLED=n
-# ESP-NOW 帧很小：关闭 AMPDU、减少静态接收缓冲，给无 PSRAM 的 C3 省内存。
+# 游戏帧很小：关闭 AMPDU、减少静态接收缓冲，给无 PSRAM 的 C3 省内存。
 CONFIG_ESP_WIFI_AMPDU_TX_ENABLED=n
 CONFIG_ESP_WIFI_AMPDU_RX_ENABLED=n
 CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=6
 CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=16
-# ESP-NOW 吞吐很低，不需要把 Wi-Fi 收发热路径放进 IRAM：省下约 20 KB 内部 RAM 给堆。
+# 吞吐很低，不需要把 Wi-Fi 收发热路径放进 IRAM：省下约 20 KB 内部 RAM 给堆。
 CONFIG_ESP_WIFI_IRAM_OPT=n
 CONFIG_ESP_WIFI_RX_IRAM_OPT=n
+
+# --- lwIP ---
+# 只用 IPv4（局域网里的电脑 hub）。
+CONFIG_LWIP_IPV6=n
+# 人多时庄家一瞬间会收到很多选手的包：加大 UDP 收包邮箱，少丢包。
+CONFIG_LWIP_UDP_RECVMBOX_SIZE=16
+# 庄家看板 TCP 只传文本行：收发窗口用 2 个 MSS，省内存。
+CONFIG_LWIP_TCP_SND_BUF_DEFAULT=2880
+CONFIG_LWIP_TCP_WND_DEFAULT=2880
+
+# --- HTTP 服务（只在配网模式运行）---
+# 手机的联网探测请求头很长，至少留 1 KB。
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024

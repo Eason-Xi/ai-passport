@@ -31,6 +31,7 @@ h1 b { color: var(--red); }
 .btn:disabled { opacity: .4; cursor: default; }
 .btn.primary { background: var(--red); border-color: var(--red); }
 .btn.gold { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+a.btn { color: var(--text); text-decoration: none; display: inline-block; }
 .status { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dim); display: inline-block; }
 .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
@@ -56,7 +57,7 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--mu
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
 .pl { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; position: relative; }
 .pl.duel { border-color: var(--gold); }
-.pl.challenged, .pl.challenging { border-color: #8a6a2a; }
+.pl.challenged, .pl.challenging, .pl.matched, .pl.bumping { border-color: #8a6a2a; }
 .pl.cleared { border-color: var(--gold); background: #261f10; }
 .pl.out, .pl.failed { opacity: .62; }
 .pl.offline .no::after { content: " · 离线"; color: var(--red); font-size: 12px; font-weight: 400; }
@@ -69,7 +70,8 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--mu
 .badge { font-size: 12px; padding: 1px 8px; border-radius: 10px; background: #2b241f; color: var(--muted); white-space: nowrap; }
 .badge.idle { color: var(--green); }
 .badge.duel { background: #3b2e12; color: var(--gold); }
-.badge.challenging, .badge.challenged { color: var(--gold); }
+.badge.challenging, .badge.challenged, .badge.bumping { color: var(--gold); }
+.badge.matched { background: #3b2e12; color: var(--gold); }
 .badge.cleared { background: var(--gold); color: #1a1410; }
 .badge.out { background: var(--red-dark); color: #ff9a9a; }
 .badge.failed { background: #3a1614; color: #e0827a; }
@@ -100,6 +102,7 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--mu
 .ev.result { border-left-color: var(--gold); }
 .ev.cleared { border-left-color: var(--gold); background: #231c0e; }
 .ev.eliminated, .ev.failed { border-left-color: var(--red); }
+.ev.match { border-left-color: var(--gold); }
 .ev .g { filter: grayscale(1) contrast(1.3); }
 .hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
 .timer { font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; }
@@ -111,18 +114,19 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--mu
 </style>
 </head>
 <body>
-<div id="unsupported">当前浏览器不支持 Web Serial。请用电脑上的 Chrome 或 Edge 打开本文件（也可以先点"演示"预览界面）。</div>
+<div id="unsupported">当前浏览器不支持 Web Serial。推荐的用法是运行电脑服务（python3 tools/kj_hub/hub.py）后打开它给出的看板地址；直接打开本文件时请用电脑上的 Chrome 或 Edge（也可以先点"演示"预览界面）。</div>
 <header>
   <div>
     <h1>限定<b>猜拳</b> · 庄家看板</h1>
     <div class="sub">只给庄家 / 观众看 · 按 H 键一键遮挡</div>
   </div>
   <span class="status"><span id="dot" class="dot"></span><span id="conn">未连接</span></span>
-  <span class="status">赌局 <b id="room">----</b></span>
+  <span class="status">赌局 <b id="room">----</b><select id="roomSel" style="display:none" title="电脑服务上有多个赌局时选择要看的那个"></select></span>
   <span class="status">阶段 <b id="phase">—</b></span>
   <span class="status">已进行 <span id="elapsed" class="timer">00:00</span></span>
   <span class="grow"></span>
-  <button class="btn primary" id="connect">连接庄家设备</button>
+  <button class="btn primary" id="connect">连接庄家设备（USB）</button>
+  <a class="btn" id="home" href="./" style="display:none">服务首页 · 导出</a>
   <button class="btn" id="demo">演示</button>
   <button class="btn" id="hide">遮挡 (H)</button>
 </header>
@@ -167,7 +171,7 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--mu
       </div>
       <div class="grid" id="grid"></div>
       <div class="empty" id="empty">还没有选手。先连接庄家设备，让选手在自己的设备上选择"我是选手 · 加入赌局"。</div>
-      <div class="hint">点选手名字可以改名（只保存在这台电脑上）。鼠标移到卡片上可以移出该选手。</div>
+      <div class="hint" id="hint">点选手名字可以改名（只保存在这台电脑上）。鼠标移到卡片上可以移出该选手。</div>
     </div>
   </section>
   <aside class="panel">
@@ -181,8 +185,9 @@ label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--mu
 const HAND = { r: "✊", s: "✌️", p: "✋" };
 const CARD_NAME = { r: "石头", s: "剪刀", p: "布" };
 const STATUS = { waiting: "等待开局", idle: "空闲", challenging: "发起挑战", challenged: "被挑战",
-  duel: "对决中", cleared: "过关", out: "出局", failed: "失败" };
-const STATUS_ORDER = { duel: 0, challenging: 1, challenged: 1, idle: 2, waiting: 3, cleared: 4, failed: 5, out: 6 };
+  duel: "对决中", cleared: "过关", out: "出局", failed: "失败", bumping: "碰拳中", matched: "碰拳配对" };
+const STATUS_ORDER = { duel: 0, matched: 0, challenging: 1, challenged: 1, bumping: 1, idle: 2, waiting: 3, cleared: 4,
+  failed: 5, out: 6 };
 const PHASE = { lobby: "等待入座", run: "进行中", ended: "已结束" };
 const EVENT_TEXT = {
   join: e => `${no(e.a)} 入座`, rejoin: e => `${no(e.a)} 重新连上`, bot: e => `${no(e.a)} 电脑选手入座`,
@@ -197,17 +202,27 @@ const EVENT_TEXT = {
   withdraw: e => `${no(e.a)} 放弃了与 ${no(e.b)} 的对决`, abort: e => `${no(e.a)} 断线，对决作废`,
   cleared: e => `<b>${no(e.a)} 过关！</b>`, eliminated: e => `${no(e.a)} 星星输光，出局`,
   failed: e => `${no(e.a)} 失败`,
+  match: e => `${no(e.a)} 与 ${no(e.b)} 碰拳配对成功（相差 ${e.x} ms），3 秒后开打`,
+  match_cancel: e => `${no(e.a)} 取消了与 ${no(e.b)} 的碰拳配对`,
+  bump_fail: e => `${no(e.a)} 碰拳${e.x === 2 ? "时人太多，没能配对" : "没碰到对手"}`,
 };
 
 const state = { room: "----", phase: "", phaseMs: 0, phaseAt: 0, players: new Map(), game: null, connected: false };
 let port = null, writer = null, demoTimer = null, endSent = false;
+// 由电脑服务（tools/kj_hub）打开时走网络：SSE 收行、POST 发命令；直接打开本文件时走 USB 串口（Web Serial）。
+const HUB = location.protocol === "http:" || location.protocol === "https:";
+const hub = { rooms: [], source: null, linkUp: {} };
 
 const $ = id => document.getElementById(id);
 const showLock = () => $("showLock").checked;
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]); }
 function pad(n) { return String(n).padStart(2, "0"); }
 function store(key, val) { try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); } catch (e) { return null; } }
-function nameOf(p) { return p && p.id ? (store(`kj-name-${p.id}`) || "") : ""; }
+function nameOf(p) {
+  if (!p) return "";
+  if (HUB) return p.name || "";   // 昵称由电脑服务的登记表提供（与选手设备一致）
+  return p.id ? (store(`kj-name-${p.id}`) || "") : "";
+}
 function no(n) {
   if (!n) return "—";
   const p = state.players.get(n);
@@ -226,6 +241,10 @@ function handleLine(line) {
   if (i < 0) return;
   let msg;
   try { msg = JSON.parse(line.slice(i + 4)); } catch (e) { return; }
+  handleMsg(msg);
+}
+
+function handleMsg(msg) {
   switch (msg.t) {
     case "hello":
       if (state.room !== msg.room) { state.players.clear(); clearLog(); }
@@ -314,15 +333,17 @@ function render() {
       duel = `<span>对决 vs ${pad(p.peer)}号</span>${lock}`;
     } else if (p.st === "challenging") duel = `<span>等 ${pad(p.peer)}号 应战…</span>`;
     else if (p.st === "challenged") duel = `<span>${pad(p.peer)}号 发来挑战</span>`;
+    else if (p.st === "matched") duel = `<span>碰拳配对 vs ${pad(p.peer)}号，即将开打</span>`;
+    else if (p.st === "bumping") duel = `<span>碰拳中，等庄家配对…</span>`;
     else if (p.st === "failed") duel = `<span>${p.fin === "timeup" ? "时间到，手牌未出完" : "手牌出完，星星不足"}</span>`;
     else if (p.st === "cleared") duel = `<span>携 ${p.stars} ★ 离场</span>`;
     html.push(`<div class="${cls}">
       <button class="kick" data-kick="${p.no}" title="移出该选手">移出</button>
       <div class="top"><span class="no">${pad(p.no)}</span>
-        <input class="name" data-id="${esc(p.id)}" placeholder="${p.bot ? "电脑选手" : "点此填写名字"}" value="${esc(nameOf(p))}" ${p.bot ? "disabled" : ""}>
+        <input class="name" data-id="${esc(p.id)}" data-mac="${esc(p.mac || "")}" data-name="${esc(nameOf(p))}" placeholder="${p.bot ? "电脑选手" : "点此填写名字"}" value="${esc(nameOf(p))}" ${p.bot ? "disabled" : ""}>
         ${p.bot ? '<span class="badge bot">电脑</span>' : ""}<span class="badge ${p.st}">${STATUS[p.st] || p.st}</span></div>
       <div class="meta"><span>${p.w}胜 ${p.l}负 ${p.d}平</span><span>手牌 ${t} 张</span></div>
-      <div class="meta small"><span>${p.bot ? "庄家内置" : `设备 ${esc(p.id)}`}</span><span>${p.bot ? "" : (p.on ? `信号 ${p.rssi} dBm` : "离线")}</span></div>
+      <div class="meta small"><span>${p.bot ? "庄家内置" : `设备 ${esc(p.id)}`}</span><span>${p.bot ? "" : (p.on ? `Wi-Fi ${p.rssi} dBm` : "离线")}</span></div>
       <div class="stars ${p.stars ? "" : "zero"}">${starText(p.stars)}</div>
       <div class="hand3">
         ${["r", "s", "p"].map(k => `<div class="hc ${p[k] ? "" : "zero"}"><div class="g">${HAND[k]}</div><div class="n">${p[k]}</div>${pips(p[k])}</div>`).join("")}
@@ -369,10 +390,63 @@ function addNote(text) {
   $("log").prepend(d);
 }
 
-// ---------------------------------------------------------------- 串口
-function canSend() { return !!writer || !!demoTimer; }
+// ---------------------------------------------------------------- 电脑服务（网络）
+async function hubPost(path, body) {
+  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", "X-KJ-Admin": "1" },
+    body: JSON.stringify(body) });
+  return r.json();
+}
+
+function selectRoom(room) {
+  if (room === state.room) return;
+  state.room = room; state.players.clear(); state.game = null; state.phase = ""; state.phaseAt = 0;
+  clearLog();
+  hub.source && hub.source.close();
+  connectHub();   // 重新订阅：快照里只取选中的赌局
+}
+
+function renderRooms() {
+  const sel = $("roomSel");
+  sel.style.display = hub.rooms.length > 1 ? "" : "none";
+  $("room").style.display = hub.rooms.length > 1 ? "none" : "";
+  sel.innerHTML = hub.rooms.map(r => `<option value="${esc(r)}"${r === state.room ? " selected" : ""}>${esc(r)}</option>`).join("");
+}
+
+function hubLink() {
+  const up = hub.linkUp[state.room];
+  if (state.room === "----") setConn(true, "已连接电脑服务 · 等庄家开设赌局");
+  else setConn(!!up, up ? "庄家已连接" : "庄家未连接（等它连上电脑服务）");
+}
+
+function connectHub() {
+  const es = new EventSource("api/stream");
+  hub.source = es;
+  es.onopen = () => { hubLink(); if (state.room !== "----") send("sync"); };
+  es.onerror = () => setConn(false, "正在重连电脑服务…");
+  es.addEventListener("kj", ev => {
+    if (demoTimer) return;   // 演示中不混入真实数据
+    let msg;
+    try { msg = JSON.parse(ev.data); } catch (e) { return; }
+    if (msg.t === "hub") { hub.rooms = msg.rooms || []; if (state.room === "----" && hub.rooms.length) state.room = hub.rooms[0]; renderRooms(); return; }
+    if (msg.room && !hub.rooms.includes(msg.room)) { hub.rooms.push(msg.room); hub.rooms.sort(); renderRooms(); }
+    if (state.room === "----" && msg.room) state.room = msg.room;
+    if (msg.room !== state.room) return;   // 别的赌局
+    if (msg.t === "link") { hub.linkUp[msg.room] = !!msg.up; hubLink(); return; }
+    handleMsg(msg);
+  });
+}
+
+// ---------------------------------------------------------------- 发送命令
+function canSend() { return !!writer || !!demoTimer || HUB; }
 async function send(cmd) {
   if (demoTimer) { demo.command(cmd); return; }
+  if (HUB) {
+    try {
+      const res = await hubPost("api/cmd", { room: state.room, cmd });
+      if (!res.ok && cmd !== "sync") addNote(`命令没有送到庄家：${res.err}`);
+    } catch (e) { addNote(`发送失败：${e.message}`); }
+    return;
+  }
   if (!writer) return;
   try { await writer.write(new TextEncoder().encode(`@KJ ${cmd}\n`)); } catch (e) { addNote(`发送失败：${e.message}`); }
 }
@@ -416,7 +490,7 @@ function setConn(on, text) {
   state.connected = on;
   $("dot").className = "dot" + (on ? " on" : "");
   $("conn").textContent = text;
-  $("connect").textContent = on ? "已连接" : "连接庄家设备";
+  $("connect").textContent = on ? "已连接" : "连接庄家设备（USB）";
   scheduleRender();
 }
 
@@ -507,6 +581,11 @@ function stopDemo() {
   clearInterval(demoTimer); demoTimer = null;
   $("demo").textContent = "演示";
   setConn(false, "未连接");
+  if (HUB) {   // 回到电脑服务的真实数据：重新订阅拿快照
+    state.players.clear(); state.game = null; clearLog();
+    hub.source && hub.source.close();
+    connectHub();
+  }
 }
 
 // ---------------------------------------------------------------- 交互
@@ -518,10 +597,19 @@ $("grid").addEventListener("click", e => {
   const k = e.target.closest("[data-kick]");
   if (k && confirm(`把 ${pad(k.dataset.kick)}号 移出赌局？`)) send(`kick ${k.dataset.kick}`);
 });
-$("grid").addEventListener("change", e => {
+$("grid").addEventListener("change", async e => {
   if (!e.target.classList.contains("name")) return;
+  if (HUB) {   // 改名写回电脑服务，选手设备上的昵称也会跟着变
+    const input = e.target;
+    try {
+      const res = await hubPost("api/name", { mac: input.dataset.mac, name: input.value });
+      if (!res.ok) { addNote(`改名失败：${res.err}`); input.value = input.dataset.name; }
+    } catch (err) { addNote(`改名失败：${err.message}`); }
+    return;
+  }
   store(`kj-name-${e.target.dataset.id}`, e.target.value.trim().slice(0, 16));
 });
+$("roomSel").addEventListener("change", e => selectRoom(e.target.value));
 $("grid").addEventListener("focusout", () => setTimeout(scheduleRender, 0));
 $("connect").addEventListener("click", () => { if (!writer) connect(); });
 $("demo").addEventListener("click", () => demoTimer ? stopDemo() : startDemo());
@@ -536,7 +624,14 @@ for (const id of ["showLock", "hideDone", "sort", "limit"]) {
   if (v !== null) { if ($(id).type === "checkbox") $(id).checked = v === "1"; else $(id).value = v; }
   $(id).addEventListener("change", () => store(`kj-opt-${id}`, $(id).type === "checkbox" ? ($(id).checked ? "1" : "0") : $(id).value));
 }
-if (!("serial" in navigator)) $("unsupported").style.display = "block";
+if (HUB) {
+  $("connect").style.display = "none";
+  $("home").style.display = "";
+  $("hint").textContent = "点选手名字可以改名（保存在电脑服务里，选手设备上的昵称会跟着变）。鼠标移到卡片上可以移出该选手。";
+  connectHub();
+} else if (!("serial" in navigator)) {
+  $("unsupported").style.display = "block";
+}
 setInterval(tickClock, 500);
 render();
 if (new URLSearchParams(location.search).has("demo")) startDemo();

@@ -1,5 +1,6 @@
 // main/kj_rules.c —— 限定猜拳裁判规则引擎（纯 C，主机测试见 tests/test_kj_rules.c）。
 #include "kj_rules.h"
+#include "kj_bump.h"
 
 #include <string.h>
 
@@ -221,12 +222,23 @@ int kj_rules_add_bot(kj_game_t *g, uint32_t now_ms)
     return idx;
 }
 
-// 取消 idx 当前的挑战 / 对决（不消耗手牌），双方回到空闲并通知对方。
+// 与另一位选手绑定在一起的状态（挑战、应战、对决、碰拳配对）。
+static bool engaged(uint8_t status)
+{
+    return status == KJ_ST_CHALLENGING || status == KJ_ST_CHALLENGED || status == KJ_ST_DUEL ||
+           status == KJ_ST_MATCHED;
+}
+
+// 取消 idx 当前的碰拳 / 挑战 / 对决（不消耗手牌），双方回到空闲并通知对方。
 static void abort_engagement(kj_game_t *g, int idx, kj_notice_t peer_notice, uint32_t now_ms)
 {
     kj_player_t *p = &g->players[idx];
     uint8_t st = p->status;
-    if (st != KJ_ST_CHALLENGING && st != KJ_ST_CHALLENGED && st != KJ_ST_DUEL) return;
+    if (st == KJ_ST_BUMPING) {   // 还没配上对手，只有自己
+        set_status(g, idx, KJ_ST_IDLE, now_ms);
+        return;
+    }
+    if (!engaged(st)) return;
     int peer = p->peer;
     p->peer = PEER_NONE;
     p->locked = KJ_CARD_NONE;
@@ -260,10 +272,7 @@ kj_notice_t kj_rules_remove_bot(kj_game_t *g, uint32_t now_ms)
     // 优先移除编号最大的、没有卷入挑战 / 对决的电脑选手。
     for (int i = KJ_MAX_PLAYERS - 1; i >= 0; i--) {
         const kj_player_t *p = &g->players[i];
-        if (!p->used || !p->is_bot) continue;
-        if (p->status == KJ_ST_CHALLENGING || p->status == KJ_ST_CHALLENGED || p->status == KJ_ST_DUEL) {
-            continue;
-        }
+        if (!p->used || !p->is_bot || engaged(p->status)) continue;
         return kj_rules_remove(g, i, now_ms);
     }
     return KJ_N_BUSY;
@@ -367,11 +376,28 @@ kj_notice_t kj_rules_challenge(kj_game_t *g, int idx, uint8_t target_no, uint32_
 
 kj_notice_t kj_rules_cancel(kj_game_t *g, int idx, uint32_t now_ms)
 {
-    if (!idx_ok(g, idx) || g->players[idx].status != KJ_ST_CHALLENGING) return KJ_N_INVALID;
+    if (!idx_ok(g, idx)) return KJ_N_INVALID;
+    uint8_t st = g->players[idx].status;
+    if (st != KJ_ST_CHALLENGING && st != KJ_ST_MATCHED) return KJ_N_INVALID;
     uint8_t peer_no = kj_no_of(g->players[idx].peer);
-    abort_engagement(g, idx, KJ_N_CANCELLED, now_ms);
-    push_event(g, KJ_EV_CANCEL, kj_no_of(idx), peer_no, now_ms);
+    bool match = st == KJ_ST_MATCHED;
+    abort_engagement(g, idx, match ? KJ_N_MATCH_CANCELLED : KJ_N_CANCELLED, now_ms);
+    push_event(g, match ? KJ_EV_MATCH_CANCEL : KJ_EV_CANCEL, kj_no_of(idx), peer_no, now_ms);
     return KJ_N_NONE;
+}
+
+// 两人进入对决（应战成功 / 碰拳倒计时结束），返回对决编号。
+static uint16_t start_duel(kj_game_t *g, int ia, int ib, uint32_t now_ms)
+{
+    uint16_t duel = g->next_duel_id++;
+    if (g->next_duel_id == 0) g->next_duel_id = 1;
+    kj_player_t *a = &g->players[ia];
+    kj_player_t *b = &g->players[ib];
+    a->duel_id = b->duel_id = duel;
+    a->locked = b->locked = KJ_CARD_NONE;
+    set_status(g, ia, KJ_ST_DUEL, now_ms);
+    set_status(g, ib, KJ_ST_DUEL, now_ms);
+    return duel;
 }
 
 kj_notice_t kj_rules_respond(kj_game_t *g, int idx, bool accept, uint32_t now_ms)
@@ -388,18 +414,69 @@ kj_notice_t kj_rules_respond(kj_game_t *g, int idx, bool accept, uint32_t now_ms
         push_event(g, KJ_EV_DECLINE, kj_no_of(idx), kj_no_of(peer), now_ms);
         return KJ_N_NONE;
     }
-    uint16_t duel = g->next_duel_id++;
-    if (g->next_duel_id == 0) g->next_duel_id = 1;
-    kj_player_t *a = &g->players[peer];   // 挑战者
-    kj_player_t *b = &g->players[idx];    // 应战者
-    a->duel_id = b->duel_id = duel;
-    a->locked = b->locked = KJ_CARD_NONE;
-    set_status(g, peer, KJ_ST_DUEL, now_ms);
-    set_status(g, idx, KJ_ST_DUEL, now_ms);
+    uint16_t duel = start_duel(g, peer, idx, now_ms);   // peer 是挑战者
     push_event(g, KJ_EV_ACCEPT, kj_no_of(peer), kj_no_of(idx), now_ms);
     kj_event_t *e = last_event(g);
     if (e) e->duel_id = duel;
     return KJ_N_NONE;
+}
+
+kj_notice_t kj_rules_bump(kj_game_t *g, int idx, uint32_t press_ms, uint32_t now_ms)
+{
+    if (!idx_ok(g, idx) || g->players[idx].is_bot) return KJ_N_INVALID;
+    if (g->phase != KJ_PHASE_RUNNING) return KJ_N_NOT_RUNNING;
+    if (g->players[idx].status != KJ_ST_IDLE) return KJ_N_INVALID;
+    // 在路上太久的请求：同伴那边早已结算，按"没碰到"处理。
+    if ((uint32_t)(now_ms - press_ms) > KJ_BUMP_MAX_AGE_MS) return KJ_N_BUMP_ALONE;
+    set_status(g, idx, KJ_ST_BUMPING, now_ms);
+    g->players[idx].since_ms = press_ms;   // BUMPING 期间 since_ms 记录按下时刻
+    return KJ_N_NONE;
+}
+
+static void bump_fail(kj_game_t *g, int idx, kj_notice_t why, uint16_t reason, uint32_t now_ms)
+{
+    set_status(g, idx, KJ_ST_IDLE, now_ms);
+    kj_rules_notify(g, idx, why);
+    push_event(g, KJ_EV_BUMP_FAIL, kj_no_of(idx), 0, now_ms);
+    kj_event_t *e = last_event(g);
+    if (e) e->aux = reason;
+}
+
+static void settle_bumps(kj_game_t *g, uint32_t now_ms)
+{
+    kj_bump_cand_t cand[KJ_BUMP_MAX];
+    int n = 0;
+    for (int i = 0; i < KJ_MAX_PLAYERS && n < KJ_BUMP_MAX; i++) {
+        const kj_player_t *p = &g->players[i];
+        if (p->used && p->status == KJ_ST_BUMPING) {
+            cand[n].idx = (uint8_t)i;
+            cand[n].t = p->since_ms;
+            n++;
+        }
+    }
+    if (n == 0) return;
+    kj_bump_out_t res[KJ_BUMP_MAX];
+    kj_bump_resolve(cand, n, now_ms, res);
+    for (int k = 0; k < n; k++) {
+        int i = cand[k].idx;
+        switch (res[k].verdict) {
+        case KJ_BUMP_PAIR: {
+            int j = res[k].peer;
+            if (i > j) break;   // 每一对只处理一次
+            g->players[i].peer = (uint8_t)j;
+            g->players[j].peer = (uint8_t)i;
+            set_status(g, i, KJ_ST_MATCHED, now_ms);
+            set_status(g, j, KJ_ST_MATCHED, now_ms);
+            push_event(g, KJ_EV_MATCH, kj_no_of(i), kj_no_of(j), now_ms);
+            kj_event_t *e = last_event(g);
+            if (e) e->aux = res[k].dt;
+            break;
+        }
+        case KJ_BUMP_ALONE: bump_fail(g, i, KJ_N_BUMP_ALONE, KJ_BUMP_FAIL_ALONE, now_ms); break;
+        case KJ_BUMP_CROWD: bump_fail(g, i, KJ_N_BUMP_CROWD, KJ_BUMP_FAIL_CROWD, now_ms); break;
+        default: break;
+        }
+    }
 }
 
 // 手牌 / 星星变化后判定是否定局。
@@ -548,14 +625,24 @@ void kj_rules_tick(kj_game_t *g, uint32_t now_ms)
             push_event(g, KJ_EV_TIMEOUT, idx_ok(g, peer) ? kj_no_of(peer) : 0, kj_no_of(i), now_ms);
             continue;
         }
-        if ((p->status == KJ_ST_DUEL || p->status == KJ_ST_CHALLENGING || p->status == KJ_ST_CHALLENGED) &&
-            !online && !p->is_bot &&
+        if (p->status == KJ_ST_MATCHED && (uint32_t)(now_ms - p->since_ms) >= KJ_MATCH_COUNTDOWN_MS) {
+            // 倒计时结束：自动开打（双方的 since_ms 相同，先遇到的一方负责）。
+            int peer = p->peer;
+            if (idx_ok(g, peer) && g->players[peer].peer == i && g->players[peer].status == KJ_ST_MATCHED) {
+                start_duel(g, i, peer, now_ms);
+            } else {
+                abort_engagement(g, i, KJ_N_NONE, now_ms);
+            }
+            continue;
+        }
+        if (engaged(p->status) && !online && !p->is_bot &&
             (uint32_t)(now_ms - p->last_seen_ms) >= KJ_DUEL_OFFLINE_ABORT_MS) {
             int peer = p->peer;
             abort_engagement(g, i, KJ_N_ABORTED, now_ms);
             push_event(g, KJ_EV_ABORT, kj_no_of(i), idx_ok(g, peer) ? kj_no_of(peer) : 0, now_ms);
         }
     }
+    settle_bumps(g, now_ms);
 }
 
 void kj_rules_view(const kj_game_t *g, int idx, uint32_t now_ms, kj_view_t *out)
@@ -596,10 +683,12 @@ void kj_rules_view(const kj_game_t *g, int idx, uint32_t now_ms, kj_view_t *out)
         out->peer_is_bot = q->is_bot;
         out->peer_locked = (p->status == KJ_ST_DUEL && q->locked != KJ_CARD_NONE) ? 1 : 0;
     }
-    if (p->status == KJ_ST_CHALLENGING || p->status == KJ_ST_CHALLENGED) {
+    uint32_t limit = 0;
+    if (p->status == KJ_ST_CHALLENGING || p->status == KJ_ST_CHALLENGED) limit = KJ_CHALLENGE_TIMEOUT_MS;
+    if (p->status == KJ_ST_MATCHED) limit = KJ_MATCH_COUNTDOWN_MS;
+    if (limit) {
         uint32_t el = now_ms - p->since_ms;
-        uint32_t left = el >= KJ_CHALLENGE_TIMEOUT_MS ? 0 : (KJ_CHALLENGE_TIMEOUT_MS - el + 999) / 1000;
-        out->deadline_s = (uint8_t)left;
+        out->deadline_s = (uint8_t)(el >= limit ? 0 : (limit - el + 999) / 1000);
     }
 }
 

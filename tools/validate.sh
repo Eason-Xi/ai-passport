@@ -66,12 +66,13 @@ run_static_checks() {
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
-    # 限定猜拳：规则 / 协议 / 庄家 / 选手 / 界面状态机 / 看板协议 / 持久化，
-    # 以及多设备丢包联机仿真；字体子集覆盖与应用约束。
-    local kj_sources=(main/kj_rules.c main/kj_proto.c main/kj_server.c main/kj_client.c
-        main/kj_flow.c main/kj_model.c main/kj_board.c main/kj_persist.c)
+    # 限定猜拳：规则 / 碰拳配对 / 协议 / 庄家 / 选手 / 界面状态机 / 看板协议 / 持久化 / hub 线协议与客户端 /
+    # 配网（DNS、表单）/ UTF-8，以及直连与经 hub 中继的多设备丢包乱序联机仿真；字体子集覆盖、应用约束与电脑 hub。
+    local kj_sources=(main/kj_rules.c main/kj_bump.c main/kj_proto.c main/kj_server.c main/kj_client.c
+        main/kj_flow.c main/kj_model.c main/kj_board.c main/kj_persist.c main/kj_hubproto.c main/kj_hubc.c
+        main/kj_dns.c main/kj_prov_form.c main/kj_utf8.c)
     local kj_test
-    for kj_test in rules proto server client flow board persist sim; do
+    for kj_test in rules bump proto server client flow board persist sim sim_hub hubproto hubc dns prov_form utf8; do
         "${CC:-cc}" -std=c11 -O1 -Wall -Wextra -Werror -Imain -Itests \
             "tests/test_kj_${kj_test}.c" "${kj_sources[@]}" \
             -o "${test_dir}/test_kj_${kj_test}"
@@ -79,6 +80,7 @@ run_static_checks() {
     done
     python3 tools/gen_kj_fonts.py check
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_kj_contract.py
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_kj_hub.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py

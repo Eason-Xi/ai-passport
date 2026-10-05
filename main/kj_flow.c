@@ -6,9 +6,15 @@
 void kj_flow_init(kj_flow_t *f, uint8_t title_sel)
 {
     memset(f, 0, sizeof(*f));
-    f->title_sel = title_sel ? 1 : 0;
+    f->title_sel = title_sel < KJ_TITLE_ITEMS ? title_sel : 0;
     f->host_confirm = -1;
     f->last_page = KJ_PAGE_TITLE;
+}
+
+static uint8_t wrap(int v, int n)
+{
+    if (n <= 0) return 0;
+    return (uint8_t)(((v % n) + n) % n);
 }
 
 void kj_flow_toast(kj_flow_t *f, kj_toast_t t, uint32_t now_ms)
@@ -36,6 +42,9 @@ kj_toast_t kj_flow_toast_for_notice(uint8_t notice)
     case KJ_N_NO_CARD: return KJ_TOAST_NO_CARD;
     case KJ_N_INVALID: return KJ_TOAST_INVALID;
     case KJ_N_FULL: return KJ_TOAST_FULL;
+    case KJ_N_BUMP_ALONE: return KJ_TOAST_BUMP_ALONE;
+    case KJ_N_BUMP_CROWD: return KJ_TOAST_BUMP_CROWD;
+    case KJ_N_MATCH_CANCELLED: return KJ_TOAST_MATCH_CANCELLED;
     default: return KJ_TOAST_NONE;
     }
 }
@@ -44,11 +53,51 @@ kj_action_t kj_flow_title_key(kj_flow_t *f, kj_key_t key)
 {
     kj_action_t a = { 0 };
     if (key == KJ_KEY_UP || key == KJ_KEY_DOWN) {
-        f->title_sel ^= 1;
+        f->title_sel = wrap(f->title_sel + (key == KJ_KEY_UP ? -1 : 1), KJ_TITLE_ITEMS);
     } else if (key == KJ_KEY_OK) {
-        a.kind = KJ_ACT_ROLE;
-        a.arg = f->title_sel;
+        if (f->title_sel == 2) {
+            a.kind = KJ_ACT_SETTINGS;
+            f->settings_sel = 0;
+        } else {
+            a.kind = KJ_ACT_ROLE;
+            a.arg = f->title_sel;
+        }
     }
+    return a;
+}
+
+kj_action_t kj_flow_settings_key(kj_flow_t *f, kj_key_t key)
+{
+    kj_action_t a = { 0 };
+    if (key == KJ_KEY_UP || key == KJ_KEY_DOWN) {
+        f->settings_sel = wrap(f->settings_sel + (key == KJ_KEY_UP ? -1 : 1), KJ_SET_COUNT);
+    } else if (key == KJ_KEY_OK) {
+        if (f->settings_sel == KJ_SET_BACK) {
+            a.kind = KJ_ACT_BACK;
+        } else {
+            a.kind = KJ_ACT_SET_ITEM;
+            a.arg = f->settings_sel;
+        }
+    } else if (key == KJ_KEY_OK_LONG) {
+        a.kind = KJ_ACT_BACK;
+    }
+    return a;
+}
+
+kj_action_t kj_flow_register_key(kj_flow_t *f, kj_key_t key)
+{
+    (void)f;
+    kj_action_t a = { 0 };
+    if (key == KJ_KEY_OK) a.kind = KJ_ACT_REG_REFRESH;
+    if (key == KJ_KEY_OK_LONG) a.kind = KJ_ACT_BACK;
+    return a;
+}
+
+kj_action_t kj_flow_provision_key(kj_flow_t *f, kj_key_t key)
+{
+    (void)f;
+    kj_action_t a = { 0 };
+    if (key == KJ_KEY_OK_LONG) a.kind = KJ_ACT_PROV_SKIP;
     return a;
 }
 
@@ -68,10 +117,14 @@ static kj_page_t derive_page(const kj_flow_t *f, const kj_view_t *v)
     if (f->reveal_active) return KJ_PAGE_REVEAL;
     if (v->phase == KJ_PHASE_LOBBY || v->status == KJ_ST_WAITING) return KJ_PAGE_SEAT;
     switch (v->status) {
-    case KJ_ST_IDLE: return f->picking ? KJ_PAGE_OPPONENTS : KJ_PAGE_HAND;
+    case KJ_ST_IDLE:
+        if (f->bump_pending) return KJ_PAGE_BUMP;
+        return f->picking ? KJ_PAGE_OPPONENTS : KJ_PAGE_HAND;
     case KJ_ST_CHALLENGING: return KJ_PAGE_WAIT;
     case KJ_ST_CHALLENGED: return KJ_PAGE_CHALLENGED;
     case KJ_ST_DUEL: return KJ_PAGE_CHOOSE;
+    case KJ_ST_BUMPING: return KJ_PAGE_BUMP;
+    case KJ_ST_MATCHED: return KJ_PAGE_MATCHED;
     default: return KJ_PAGE_FINAL;
     }
 }
@@ -100,6 +153,7 @@ kj_page_t kj_flow_player_update(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_cue
     kj_page_t page;
     if (c->link != KJ_LINK_JOINED) {
         f->picking = false;
+        f->bump_pending = false;
         f->reveal_active = false;
         f->primed = false;
         if (ctx->room_count <= 0) {
@@ -129,11 +183,17 @@ kj_page_t kj_flow_player_update(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_cue
         }
         if (v->notice_seq != f->notice_seq) {
             f->notice_seq = v->notice_seq;
+            f->bump_pending = false;   // 碰拳的结果（没碰到 / 人太多 / 被拒）以通知的形式到达
             kj_toast_t t = kj_flow_toast_for_notice(v->notice);
             if (t != KJ_TOAST_NONE) {
                 kj_flow_toast(f, t, ctx->now_ms);
                 out = KJ_CUE_NOTICE;
             }
+        }
+        // 庄家已接手（状态离开空闲），或迟迟没有结果：结束本地的"碰拳中"。
+        if (f->bump_pending &&
+            (v->status != KJ_ST_IDLE || (uint32_t)(ctx->now_ms - f->bump_since) >= KJ_BUMP_LOCAL_MS)) {
+            f->bump_pending = false;
         }
         if (!f->reveal_active && v->res_duel_id != 0 && v->res_duel_id != f->shown_res_duel &&
             v->res_outcome != KJ_OUT_NONE) {
@@ -160,6 +220,7 @@ kj_page_t kj_flow_player_update(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_cue
         }
         if (page != f->last_page && out == KJ_CUE_NONE) {
             if (page == KJ_PAGE_CHALLENGED) out = KJ_CUE_ALERT;
+            else if (page == KJ_PAGE_MATCHED) out = KJ_CUE_MATCH;
             else if (page == KJ_PAGE_CHOOSE) out = KJ_CUE_DUEL;
             else if (page == KJ_PAGE_FINAL) out = v->status == KJ_ST_CLEARED ? KJ_CUE_CLEARED : KJ_CUE_OUT;
         }
@@ -167,12 +228,6 @@ kj_page_t kj_flow_player_update(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_cue
     f->last_page = (uint8_t)page;
     if (cue) *cue = out;
     return page;
-}
-
-static uint8_t wrap(int v, int n)
-{
-    if (n <= 0) return 0;
-    return (uint8_t)(((v % n) + n) % n);
 }
 
 kj_action_t kj_flow_player_key(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_key_t key)
@@ -198,6 +253,19 @@ kj_action_t kj_flow_player_key(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_key_
             f->opp_sel = 0;
             f->opp_no = ctx->opp_count > 0 ? ctx->opps[0].no : 0;
             f->last_page = KJ_PAGE_OPPONENTS;
+        } else if (key == KJ_KEY_OK_LONG) {
+            // 碰拳：立刻切到碰拳页，结果由庄家的视图 / 通知决定。
+            a.kind = KJ_ACT_REQUEST;
+            a.op = KJ_OP_BUMP;
+            f->bump_pending = true;
+            f->bump_since = ctx->now_ms;
+            f->last_page = KJ_PAGE_BUMP;
+        }
+        break;
+    case KJ_PAGE_MATCHED:
+        if (key == KJ_KEY_OK_LONG) {   // 认错人了：取消配对
+            a.kind = KJ_ACT_REQUEST;
+            a.op = KJ_OP_CANCEL;
         }
         break;
     case KJ_PAGE_OPPONENTS:
@@ -254,6 +322,12 @@ kj_action_t kj_flow_player_key(kj_flow_t *f, const kj_player_ctx_t *ctx, kj_key_
     return a;
 }
 
+void kj_flow_bump_rejected(kj_flow_t *f)
+{
+    f->bump_pending = false;
+    if (f->last_page == KJ_PAGE_BUMP) f->last_page = KJ_PAGE_HAND;
+}
+
 bool kj_flow_host_item_enabled(kj_host_item_t item, const kj_game_t *g)
 {
     int count = kj_rules_player_count(g);
@@ -268,6 +342,7 @@ bool kj_flow_host_item_enabled(kj_host_item_t item, const kj_game_t *g)
         }
         return false;
     case KJ_HM_RESET: return count > 0;
+    case KJ_HM_ROSTER: return count > 0;
     default: return false;
     }
 }
@@ -285,11 +360,19 @@ static kj_cmd_t host_cmd(kj_host_item_t item)
     }
 }
 
+static int roster_max_first(const kj_game_t *g)
+{
+    int n = kj_rules_player_count(g);
+    return n > KJ_ROSTER_ROWS ? n - KJ_ROSTER_ROWS : 0;
+}
+
 void kj_flow_host_sync(kj_flow_t *f, const kj_game_t *g)
 {
     if (f->host_confirm >= 0 && !kj_flow_host_item_enabled((kj_host_item_t)f->host_confirm, g)) {
         f->host_confirm = -1;
     }
+    if (f->roster_first > roster_max_first(g)) f->roster_first = (uint8_t)roster_max_first(g);
+    if (f->host_roster && kj_rules_player_count(g) == 0) f->host_roster = false;
     if (kj_flow_host_item_enabled((kj_host_item_t)f->host_sel, g)) return;
     // 当前项不可用（例如刚开局后的"开始赌局"）：顺延到下一个可用项。
     for (int k = 1; k < KJ_HM_COUNT; k++) {
@@ -304,6 +387,15 @@ void kj_flow_host_sync(kj_flow_t *f, const kj_game_t *g)
 kj_action_t kj_flow_host_key(kj_flow_t *f, const kj_game_t *g, kj_key_t key, uint32_t now_ms)
 {
     kj_action_t a = { 0 };
+    if (f->host_roster) {   // 名单：▲▼ 滚动，OK / 长按回到面板
+        int first = f->roster_first;
+        if (key == KJ_KEY_UP) first--;
+        if (key == KJ_KEY_DOWN) first++;
+        int max = roster_max_first(g);
+        f->roster_first = (uint8_t)(first < 0 ? 0 : first > max ? max : first);
+        if (key == KJ_KEY_OK || key == KJ_KEY_OK_LONG) f->host_roster = false;
+        return a;
+    }
     if (f->host_confirm >= 0) {
         if (key == KJ_KEY_OK && kj_flow_host_item_enabled((kj_host_item_t)f->host_confirm, g)) {
             a.kind = KJ_ACT_HOST_CMD;
@@ -333,6 +425,9 @@ kj_action_t kj_flow_host_key(kj_flow_t *f, const kj_game_t *g, kj_key_t key, uin
             kj_flow_toast(f, need_two ? KJ_TOAST_NEED_TWO : KJ_TOAST_INVALID, now_ms);
             a.kind = KJ_ACT_NONE;
             a.arg = 1;            // 1 = 被拒绝（调用方据此播放错误音）
+        } else if (item == KJ_HM_ROSTER) {
+            f->host_roster = true;
+            f->roster_first = 0;
         } else if (item == KJ_HM_END || item == KJ_HM_NEW || item == KJ_HM_RESET) {
             f->host_confirm = (int8_t)item;
         } else {

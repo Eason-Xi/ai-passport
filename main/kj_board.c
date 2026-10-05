@@ -9,7 +9,7 @@
 const char *kj_board_status_name(uint8_t status)
 {
     static const char *const names[KJ_ST_COUNT] = {
-        "waiting", "idle", "challenging", "challenged", "duel", "cleared", "out", "failed",
+        "waiting", "idle", "challenging", "challenged", "duel", "cleared", "out", "failed", "bumping", "matched",
     };
     return status < KJ_ST_COUNT ? names[status] : "?";
 }
@@ -57,6 +57,9 @@ const char *kj_board_event_name(uint8_t kind)
     case KJ_EV_CLEARED: return "cleared";
     case KJ_EV_ELIMINATED: return "eliminated";
     case KJ_EV_FAILED: return "failed";
+    case KJ_EV_MATCH: return "match";
+    case KJ_EV_MATCH_CANCEL: return "match_cancel";
+    case KJ_EV_BUMP_FAIL: return "bump_fail";
     default: return "?";
     }
 }
@@ -65,7 +68,7 @@ const char *kj_board_notice_name(uint8_t notice)
 {
     static const char *const names[KJ_N_COUNT] = {
         "", "declined", "cancelled", "timeout", "withdrawn", "aborted", "busy",
-        "not_running", "no_card", "invalid", "full",
+        "not_running", "no_card", "invalid", "full", "bump_alone", "bump_crowd", "match_cancelled",
     };
     return notice < KJ_N_COUNT ? names[notice] : "?";
 }
@@ -95,14 +98,19 @@ static size_t finish(int n, size_t cap)
     return (n < 0 || (size_t)n >= cap) ? 0 : (size_t)n;
 }
 
-size_t kj_board_hello_line(uint16_t room, const char *fw, char *buf, size_t cap)
+size_t kj_board_hello_line(uint16_t room, const char *fw, const uint8_t mac[6], const char *link, char *buf,
+                           size_t cap)
 {
     char rt[5];
     kj_board_room_text(room, rt);
+    static const uint8_t zero[6] = { 0 };
+    const uint8_t *m = mac ? mac : zero;
     int n = snprintf(buf, cap,
-                     KJ_BOARD_PREFIX "{\"t\":\"hello\",\"app\":\"limited-rps\",\"fw\":\"%s\","
-                     "\"room\":\"%s\",\"max\":%d,\"cards\":%d,\"stars\":%d}\n",
-                     fw ? fw : "", rt, KJ_MAX_PLAYERS, KJ_CARDS_PER_TYPE, KJ_START_STARS);
+                     KJ_BOARD_PREFIX "{\"t\":\"hello\",\"app\":\"limited-rps\",\"fw\":\"%s\",\"proto\":%d,"
+                     "\"room\":\"%s\",\"mac\":\"%02x%02x%02x%02x%02x%02x\",\"link\":\"%s\","
+                     "\"max\":%d,\"cards\":%d,\"stars\":%d}\n",
+                     fw ? fw : "", KJ_PROTO_VERSION, rt, m[0], m[1], m[2], m[3], m[4], m[5], link ? link : "",
+                     KJ_MAX_PLAYERS, KJ_CARDS_PER_TYPE, KJ_START_STARS);
     return finish(n, cap);
 }
 
@@ -137,12 +145,14 @@ size_t kj_board_player_line(const kj_game_t *g, int idx, uint32_t now_ms, char *
     int n = snprintf(buf, cap,
                      KJ_BOARD_PREFIX "{\"t\":\"p\",\"no\":%d,\"bot\":%d,\"on\":%d,\"st\":\"%s\","
                      "\"r\":%u,\"s\":%u,\"p\":%u,\"stars\":%u,\"peer\":%u,\"lock\":\"%s\",\"duel\":%u,"
-                     "\"w\":%u,\"l\":%u,\"d\":%u,\"fin\":\"%s\",\"rssi\":%d,\"id\":\"%02x%02x%02x\"}\n",
+                     "\"w\":%u,\"l\":%u,\"d\":%u,\"fin\":\"%s\",\"rssi\":%d,\"id\":\"%02x%02x%02x\","
+                     "\"mac\":\"%02x%02x%02x%02x%02x%02x\"}\n",
                      kj_no_of(idx), p->is_bot ? 1 : 0, kj_rules_online(g, idx, now_ms) ? 1 : 0,
                      kj_board_status_name(p->status), p->cards[KJ_ROCK], p->cards[KJ_SCISSORS],
                      p->cards[KJ_PAPER], p->stars, peer_no, kj_board_card_name(p->locked),
                      p->status == KJ_ST_DUEL ? p->duel_id : 0, p->wins, p->losses, p->draws, final,
-                     p->is_bot ? 0 : p->rssi, p->mac[3], p->mac[4], p->mac[5]);
+                     p->is_bot ? 0 : p->rssi, p->mac[3], p->mac[4], p->mac[5], p->mac[0], p->mac[1], p->mac[2],
+                     p->mac[3], p->mac[4], p->mac[5]);
     return finish(n, cap);
 }
 
@@ -150,9 +160,9 @@ size_t kj_board_event_line(const kj_event_t *e, char *buf, size_t cap)
 {
     int n = snprintf(buf, cap,
                      KJ_BOARD_PREFIX "{\"t\":\"e\",\"k\":\"%s\",\"a\":%u,\"b\":%u,\"ca\":\"%s\","
-                     "\"cb\":\"%s\",\"w\":%u,\"duel\":%u,\"ms\":%lu}\n",
+                     "\"cb\":\"%s\",\"w\":%u,\"duel\":%u,\"x\":%u,\"ms\":%lu}\n",
                      kj_board_event_name(e->kind), e->a, e->b, kj_board_card_name(e->ca),
-                     kj_board_card_name(e->cb), e->winner, e->duel_id, (unsigned long)e->t_ms);
+                     kj_board_card_name(e->cb), e->winner, e->duel_id, e->aux, (unsigned long)e->t_ms);
     return finish(n, cap);
 }
 

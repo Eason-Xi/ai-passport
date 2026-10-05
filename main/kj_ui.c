@@ -163,39 +163,15 @@ lv_obj_t *kj_pill(lv_obj_t *parent, int x, int y, int w, int h, const char *s, b
     return p;
 }
 
-void kj_signal(lv_obj_t *parent, int x, int y, uint8_t level, uint32_t color)
-{
-    for (int i = 0; i < 4; i++) {
-        int bh = 4 + i * 3;
-        kj_box(parent, x + i * 5, y + 13 - bh, 3, bh, i < level ? color : 0x3A322B, 1);
-    }
-}
-
-uint8_t kj_ui_signal_level(int8_t rssi)
-{
-    if (rssi >= -55) return 4;
-    if (rssi >= -67) return 3;
-    if (rssi >= -78) return 2;
-    if (rssi >= -90) return 1;
-    return 0;
-}
-
-const char *kj_signal_word(const kj_opponent_t *o)
-{
-    if (!o->nearby) return KJ_STR_SIG_NONE;
-    uint8_t lv = kj_ui_signal_level(o->rssi);
-    return lv >= 4 ? KJ_STR_SIG_NEAR : lv >= 3 ? KJ_STR_SIG_MID : KJ_STR_SIG_FAR;
-}
-
 void kj_footer(lv_obj_t *scr, const char *s)
 {
     kj_text_at(scr, &kj_zh14, KJ_C_MUTED, s, LV_ALIGN_TOP_MID, 0, 294);
 }
 
-// 顶栏：左侧标签 + 右上角电量（电量在局部刷新里更新）。
+// 顶栏：左侧标签（可能含昵称）+ 右上角电量（电量在局部刷新里更新）。
 void kj_top_bar(lv_obj_t *scr, const char *left, uint32_t left_color)
 {
-    if (left && left[0]) kj_text_at(scr, &kj_zh18, left_color, left, LV_ALIGN_TOP_LEFT, 24, 11);
+    if (left && left[0]) kj_text_box(scr, &kj_font_name, left_color, left, 24, 11, 150, LV_TEXT_ALIGN_LEFT);
     kj_ui.bat_label = kj_text(scr, &kj_zh14, KJ_C_MUTED, KJ_STR_BATTERY_NA);
     lv_obj_align(kj_ui.bat_label, LV_ALIGN_TOP_RIGHT, -50, 13);
     lv_obj_t *body = kj_frame(scr, 192, 16, 24, 12, 0x9C8F7E, 1, 3);
@@ -241,6 +217,13 @@ const char *kj_ui_toast_text(uint8_t toast)
     case KJ_TOAST_NEED_TWO: return KJ_STR_T_NEED_TWO;
     case KJ_TOAST_DONE: return KJ_STR_T_DONE;
     case KJ_TOAST_RADIO_FAIL: return KJ_STR_T_RADIO_FAIL;
+    case KJ_TOAST_BUMP_ALONE: return KJ_STR_T_BUMP_ALONE;
+    case KJ_TOAST_BUMP_CROWD: return KJ_STR_T_BUMP_CROWD;
+    case KJ_TOAST_MATCH_CANCELLED: return KJ_STR_T_MATCH_CANCEL;
+    case KJ_TOAST_NAME_UPDATED: return KJ_STR_T_NAME_UPDATED;
+    case KJ_TOAST_NEED_HUB: return KJ_STR_T_NEED_HUB;
+    case KJ_TOAST_OLD_FW: return KJ_STR_T_OLD_FW;
+    case KJ_TOAST_NO_WIFI: return KJ_STR_T_NO_WIFI;
     default: return NULL;
     }
 }
@@ -285,17 +268,13 @@ static uint32_t fnv(uint32_t h, const void *data, size_t n)
 
 static uint32_t signature(const kj_ui_model_t *m)
 {
-    static kj_ui_model_t s;   // 约 0.6 KB，避免占用 LVGL / 应用任务栈
+    static kj_ui_model_t s;   // 约 1 KB，避免占用 LVGL / 应用任务栈
     s = *m;
     s.now_ms = 0;
     s.battery = 0;
     s.deadline_s = 0;
     s.host_phase_s = 0;
-    for (int i = 0; i < KJ_CLIENT_MAX_ROOMS; i++) {
-        s.rooms[i].rssi = (int8_t)kj_ui_signal_level(s.rooms[i].rssi);
-        s.rooms[i].seen_ms = 0;
-    }
-    for (int i = 0; i < KJ_UI_OPP_MAX; i++) s.opps[i].rssi = (int8_t)kj_ui_signal_level(s.opps[i].rssi);
+    for (int i = 0; i < KJ_CLIENT_MAX_ROOMS; i++) s.rooms[i].seen_ms = 0;
     // 视图里只有倒计时会频繁变化
     s.view.deadline_s = 0;
     return fnv(2166136261u, &s, sizeof(s));

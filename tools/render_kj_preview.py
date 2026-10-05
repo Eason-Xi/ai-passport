@@ -3,15 +3,17 @@
 
 开发辅助，不进校验门，也不参与固件构建。它能发现：
   * 缺字形（占位框）、文字裁切 / 重叠、版面越界；
-  * 每个页面的 LVGL 内置内存池峰值（固件为 40 KB）。
+  * 每个页面的 LVGL 内置内存池峰值（固件为 36 KB，见 sdkconfig.defaults）。
 它不能替代真机：色彩、刷新与按键手感只有上板才知道。
 
 依赖：C 编译器、Python 3 标准库；LVGL 源码取自 idf.py 下载到 managed_components/ 的那份
 （版本由 dependencies.lock 锁定）。
 
 用法（仓库根目录）：
-  python3 tools/render_kj_preview.py [--out build/kj_preview] [--scale 2] [--mem-kb 40]
+  python3 tools/render_kj_preview.py [--out build/kj_preview] [--scale 2] [--mem-kb 36]
+      [--sheet assets/images/kj-preview.png --sheet-pages 01_title,02d_register_qr,...]
 峰值超过内存池 75%（--budget）时失败：池耗尽在板上表现为卡死 / 白屏。
+--sheet 把指定的几页（1 倍大小、带圆角）横向拼成一张图，README 的预览图就是这样生成的。
 """
 
 from __future__ import annotations
@@ -30,7 +32,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LVGL_DIR = ROOT / "managed_components" / "lvgl__lvgl"
 PREVIEW_DIR = ROOT / "tools" / "kj_preview"
-APP_SOURCES = ["kj_rules.c", "kj_proto.c", "kj_server.c", "kj_client.c", "kj_flow.c", "kj_model.c",
+APP_SOURCES = ["kj_rules.c", "kj_bump.c", "kj_proto.c", "kj_server.c", "kj_client.c", "kj_flow.c", "kj_model.c",
                "kj_fonts.c", "kj_ui.c", "kj_ui_pages.c"]
 SCREEN_W, SCREEN_H, CORNER_RADIUS = 240, 320, 30
 
@@ -128,7 +130,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", default=str(ROOT / "build" / "kj_preview"))
     parser.add_argument("--scale", type=int, default=2)
-    parser.add_argument("--mem-kb", type=int, default=40, help="LVGL pool size (firmware: sdkconfig.defaults)")
+    parser.add_argument("--mem-kb", type=int, default=36, help="LVGL pool size (firmware: sdkconfig.defaults)")
+    parser.add_argument("--sheet", help="write a side-by-side PNG of --sheet-pages here")
+    parser.add_argument("--sheet-pages", default="01_title,02d_register_qr,08_hand,21c_bump,21d_matched,21b_host_roster")
     parser.add_argument("--budget", type=float, default=0.75)
     parser.add_argument("--timeout", type=int, default=60)
     args = parser.parse_args()
@@ -151,15 +155,36 @@ def main() -> int:
         raise SystemExit(f"ERROR: LVGL pool peak {peak.group(1)} B exceeds {args.budget:.0%} of {peak.group(2)} B")
     if result.returncode != 0:
         raise SystemExit(f"ERROR: preview program failed ({result.returncode})")
+    masked: dict[str, bytes] = {}
     for ppm in sorted(shots.glob("*.ppm")):
         width, height, rgb = read_ppm(ppm)
         buf = bytearray(rgb)
         mask_corners(buf, width, height, CORNER_RADIUS)
+        masked[ppm.stem] = bytes(buf)
         w2, h2, scaled = scale_up(bytes(buf), width, height, args.scale)
         write_png(ppm.with_suffix(".png"), w2, h2, scaled)
         ppm.unlink()
     print(f"wrote {len(list(shots.glob('*.png')))} PNG file(s) to {shots}")
+    if args.sheet:
+        write_sheet(Path(args.sheet), [masked[name] for name in args.sheet_pages.split(",")])
+        print(f"wrote sheet {args.sheet}")
     return 0
+
+
+def write_sheet(path: Path, pages: list[bytes], gap: int = 12, bg: bytes = b"\x0d\x0b\x0a") -> None:
+    """把几页横向拼成一张图（页与页之间、四周各留 gap 像素）。"""
+    width = len(pages) * SCREEN_W + (len(pages) + 1) * gap
+    height = SCREEN_H + 2 * gap
+    rows = []
+    for y in range(height):
+        row = bytearray(bg * width)
+        py = y - gap
+        if 0 <= py < SCREEN_H:
+            for i, page in enumerate(pages):
+                x0 = gap + i * (SCREEN_W + gap)
+                row[x0 * 3:(x0 + SCREEN_W) * 3] = page[py * SCREEN_W * 3:(py + 1) * SCREEN_W * 3]
+        rows.append(bytes(row))
+    write_png(path, width, height, b"".join(rows))
 
 
 if __name__ == "__main__":

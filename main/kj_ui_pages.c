@@ -1,4 +1,6 @@
 // main/kj_ui_pages.c —— 限定猜拳各页面的版面（240×320，四角 30 px 圆角遮罩之内）。
+// 昵称（任意中文）一律用 kj_font_name：正文字体子集 + 回退到昵称字库。
+#include "kj_model.h"
 #include "kj_ui_internal.h"
 
 #include <stdio.h>
@@ -12,24 +14,187 @@ static void no_text(char *buf, size_t n, unsigned no)
     snprintf(buf, n, KJ_STR_NO_FMT, no);
 }
 
+// 对手的称呼：有昵称用昵称，否则"07号"；电脑选手"电脑 07"。
+static void who_text(char *buf, size_t n, unsigned no, const char *name, bool bot)
+{
+    if (name && name[0]) {
+        snprintf(buf, n, "%s", name);
+    } else if (bot) {
+        snprintf(buf, n, "%s %02u", KJ_STR_BOT, no);
+    } else {
+        no_text(buf, n, no);
+    }
+}
+
+static const char *net_text(uint8_t net)
+{
+    switch (net) {
+    case KJ_NET_CONNECTING: return KJ_STR_NET_CONNECTING;
+    case KJ_NET_SEARCHING: return KJ_STR_NET_SEARCHING;
+    case KJ_NET_OK: return KJ_STR_NET_OK;
+    case KJ_NET_OLD: return KJ_STR_NET_OLD;
+    default: return KJ_STR_NET_NO_WIFI;
+    }
+}
+
+static uint32_t net_color(uint8_t net)
+{
+    return net == KJ_NET_OK ? KJ_C_GREEN : (net == KJ_NET_CONNECTING || net == KJ_NET_SEARCHING) ? KJ_C_GOLD
+                                                                                                : KJ_C_RED;
+}
+
+// 雷达：三圈同心圆 + 中心点（找赌局 / 等电脑服务）
+static void radar(lv_obj_t *s, int cy)
+{
+    for (int i = 0; i < 3; i++) {
+        int d = 40 + i * 36;
+        kj_frame(s, 120 - d / 2, cy - d / 2, d, d, i == 0 ? KJ_C_RED : 0x3A2F28, 2, LV_RADIUS_CIRCLE);
+    }
+    kj_box(s, 114, cy - 6, 12, 12, KJ_C_RED, LV_RADIUS_CIRCLE);
+}
+
+// 白底二维码（自带留白）。text 为空时不画。
+static void qr_box(lv_obj_t *s, int x, int y, int box, const char *text)
+{
+    if (!text || !text[0]) return;
+    lv_obj_t *bg = kj_box(s, x, y, box, box, 0xFFFFFF, 10);
+    lv_obj_t *qr = lv_qrcode_create(bg);
+    lv_qrcode_set_size(qr, box - 16);
+    lv_qrcode_set_dark_color(qr, lv_color_hex(0x000000));
+    lv_qrcode_set_light_color(qr, lv_color_hex(0xFFFFFF));
+    lv_qrcode_update(qr, text, (uint32_t)strlen(text));
+    lv_obj_center(qr);
+}
+
 // ---------------------------------------------------------------------------
-// 首页：选择角色
+// 首页：选手 / 庄家 / 设置
 // ---------------------------------------------------------------------------
 static void page_title(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
     kj_top_bar(s, NULL, 0);
-    kj_text_at(s, &kj_big48, KJ_C_TEXT, KJ_BIG_TITLE_1, LV_ALIGN_TOP_MID, -50, 34);
-    kj_text_at(s, &kj_big48, KJ_C_RED, KJ_BIG_TITLE_2, LV_ALIGN_TOP_MID, 50, 34);
-    lv_obj_t *z = kj_text_at(s, &kj_zh14, KJ_C_DIM, KJ_STR_ZAWA, LV_ALIGN_TOP_MID, 0, 94);
-    kj_pulse(z, 2400);
+    kj_text_at(s, &kj_zh14, net_color(m->net), net_text(m->net), LV_ALIGN_TOP_LEFT, 24, 13);
+    kj_text_at(s, &kj_big48, KJ_C_TEXT, KJ_BIG_TITLE_1, LV_ALIGN_TOP_MID, -50, 30);
+    kj_text_at(s, &kj_big48, KJ_C_RED, KJ_BIG_TITLE_2, LV_ALIGN_TOP_MID, 50, 30);
     // 三张扇形摆开的牌（中间那张抬高）
-    kj_card(s, 38, 128, 56, 78, KJ_ROCK, 0, KJ_CARD_NAME);
-    kj_card(s, 92, 116, 56, 78, KJ_SCISSORS, 0, KJ_CARD_NAME);
-    kj_card(s, 146, 128, 56, 78, KJ_PAPER, 0, KJ_CARD_NAME);
-    kj_pill(s, 22, 222, 196, 32, KJ_STR_ROLE_PLAYER, m->title_sel == 0, KJ_C_RED);
-    kj_pill(s, 22, 258, 196, 32, KJ_STR_ROLE_HOST, m->title_sel == 1, KJ_C_RED);
+    kj_card(s, 52, 96, 44, 58, KJ_ROCK, 0, 0);
+    kj_card(s, 98, 88, 44, 58, KJ_SCISSORS, 0, 0);
+    kj_card(s, 144, 96, 44, 58, KJ_PAPER, 0, 0);
+    if (m->my_name[0]) {
+        char buf[48];
+        snprintf(buf, sizeof(buf), KJ_STR_HELLO_FMT, m->my_name);
+        kj_text_box(s, &kj_font_name, KJ_C_GOLD, buf, 20, 160, 200, LV_TEXT_ALIGN_CENTER);
+    } else {
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_NO_NAME, LV_ALIGN_TOP_MID, 0, 163);
+    }
+    static const char *const items[KJ_TITLE_ITEMS] = { KJ_STR_ROLE_PLAYER, KJ_STR_ROLE_HOST, KJ_STR_ROLE_SETTINGS };
+    for (int i = 0; i < KJ_TITLE_ITEMS; i++) {
+        kj_pill(s, 22, 190 + i * 32, 196, 28, items[i], m->title_sel == i, i == 2 ? KJ_C_GOLD : KJ_C_RED);
+    }
     kj_footer(s, KJ_STR_HINT_TITLE);
+}
+
+// ---------------------------------------------------------------------------
+// 设置：本机信息 + 登记昵称 / 重新配网 / 返回
+// ---------------------------------------------------------------------------
+static void info_row(lv_obj_t *panel, int y, const char *label, const char *value, uint32_t color)
+{
+    kj_text_at(panel, &kj_zh14, KJ_C_MUTED, label, LV_ALIGN_TOP_LEFT, 10, y);
+    kj_text_box(panel, &kj_font_name, color, value, 58, y - 2, 136, LV_TEXT_ALIGN_LEFT);
+}
+
+static void page_settings(const kj_ui_model_t *m)
+{
+    lv_obj_t *s = kj_ui.scr;
+    kj_top_bar(s, KJ_STR_SET_TITLE, KJ_C_GOLD);
+    lv_obj_t *panel = kj_box(s, 18, 40, 204, 120, KJ_C_PANEL, 12);
+    info_row(panel, 8, KJ_STR_INFO_NAME, m->my_name[0] ? m->my_name : KJ_STR_INFO_NO_NAME,
+             m->my_name[0] ? KJ_C_GOLD : KJ_C_DIM);
+    info_row(panel, 34, KJ_STR_INFO_WIFI, m->ssid[0] ? m->ssid : KJ_STR_NET_NO_WIFI,
+             m->net >= KJ_NET_SEARCHING ? KJ_C_TEXT : KJ_C_DIM);
+    char ip[16];
+    kj_ip_text(m->hub_ip, ip);
+    info_row(panel, 60, KJ_STR_INFO_HUB, m->net == KJ_NET_OK || m->net == KJ_NET_OLD ? ip : net_text(m->net),
+             net_color(m->net));
+    char dev[48];
+    snprintf(dev, sizeof(dev), KJ_STR_INFO_DEVICE_FMT, (unsigned)m->dev_id, m->fw);
+    kj_text_at(panel, &kj_zh14, KJ_C_DIM, dev, LV_ALIGN_TOP_LEFT, 10, 90);
+    static const char *const items[KJ_SET_COUNT] = { KJ_STR_SET_NAME, KJ_STR_SET_WIFI, KJ_STR_SET_BACK };
+    for (int i = 0; i < KJ_SET_COUNT; i++) {
+        kj_pill(s, 22, 172 + i * 38, 196, 32, items[i], m->settings_sel == i, i == KJ_SET_BACK ? 0x5A4D42 : KJ_C_RED);
+    }
+    kj_footer(s, KJ_STR_HINT_SETTINGS);
+}
+
+// ---------------------------------------------------------------------------
+// 登记昵称：二维码 → 手机网页
+// ---------------------------------------------------------------------------
+static void page_register(const kj_ui_model_t *m)
+{
+    lv_obj_t *s = kj_ui.scr;
+    kj_top_bar(s, KJ_STR_REG_TITLE, KJ_C_GOLD);
+    if (m->reg_state == KH_REG_INVALID) {   // 还没连上电脑服务：没有网址可扫
+        radar(s, 132);
+        lv_obj_t *t = kj_text_at(s, &kj_zh18, KJ_C_TEXT, KJ_STR_REG_NO_HUB, LV_ALIGN_TOP_MID, 0, 212);
+        kj_pulse(t, 1600);
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_REG_NO_HUB2, LV_ALIGN_TOP_MID, 0, 240);
+        kj_text_at(s, &kj_zh14, net_color(m->net), net_text(m->net), LV_ALIGN_TOP_MID, 0, 262);
+    } else if (m->reg_state == KH_REG_DONE) {
+        kj_frame(s, 50, 50, 140, 140, KJ_C_GOLD, 4, LV_RADIUS_CIRCLE);
+        kj_frame(s, 60, 60, 120, 120, KJ_C_GOLD, 1, LV_RADIUS_CIRCLE);
+        kj_text_at(s, &kj_big48, KJ_C_GOLD, KJ_BIG_WELCOME, LV_ALIGN_TOP_MID, 0, 88);
+        kj_text_box(s, &kj_font_name, KJ_C_GOLD, m->my_name, 20, 204, 200, LV_TEXT_ALIGN_CENTER);
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_REG_DONE, LV_ALIGN_TOP_MID, 0, 232);
+    } else {
+        qr_box(s, 42, 36, 156, m->qr);
+        if (m->reg_state == KH_REG_OPENED) {
+            lv_obj_t *t = kj_text_at(s, &kj_zh18, KJ_C_GOLD, KJ_STR_REG_OPENED, LV_ALIGN_TOP_MID, 0, 202);
+            kj_pulse(t, 1200);
+        } else {
+            kj_text_at(s, &kj_zh14, KJ_C_TEXT, KJ_STR_REG_SCAN, LV_ALIGN_TOP_MID, 0, 202);
+        }
+        // 扫不了码时手动输入的网址：主机:端口 一行，路径一行
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, m->line1, LV_ALIGN_TOP_MID, 0, 224);
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, m->line2, LV_ALIGN_TOP_MID, 0, 242);
+        kj_text_at(s, &kj_zh14, KJ_C_DIM, KJ_STR_REG_SCAN2, LV_ALIGN_TOP_MID, 0, 264);
+    }
+    kj_footer(s, KJ_STR_HINT_REG);
+}
+
+// ---------------------------------------------------------------------------
+// 配网：设备开热点 → 手机网页里选 Wi-Fi
+// ---------------------------------------------------------------------------
+static void page_provision(const kj_ui_model_t *m)
+{
+    lv_obj_t *s = kj_ui.scr;
+    kj_top_bar(s, KJ_STR_PROV_TITLE, KJ_C_GOLD);
+    qr_box(s, 56, 34, 128, m->qr);
+    kj_text_at(s, &kj_zh14, KJ_C_TEXT, KJ_STR_PROV_STEP1, LV_ALIGN_TOP_MID, 0, 168);
+    char buf[KJ_UI_TEXT_LEN + 16];
+    snprintf(buf, sizeof(buf), KJ_STR_PROV_AP_FMT, m->line1);
+    kj_text_at(s, &kj_zh18, KJ_C_GOLD, buf, LV_ALIGN_TOP_LEFT, 22, 188);
+    snprintf(buf, sizeof(buf), KJ_STR_PROV_PASS_FMT, m->prov_state == KJ_PROV_TRYING ? "" : m->line2);
+    if (m->prov_state != KJ_PROV_TRYING) kj_text_at(s, &kj_zh18, KJ_C_GOLD, buf, LV_ALIGN_TOP_LEFT, 22, 210);
+    const char *status = NULL;
+    uint32_t color = KJ_C_GOLD;
+    switch (m->prov_state) {
+    case KJ_PROV_PHONE_IN: status = KJ_STR_PROV_PHONE_IN; break;
+    case KJ_PROV_TRYING:
+        snprintf(buf, sizeof(buf), KJ_STR_PROV_TRYING_FMT, m->line2);
+        status = buf;
+        break;
+    case KJ_PROV_OK: status = KJ_STR_PROV_OK; color = KJ_C_GREEN; break;
+    case KJ_PROV_FAILED: status = KJ_STR_PROV_FAILED; color = KJ_C_RED; break;
+    default: break;
+    }
+    if (status) {
+        lv_obj_t *t = kj_text_box(s, &kj_font_name, color, status, 16, 240, 208, LV_TEXT_ALIGN_CENTER);
+        if (m->prov_state == KJ_PROV_TRYING || m->prov_state == KJ_PROV_PHONE_IN) kj_pulse(t, 1200);
+    } else {
+        kj_text_at(s, &kj_zh14, KJ_C_TEXT, KJ_STR_PROV_STEP2, LV_ALIGN_TOP_MID, 0, 236);
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_PROV_STEP2B, LV_ALIGN_TOP_MID, 0, 256);
+    }
+    kj_footer(s, KJ_STR_HINT_PROV);
 }
 
 // ---------------------------------------------------------------------------
@@ -41,19 +206,25 @@ static const char *phase_text(uint8_t phase)
          : phase == KJ_PHASE_ENDED ? KJ_STR_PHASE_ENDED : KJ_STR_PHASE_LOBBY;
 }
 
+static uint32_t phase_color(uint8_t phase)
+{
+    return phase == KJ_PHASE_RUNNING ? KJ_C_RED : phase == KJ_PHASE_ENDED ? KJ_C_BLUE : KJ_C_GOLD;
+}
+
 static void page_rooms(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
     kj_top_bar(s, NULL, 0);
     kj_text_at(s, &kj_zh26, KJ_C_TEXT, KJ_STR_ROOMS_TITLE, LV_ALIGN_TOP_MID, 0, 40);
     kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_ROOMS_SUB, LV_ALIGN_TOP_MID, 0, 76);
-    if (m->room_count == 0) {
-        // 雷达：三圈同心圆 + 跳动的提示
-        for (int i = 0; i < 3; i++) {
-            int d = 40 + i * 36;
-            kj_frame(s, 120 - d / 2, 170 - d / 2, d, d, i == 0 ? KJ_C_RED : 0x3A2F28, 2, LV_RADIUS_CIRCLE);
-        }
-        kj_box(s, 114, 164, 12, 12, KJ_C_RED, LV_RADIUS_CIRCLE);
+    if (m->net != KJ_NET_OK) {
+        radar(s, 170);
+        lv_obj_t *t = kj_text_at(s, &kj_zh18, KJ_C_TEXT, KJ_STR_REG_NO_HUB, LV_ALIGN_TOP_MID, 0, 238);
+        kj_pulse(t, 1600);
+        kj_text_at(s, &kj_zh14, KJ_C_MUTED, m->net == KJ_NET_OLD ? KJ_STR_T_OLD_FW : KJ_STR_ROOMS_NO_HUB2,
+                   LV_ALIGN_TOP_MID, 0, 264);
+    } else if (m->room_count == 0) {
+        radar(s, 170);
         lv_obj_t *t = kj_text_at(s, &kj_zh18, KJ_C_TEXT, KJ_STR_ROOMS_EMPTY, LV_ALIGN_TOP_MID, 0, 238);
         kj_pulse(t, 1600);
         kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_ROOMS_EMPTY2, LV_ALIGN_TOP_MID, 0, 264);
@@ -72,7 +243,7 @@ static void page_rooms(const kj_ui_model_t *m)
             kj_text_at(row, &kj_zh18, KJ_C_TEXT, buf, LV_ALIGN_TOP_LEFT, 12, 1);
             snprintf(buf, sizeof(buf), KJ_STR_ROOM_LINE_FMT, phase_text(r->phase), (unsigned)r->seated);
             kj_text_at(row, &kj_zh14, KJ_C_MUTED, buf, LV_ALIGN_TOP_LEFT, 12, 21);
-            kj_signal(row, 170, 13, kj_ui_signal_level(r->rssi), sel ? KJ_C_GOLD : KJ_C_MUTED);
+            kj_box(row, 182, 15, 10, 10, phase_color(r->phase), LV_RADIUS_CIRCLE);
         }
         if (m->joining) {
             lv_obj_t *j = kj_box(s, 50, 196, 140, 44, 0x2B231E, 12);
@@ -97,10 +268,15 @@ static void room_top_bar(const kj_ui_model_t *m)
     kj_top_bar(kj_ui.scr, buf, KJ_C_MUTED);
 }
 
+// 顶栏左侧："07号 小明"
 static void player_top_bar(const kj_ui_model_t *m)
 {
-    char buf[16];
-    no_text(buf, sizeof(buf), m->view.no);
+    char buf[48];
+    if (m->my_name[0]) {
+        snprintf(buf, sizeof(buf), KJ_STR_NO_FMT " %s", (unsigned)m->view.no, m->my_name);
+    } else {
+        no_text(buf, sizeof(buf), m->view.no);
+    }
     kj_top_bar(kj_ui.scr, buf, KJ_C_GOLD);
 }
 
@@ -108,14 +284,15 @@ static void page_seat(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
     room_top_bar(m);
-    kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_YOUR_NO, LV_ALIGN_TOP_MID, 0, 50);
-    kj_badge(s, 120, 136, 120, m->view.no, KJ_C_RED, true);
+    kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_YOUR_NO, LV_ALIGN_TOP_MID, 0, 46);
+    kj_badge(s, 120, 128, 112, m->view.no, KJ_C_RED, true);
+    if (m->my_name[0]) kj_text_box(s, &kj_font_name, KJ_C_GOLD, m->my_name, 20, 190, 200, LV_TEXT_ALIGN_CENTER);
     char buf[32];
     snprintf(buf, sizeof(buf), KJ_STR_SEATED_FMT, (unsigned)m->seated);
-    kj_text_at(s, &kj_zh18, KJ_C_TEXT, buf, LV_ALIGN_TOP_MID, 0, 210);
+    kj_text_at(s, &kj_zh18, KJ_C_TEXT, buf, LV_ALIGN_TOP_MID, 0, 220);
     bool ended = m->view.phase == KJ_PHASE_ENDED;
     lv_obj_t *t = kj_text_at(s, &kj_zh18, KJ_C_RED, ended ? KJ_STR_WAIT_NEXT : KJ_STR_WAIT_START,
-                             LV_ALIGN_TOP_MID, 0, 242);
+                             LV_ALIGN_TOP_MID, 0, 250);
     kj_pulse(t, 1600);
     kj_footer(s, KJ_STR_HINT_SEAT);
 }
@@ -166,27 +343,29 @@ static void page_opponents(const kj_ui_model_t *m)
         kj_text_at(s, &kj_zh18, KJ_C_TEXT, KJ_STR_OPP_EMPTY, LV_ALIGN_TOP_MID, 0, 160);
         kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_OPP_EMPTY2, LV_ALIGN_TOP_MID, 0, 188);
     } else {
-        int first = m->opp_sel >= 3 ? m->opp_sel - 2 : 0;
-        if (first > m->opp_count - 4) first = m->opp_count - 4 > 0 ? m->opp_count - 4 : 0;
-        for (int i = first; i < m->opp_count && i < first + 4; i++) {
+        int first = m->opp_first;
+        for (int i = first; i < m->opp_count && i < first + KJ_UI_OPP_ROWS; i++) {
             const kj_opponent_t *o = &m->opps[i];
             bool sel = i == m->opp_sel;
             int y = 100 + (i - first) * 46;
             lv_obj_t *row = kj_box(s, 18, y, 204, 40, sel ? 0x3A1517 : KJ_C_PANEL, 10);
             lv_obj_set_style_border_width(row, sel ? 2 : 1, 0);
             lv_obj_set_style_border_color(row, lv_color_hex(sel ? KJ_C_RED : KJ_C_LINE), 0);
-            char buf[16];
-            no_text(buf, sizeof(buf), o->no);
-            kj_text_at(row, &kj_zh26, sel ? KJ_C_TEXT : 0xD9CDBA, buf, LV_ALIGN_LEFT_MID, 14, -1);
+            char buf[8];
+            snprintf(buf, sizeof(buf), "%02u", (unsigned)o->no);
+            kj_text_at(row, &kj_zh26, sel ? KJ_C_GOLD : 0xD9CDBA, buf, LV_ALIGN_LEFT_MID, 12, -1);
+            const char *name = m->opp_names[i - first];
             if (o->is_bot) {
-                // 电脑选手在庄家设备里，没有信号强弱可言
-                lv_obj_t *tag = kj_box(row, 92, 10, 44, 20, 0x2E3A44, 10);
+                lv_obj_t *tag = kj_box(row, 56, 10, 44, 20, 0x2E3A44, 10);
                 lv_obj_center(kj_text(tag, &kj_zh14, KJ_C_BLUE, KJ_STR_BOT));
+            } else if (name[0]) {
+                lv_obj_t *l = kj_text_box(row, &kj_font_name, sel ? KJ_C_TEXT : 0xD9CDBA, name, 56, 9, 140,
+                                          LV_TEXT_ALIGN_LEFT);
+                (void)l;
             } else {
-                kj_text_at(row, &kj_zh14, o->nearby ? KJ_C_MUTED : KJ_C_DIM, kj_signal_word(o),
-                           LV_ALIGN_RIGHT_MID, -36, 0);
-                kj_signal(row, 178, 13, o->nearby ? kj_ui_signal_level(o->rssi) : 0,
-                          sel ? KJ_C_GOLD : KJ_C_MUTED);
+                char no[16];
+                no_text(no, sizeof(no), o->no);
+                kj_text_at(row, &kj_zh14, KJ_C_DIM, no, LV_ALIGN_LEFT_MID, 58, 0);
             }
         }
         char pos[12];
@@ -197,9 +376,9 @@ static void page_opponents(const kj_ui_model_t *m)
 }
 
 // ---------------------------------------------------------------------------
-// 等待应战 / 收到挑战（共用倒计时条）
+// 等待应战 / 收到挑战 / 碰拳配对（共用倒计时条）
 // ---------------------------------------------------------------------------
-static void countdown(lv_obj_t *s, const char *fmt, int y, uint32_t color)
+static void countdown(lv_obj_t *s, const char *fmt, int y, uint32_t color, int range_s)
 {
     kj_ui.countdown_fmt = fmt;
     kj_ui.countdown_label = kj_text_at(s, &kj_zh18, KJ_C_TEXT, "", LV_ALIGN_TOP_MID, 0, y);
@@ -213,22 +392,30 @@ static void countdown(lv_obj_t *s, const char *fmt, int y, uint32_t color)
     lv_obj_set_style_bg_color(bar, lv_color_hex(color), LV_PART_INDICATOR);
     lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, LV_PART_INDICATOR);
     lv_obj_set_style_radius(bar, 3, LV_PART_INDICATOR);
-    lv_bar_set_range(bar, 0, KJ_CHALLENGE_TIMEOUT_MS / 1000);
-    lv_bar_set_value(bar, KJ_CHALLENGE_TIMEOUT_MS / 1000, LV_ANIM_OFF);
+    lv_bar_set_range(bar, 0, range_s);
+    lv_bar_set_value(bar, range_s, LV_ANIM_OFF);
     kj_ui.countdown_bar = bar;
+}
+
+// 对手的编号牌 + 昵称（或"电脑"标签）
+static void peer_badge(lv_obj_t *s, const kj_ui_model_t *m, int cy, int d, uint32_t ring, int name_y)
+{
+    kj_badge(s, 120, cy, d, m->view.peer_no, ring, true);
+    if (m->view.peer_is_bot) {
+        lv_obj_t *tag = kj_box(s, 100, name_y, 40, 20, 0x2E3A44, 10);
+        lv_obj_center(kj_text(tag, &kj_zh14, KJ_C_BLUE, KJ_STR_BOT));
+    } else if (m->peer_name[0]) {
+        kj_text_box(s, &kj_font_name, KJ_C_TEXT, m->peer_name, 20, name_y, 200, LV_TEXT_ALIGN_CENTER);
+    }
 }
 
 static void page_wait(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
     player_top_bar(m);
-    kj_text_at(s, &kj_zh26, KJ_C_TEXT, KJ_STR_WAIT_TITLE, LV_ALIGN_TOP_MID, 0, 44);
-    kj_badge(s, 120, 146, 110, m->view.peer_no, KJ_C_GOLD, true);
-    if (m->view.peer_is_bot) {
-        lv_obj_t *tag = kj_box(s, 100, 196, 40, 20, 0x2E3A44, 10);
-        lv_obj_center(kj_text(tag, &kj_zh14, KJ_C_BLUE, KJ_STR_BOT));
-    }
-    countdown(s, KJ_STR_WAIT_FMT, 224, KJ_C_GOLD);
+    kj_text_at(s, &kj_zh26, KJ_C_TEXT, KJ_STR_WAIT_TITLE, LV_ALIGN_TOP_MID, 0, 40);
+    peer_badge(s, m, 134, 100, KJ_C_GOLD, 190);
+    countdown(s, KJ_STR_WAIT_FMT, 222, KJ_C_GOLD, KJ_CHALLENGE_TIMEOUT_MS / 1000);
     kj_footer(s, KJ_STR_HINT_WAIT);
 }
 
@@ -236,14 +423,49 @@ static void page_challenged(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
     player_top_bar(m);
-    lv_obj_t *title = kj_text_at(s, &kj_big48, KJ_C_TEXT, KJ_BIG_CHALLENGE, LV_ALIGN_TOP_MID, 0, 36);
+    lv_obj_t *title = kj_text_at(s, &kj_big48, KJ_C_TEXT, KJ_BIG_CHALLENGE, LV_ALIGN_TOP_MID, 0, 32);
     kj_pulse(title, 900);
-    kj_badge(s, 120, 146, 92, m->view.peer_no, KJ_C_RED, true);
-    kj_text_at(s, &kj_zh18, KJ_C_TEXT, m->view.peer_is_bot ? KJ_STR_CHAL_BOT : KJ_STR_CHAL_FROM,
-               LV_ALIGN_TOP_MID, 0, 198);
-    countdown(s, KJ_STR_CHAL_LEFT_FMT, 222, KJ_C_RED);
-    kj_pill(s, 22, 262, 100, 30, KJ_STR_ACCEPT, true, KJ_C_GOLD);
-    kj_pill(s, 128, 262, 90, 30, KJ_STR_DECLINE, false, 0);
+    kj_badge(s, 120, 128, 84, m->view.peer_no, KJ_C_RED, true);
+    char buf[64];
+    if (m->view.peer_is_bot) {
+        snprintf(buf, sizeof(buf), "%s", KJ_STR_CHAL_BOT);
+    } else {
+        char who[40];
+        who_text(who, sizeof(who), m->view.peer_no, m->peer_name, false);
+        snprintf(buf, sizeof(buf), "%s %s", who, KJ_STR_CHAL_FROM);
+    }
+    kj_text_box(s, &kj_font_name, KJ_C_TEXT, buf, 16, 178, 208, LV_TEXT_ALIGN_CENTER);
+    countdown(s, KJ_STR_CHAL_LEFT_FMT, 206, KJ_C_RED, KJ_CHALLENGE_TIMEOUT_MS / 1000);
+    kj_pill(s, 22, 256, 100, 30, KJ_STR_ACCEPT, true, KJ_C_GOLD);
+    kj_pill(s, 128, 256, 90, 30, KJ_STR_DECLINE, false, 0);
+}
+
+// ---------------------------------------------------------------------------
+// 碰拳：两只拳头对撞，等庄家配对；配对成功后显示对手并倒计时
+// ---------------------------------------------------------------------------
+static void page_bump(const kj_ui_model_t *m)
+{
+    lv_obj_t *s = kj_ui.scr;
+    player_top_bar(m);
+    lv_obj_t *big = kj_text_at(s, &kj_big48, KJ_C_RED, KJ_BIG_BUMP, LV_ALIGN_TOP_MID, 0, 34);
+    kj_pulse(big, 700);
+    kj_card(s, 22, 100, 84, 112, KJ_ROCK, 0, KJ_CARD_BIG);
+    kj_card(s, 134, 100, 84, 112, KJ_ROCK, 0, KJ_CARD_BIG);
+    lv_obj_t *t = kj_text_at(s, &kj_zh18, KJ_C_TEXT, KJ_STR_BUMP_WAIT, LV_ALIGN_TOP_MID, 0, 228);
+    kj_pulse(t, 1200);
+    kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_BUMP_SUB, LV_ALIGN_TOP_MID, 0, 256);
+    kj_footer(s, KJ_STR_HINT_BUMP);
+}
+
+static void page_matched(const kj_ui_model_t *m)
+{
+    lv_obj_t *s = kj_ui.scr;
+    player_top_bar(m);
+    kj_text_at(s, &kj_zh26, KJ_C_GOLD, KJ_STR_MATCH_TITLE, LV_ALIGN_TOP_MID, 0, 38);
+    kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_MATCH_PEER, LV_ALIGN_TOP_MID, 0, 72);
+    peer_badge(s, m, 136, 92, KJ_C_GOLD, 188);
+    countdown(s, KJ_STR_MATCH_FMT, 218, KJ_C_RED, KJ_MATCH_COUNTDOWN_MS / 1000);
+    kj_footer(s, KJ_STR_HINT_MATCH);
 }
 
 // ---------------------------------------------------------------------------
@@ -253,8 +475,12 @@ static void page_choose(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
     const kj_view_t *v = &m->view;
-    char buf[48];
-    snprintf(buf, sizeof(buf), KJ_STR_DUEL_VS_FMT, v->peer_no);
+    char buf[64];
+    if (m->peer_name[0] && !v->peer_is_bot) {
+        snprintf(buf, sizeof(buf), KJ_STR_DUEL_VS_NAME_FMT, m->peer_name);
+    } else {
+        snprintf(buf, sizeof(buf), KJ_STR_DUEL_VS_FMT, v->peer_no);
+    }
     kj_top_bar(s, buf, KJ_C_TEXT);
     // 对手状态
     lv_obj_t *chip = kj_box(s, 50, 40, 140, 26, v->peer_locked ? 0x3B2E12 : KJ_C_PANEL, 13);
@@ -294,10 +520,10 @@ static void page_reveal(const kj_ui_model_t *m)
     lv_obj_t *s = kj_ui.scr;
     const kj_view_t *v = &m->view;
     player_top_bar(m);
-    char buf[16];
-    kj_text_at(s, &kj_zh14, KJ_C_MUTED, KJ_STR_ME, LV_ALIGN_TOP_LEFT, 56, 42);
-    no_text(buf, sizeof(buf), v->res_opp_no);
-    kj_text_at(s, &kj_zh14, KJ_C_MUTED, buf, LV_ALIGN_TOP_RIGHT, -46, 42);
+    char buf[40];
+    kj_text_box(s, &kj_zh14, KJ_C_MUTED, KJ_STR_ME, 18, 42, 84, LV_TEXT_ALIGN_CENTER);
+    who_text(buf, sizeof(buf), v->res_opp_no, m->peer_name, false);
+    kj_text_box(s, &kj_font_name, KJ_C_MUTED, buf, 128, 38, 104, LV_TEXT_ALIGN_CENTER);
     uint8_t out = v->res_outcome;
     kj_card(s, 18, 64, 84, 112, v->res_my, 0, KJ_CARD_BIG | KJ_CARD_NAME |
             (out == KJ_OUT_LOSE ? KJ_CARD_OFF : 0));
@@ -363,6 +589,7 @@ static const char *host_item_text(int item)
 {
     static const char *const names[KJ_HM_COUNT] = {
         KJ_STR_M_START, KJ_STR_M_END, KJ_STR_M_NEW, KJ_STR_M_BOT_ADD, KJ_STR_M_BOT_DEL, KJ_STR_M_RESET,
+        KJ_STR_M_ROSTER,
     };
     return item >= 0 && item < KJ_HM_COUNT ? names[item] : "";
 }
@@ -376,6 +603,23 @@ static void stat_cell(lv_obj_t *s, int x, int value, const char *label)
     kj_text_at(cell, &kj_zh14, KJ_C_MUTED, label, LV_ALIGN_BOTTOM_MID, 0, -3);
 }
 
+static void board_footer(lv_obj_t *s, const kj_ui_model_t *m)
+{
+    char buf[48];
+    const char *text;
+    if (m->board == KJ_BOARD_WIFI) {
+        char ip[16];
+        kj_ip_text(m->hub_ip, ip);
+        snprintf(buf, sizeof(buf), KJ_STR_BOARD_WIFI_FMT, ip);
+        text = buf;
+    } else if (m->board == KJ_BOARD_USB) {
+        text = KJ_STR_BOARD_USB;
+    } else {
+        text = m->net == KJ_NET_NO_WIFI ? KJ_STR_BOARD_NO_WIFI : KJ_STR_BOARD_SEARCH;
+    }
+    kj_text_at(s, &kj_zh14, m->board ? KJ_C_GREEN : KJ_C_MUTED, text, LV_ALIGN_TOP_MID, 0, 294);
+}
+
 static void page_host(const kj_ui_model_t *m)
 {
     lv_obj_t *s = kj_ui.scr;
@@ -384,8 +628,7 @@ static void page_host(const kj_ui_model_t *m)
     char room[5];
     snprintf(room, sizeof(room), "%04X", (unsigned)m->host_room);
     kj_text_at(s, &kj_num56, KJ_C_TEXT, room, LV_ALIGN_TOP_MID, 0, 50);
-    uint32_t pc = m->host_phase == KJ_PHASE_RUNNING ? KJ_C_RED : m->host_phase == KJ_PHASE_ENDED ? KJ_C_BLUE
-                                                                                             : KJ_C_GOLD;
+    uint32_t pc = phase_color(m->host_phase);
     lv_obj_t *chip = kj_box(s, 44, 112, 152, 24, 0x1E1714, 12);
     lv_obj_set_style_border_width(chip, 1, 0);
     lv_obj_set_style_border_color(chip, lv_color_hex(pc), 0);
@@ -410,7 +653,7 @@ static void page_host(const kj_ui_model_t *m)
         kj_text_at(s, sel ? &kj_zh18 : &kj_zh14, sel ? (on ? KJ_C_TEXT : KJ_C_MUTED) : (on ? 0xBDB09C : KJ_C_DIM),
                    host_item_text(item), LV_ALIGN_TOP_MID, 0, y + (sel ? 0 : 3));
     }
-    kj_footer(s, m->usb ? KJ_STR_USB_ON : KJ_STR_USB_OFF);
+    board_footer(s, m);
 
     if (m->host_confirm >= 0) {
         lv_obj_t *dlg = kj_box(s, 22, 112, 196, 104, 0x241C18, 14);
@@ -421,6 +664,65 @@ static void page_host(const kj_ui_model_t *m)
         kj_text_at(dlg, &kj_zh18, KJ_C_TEXT, buf, LV_ALIGN_TOP_MID, 0, 22);
         kj_text_at(dlg, &kj_zh14, KJ_C_MUTED, KJ_STR_CONFIRM_HINT, LV_ALIGN_TOP_MID, 0, 62);
     }
+}
+
+// ---------------------------------------------------------------------------
+// 庄家：选手名单（昵称、状态、星星、剩余手牌；不显示分类牌数，牌数在原作里也是秘密）
+// ---------------------------------------------------------------------------
+static const char *status_word(uint8_t st)
+{
+    static const char *const words[KJ_ST_COUNT] = {
+        KJ_STR_ST_WAITING, KJ_STR_ST_IDLE, KJ_STR_ST_CHALLENGING, KJ_STR_ST_CHALLENGED, KJ_STR_ST_DUEL,
+        KJ_STR_ST_CLEARED, KJ_STR_ST_OUT, KJ_STR_ST_FAILED, KJ_STR_ST_BUMPING, KJ_STR_ST_MATCHED,
+    };
+    return st < KJ_ST_COUNT ? words[st] : "";
+}
+
+static uint32_t status_color(uint8_t st)
+{
+    switch (st) {
+    case KJ_ST_IDLE: return KJ_C_GREEN;
+    case KJ_ST_DUEL: case KJ_ST_MATCHED: case KJ_ST_CHALLENGING: case KJ_ST_CHALLENGED: case KJ_ST_BUMPING:
+        return KJ_C_GOLD;
+    case KJ_ST_CLEARED: return KJ_C_GOLD;
+    case KJ_ST_ELIMINATED: case KJ_ST_FAILED: return KJ_C_RED;
+    default: return KJ_C_MUTED;
+    }
+}
+
+static void page_host_roster(const kj_ui_model_t *m)
+{
+    lv_obj_t *s = kj_ui.scr;
+    kj_top_bar(s, KJ_STR_HOST_TAG, KJ_C_GOLD);
+    kj_text_at(s, &kj_zh26, KJ_C_TEXT, KJ_STR_ROSTER_TITLE, LV_ALIGN_TOP_LEFT, 20, 36);
+    char buf[48];
+    snprintf(buf, sizeof(buf), KJ_STR_ROSTER_FMT, (unsigned)m->roster_total);
+    kj_text_at(s, &kj_zh14, KJ_C_MUTED, buf, LV_ALIGN_TOP_RIGHT, -22, 46);
+    if (m->roster_count == 0) {
+        kj_text_at(s, &kj_zh18, KJ_C_MUTED, KJ_STR_ROSTER_EMPTY, LV_ALIGN_TOP_MID, 0, 160);
+    }
+    for (int i = 0; i < m->roster_count; i++) {
+        const kj_roster_row_t *r = &m->roster[i];
+        int y = 74 + i * 42;
+        lv_obj_t *row = kj_box(s, 14, y, 212, 38, KJ_C_PANEL, 8);
+        if (!r->online && !r->is_bot) lv_obj_set_style_bg_opa(row, LV_OPA_50, 0);
+        snprintf(buf, sizeof(buf), "%02u", (unsigned)r->no);
+        kj_text_at(row, &kj_zh18, KJ_C_GOLD, buf, LV_ALIGN_TOP_LEFT, 8, 0);
+        char who[40];
+        who_text(who, sizeof(who), r->no, r->name, r->is_bot);
+        kj_text_box(row, &kj_font_name, r->online ? KJ_C_TEXT : KJ_C_DIM, who, 38, 0, 108, LV_TEXT_ALIGN_LEFT);
+        kj_text_at(row, &kj_zh14, r->online ? status_color(r->status) : KJ_C_DIM,
+                   r->online ? status_word(r->status) : KJ_STR_OFFLINE, LV_ALIGN_TOP_RIGHT, -8, 2);
+        snprintf(buf, sizeof(buf), "%s%u  " KJ_STR_ROSTER_CARDS_FMT, KJ_STR_STAR, (unsigned)r->stars,
+                 (unsigned)r->cards);
+        kj_text_at(row, &kj_zh14, KJ_C_MUTED, buf, LV_ALIGN_TOP_LEFT, 38, 20);
+    }
+    if (m->roster_total > KJ_ROSTER_ROWS) {
+        unsigned last = m->roster_first + m->roster_count;
+        snprintf(buf, sizeof(buf), "%u-%u/%u", (unsigned)m->roster_first + 1, last, (unsigned)m->roster_total);
+        kj_text_at(s, &kj_zh14, KJ_C_DIM, buf, LV_ALIGN_TOP_RIGHT, -22, 282);
+    }
+    kj_footer(s, KJ_STR_HINT_ROSTER);
 }
 
 void kj_ui_build_page(const kj_ui_model_t *m)
@@ -437,6 +739,12 @@ void kj_ui_build_page(const kj_ui_model_t *m)
     case KJ_PAGE_REVEAL: page_reveal(m); break;
     case KJ_PAGE_FINAL: page_final(m); break;
     case KJ_PAGE_HOST: page_host(m); break;
+    case KJ_PAGE_BUMP: page_bump(m); break;
+    case KJ_PAGE_MATCHED: page_matched(m); break;
+    case KJ_PAGE_SETTINGS: page_settings(m); break;
+    case KJ_PAGE_REGISTER: page_register(m); break;
+    case KJ_PAGE_PROVISION: page_provision(m); break;
+    case KJ_PAGE_HOST_ROSTER: page_host_roster(m); break;
     default: page_title(m); break;
     }
 }

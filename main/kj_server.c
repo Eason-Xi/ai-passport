@@ -1,5 +1,6 @@
 // main/kj_server.c —— 庄家侧协议逻辑（纯 C）。
 #include "kj_server.h"
+#include "kj_bump.h"
 
 #include <string.h>
 
@@ -69,6 +70,7 @@ void kj_server_init(kj_server_t *s, uint16_t room, uint32_t seed)
     kj_rules_init(&s->game);
     s->room = room;
     s->rng = seed ? seed : 0x2545F491u;
+    s->epoch = (uint16_t)(mix(s->rng ^ 0xE90Cu) | 1u);   // 非 0
     kj_rules_mark_all_dirty(&s->game);
 }
 
@@ -96,6 +98,7 @@ static void send_view(kj_server_t *s, int idx, const uint8_t mac[6], uint32_t no
 {
     kj_frame_t f = { .type = KJ_F_VIEW, .room = s->room };
     kj_rules_view(&s->game, idx, now_ms, &f.u.view);
+    f.u.view.epoch = s->epoch;
     if (kj_outbox_push(out, mac, &f)) s->tx_views++;
 }
 
@@ -107,6 +110,7 @@ static void send_not_member(kj_server_t *s, const uint8_t mac[6], kj_notice_t wh
     kj_rules_view(&s->game, -1, now_ms, &f.u.view);
     f.u.view.notice = (uint8_t)why;
     f.u.view.notice_seq = 1;
+    f.u.view.epoch = s->epoch;
     kj_outbox_push(out, mac, &f);
 }
 
@@ -146,6 +150,12 @@ static void apply_request(kj_server_t *s, int idx, const kj_req_t *req, uint32_t
     case KJ_OP_DECLINE: n = kj_rules_respond(g, idx, false, now_ms); break;
     case KJ_OP_PLAY: n = kj_rules_play(g, idx, req->arg, now_ms); break;
     case KJ_OP_WITHDRAW: n = kj_rules_withdraw(g, idx, now_ms); break;
+    case KJ_OP_BUMP: {
+        // 按下时刻 = 收到时间 − 请求在路上的时间（含重发）。过旧的请求由规则判为没碰到。
+        uint32_t age = req->age_ms > KJ_BUMP_MAX_AGE_MS ? KJ_BUMP_MAX_AGE_MS + 1u : req->age_ms;
+        n = kj_rules_bump(g, idx, now_ms - age, now_ms);
+        break;
+    }
     default: break;
     }
     if (n != KJ_N_NONE) kj_rules_notify(g, idx, n);
@@ -180,8 +190,9 @@ void kj_server_on_frame(kj_server_t *s, const uint8_t mac[6], int8_t rssi,
 
     const kj_req_t *req = &f.u.req;
     if (req->op == KJ_OP_JOIN) {
-        if (idx >= 0 && req->seq == g->players[idx].last_req_seq) {
-            kj_rules_seen(g, idx, rssi, now_ms);   // 重复的入座请求：只补发视图
+        if (idx >= 0 && req->boot == g->players[idx].boot &&
+            kj_seq_diff(req->seq, g->players[idx].last_req_seq) <= 0) {
+            kj_rules_seen(g, idx, rssi, now_ms);   // 同一次开机的重复 / 迟到的入座请求：只补发视图
             s->link[idx].force = 1;
         } else {
             idx = kj_rules_join(g, mac, now_ms);
@@ -189,8 +200,9 @@ void kj_server_on_frame(kj_server_t *s, const uint8_t mac[6], int8_t rssi,
                 send_not_member(s, mac, KJ_N_FULL, now_ms, out);
                 return;
             }
-            // 设备重启后序号从头开始：入座请求总是重置去重基准。
+            // 设备重启后序号从头开始：新开机的入座请求重置去重基准。
             g->players[idx].last_req_seq = req->seq;
+            g->players[idx].boot = req->boot;
             kj_rules_seen(g, idx, rssi, now_ms);
             kj_rules_touch(g, idx);
             s->link[idx].force = 1;
@@ -205,8 +217,14 @@ void kj_server_on_frame(kj_server_t *s, const uint8_t mac[6], int8_t rssi,
     }
     kj_rules_seen(g, idx, rssi, now_ms);
     kj_player_t *p = &g->players[idx];
-    if (kj_seq_diff(req->seq, p->last_req_seq) <= 0) {
-        s->link[idx].force = 1;   // 重复 / 过期请求：不再执行，只补发视图（确认已送达）
+    if (p->boot == 0 && req->boot != 0) {
+        // 庄家从快照恢复后还不知道选手的开机号：以第一个请求为准重新建立去重基准。
+        p->boot = req->boot;
+        p->last_req_seq = (uint16_t)(req->seq - 1);
+    }
+    if (req->boot != p->boot || kj_seq_diff(req->seq, p->last_req_seq) <= 0) {
+        // 重复 / 过期请求，或上一次开机遗留的迟到请求：不再执行，只补发视图（确认已送达）
+        s->link[idx].force = 1;
     } else {
         p->last_req_seq = req->seq;
         apply_request(s, idx, req, now_ms);

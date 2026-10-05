@@ -1,6 +1,6 @@
 // tools/kj_preview/lv_conf.h —— 电脑预览用的 LVGL 最小配置。
 //
-// 与固件（sdkconfig.defaults）一致：16 位色、内置内存池、关闭默认主题、保留缺字占位框。
+// 与固件（sdkconfig.defaults）一致：16 位色、内置内存池（36 KB）、关闭默认主题、保留缺字占位框、二维码。
 // 电脑是 64 位，对象里的指针更大，所以预览测得的内存占用比板上偏高（偏保守）。
 #ifndef LV_CONF_H
 #define LV_CONF_H
@@ -10,7 +10,7 @@
 #define LV_USE_STDLIB_STRING LV_STDLIB_BUILTIN
 #define LV_USE_STDLIB_SPRINTF LV_STDLIB_BUILTIN
 #ifndef KJ_PREVIEW_MEM_KB
-#define KJ_PREVIEW_MEM_KB 40
+#define KJ_PREVIEW_MEM_KB 36
 #endif
 #define LV_MEM_SIZE (KJ_PREVIEW_MEM_KB * 1024U)
 #define LV_DEF_REFR_PERIOD 20
@@ -22,6 +22,7 @@
 #define LV_USE_FONT_PLACEHOLDER 1
 #define LV_TXT_ENC LV_TXT_ENC_UTF8
 #define LV_USE_THEME_DEFAULT 0
+#define LV_USE_QRCODE 1
 #define LV_USE_PERF_MONITOR 0
 #define LV_USE_MEM_MONITOR 0
 #define LV_USE_ASSERT_NULL 1

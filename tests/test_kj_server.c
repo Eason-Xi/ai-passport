@@ -1,4 +1,6 @@
-// tests/test_kj_server.c —— 庄家协议逻辑：入座 / 去重 / 非成员处理 / 视图重发上限 / 信标 / 电脑选手。
+// tests/test_kj_server.c —— 庄家协议逻辑：入座 / 去重（含开机号）/ 非成员处理 / 视图重发上限 / 信标 / 电脑选手 /
+// 碰拳配对与倒计时 / 视图带 epoch。
+#include "kj_bump.h"
 #include "kj_server.h"
 #include "kj_test.h"
 
@@ -14,15 +16,24 @@ static size_t enc(const kj_frame_t *f, uint8_t *buf)
     return kj_proto_encode(f, buf, KJ_FRAME_MAX);
 }
 
-static void req(const uint8_t mac[6], uint16_t seq, uint8_t op, uint8_t arg, uint32_t now)
+static void req_full(const uint8_t mac[6], uint16_t seq, uint8_t op, uint8_t arg, uint16_t boot, uint16_t age,
+                     uint32_t now)
 {
     kj_frame_t f = { .type = KJ_F_REQ, .room = ROOM };
     f.u.req.seq = seq;
     f.u.req.op = op;
     f.u.req.arg = arg;
+    f.u.req.boot = boot;
+    f.u.req.age_ms = age;
     uint8_t buf[KJ_FRAME_MAX];
     size_t n = enc(&f, buf);
     kj_server_on_frame(&s, mac, -50, buf, n, now, &out);
+}
+
+// 默认每台设备一个固定的开机号
+static void req(const uint8_t mac[6], uint16_t seq, uint8_t op, uint8_t arg, uint32_t now)
+{
+    req_full(mac, seq, op, arg, (uint16_t)(0x1000 + mac[5]), 0, now);
 }
 
 static void hello(const uint8_t mac[6], uint8_t no, uint16_t ver, uint32_t now)
@@ -84,6 +95,8 @@ int main(void)
     CHECK_EQ(v.no, 1);
     CHECK_EQ(v.ack_seq, 100);
     CHECK_EQ(v.status, KJ_ST_WAITING);
+    CHECK(s.epoch != 0);
+    CHECK_EQ(v.epoch, s.epoch);
     req(b, 7, KJ_OP_JOIN, 0, 1100);
     // 别的赌局号直接忽略
     kj_frame_t other = { .type = KJ_F_REQ, .room = ROOM + 1 };
@@ -132,18 +145,27 @@ int main(void)
     CHECK_EQ(s.game.players[0].stars, 4);
     CHECK_EQ(s.game.players[1].stars, 2);
 
-    // 选手重启后序号从头：入座请求重置去重基准，之后的小序号照常执行
-    req(b, 1, KJ_OP_JOIN, 0, 1900);
+    // 同一次开机里迟到的旧入座请求（经 UDP 中继可能乱序）不会把去重基准拉回去
+    req(b, 7, KJ_OP_JOIN, 0, 1850);
+    CHECK_EQ(s.game.players[1].last_req_seq, 10);
+    // 选手重启（开机号变化）后序号从头：入座请求重置去重基准，之后的小序号照常执行
+    req_full(b, 1, KJ_OP_JOIN, 0, 0x2B02, 0, 1900);
     CHECK_EQ(s.game.players[1].last_req_seq, 1);
-    req(b, 2, KJ_OP_CHALLENGE, 1, 1950);
+    CHECK_EQ(s.game.players[1].boot, 0x2B02);
+    // 上一次开机遗留的迟到请求：不执行
+    req(b, 11, KJ_OP_CHALLENGE, 1, 1940);
+    CHECK_EQ(s.game.players[1].status, KJ_ST_IDLE);
+    req_full(b, 2, KJ_OP_CHALLENGE, 1, 0x2B02, 0, 1950);
     CHECK_EQ(s.game.players[1].status, KJ_ST_CHALLENGING);
-    req(b, 3, KJ_OP_CANCEL, 0, 1960);
+    req_full(b, 3, KJ_OP_CANCEL, 0, 0x2B02, 0, 1960);
+    CHECK_EQ(s.game.players[1].status, KJ_ST_IDLE);
 
-    // 不在册的设备：心跳 / 请求都会收到 no=0 的视图
+    // 不在册的设备：心跳 / 请求都会收到 no=0 的视图（同样带 epoch）
     kj_outbox_clear(&out);
     hello(x, 5, 3, 2000);
     CHECK(last_view_to(x, &v));
     CHECK_EQ(v.no, 0);
+    CHECK_EQ(v.epoch, s.epoch);
     kj_outbox_clear(&out);
     req(x, 50, KJ_OP_CHALLENGE, 1, 2000);
     CHECK(last_view_to(x, &v));
@@ -225,6 +247,65 @@ int main(void)
     }
     CHECK(s.game.next_duel_id > before);   // 两个电脑选手自己打起来了
     CHECK_EQ(s.game.players[0].status, KJ_ST_IDLE);   // 真人没被电脑骚扰
+
+    // 碰拳：两人几乎同时按下（b 的请求在路上重发过，靠 age 还原按下时刻）
+    kj_server_init(&s, ROOM, 4);
+    uint8_t c3[6] = { 2, 0, 0, 0, 0, 3 };
+    req(a, 1, KJ_OP_JOIN, 0, 0);
+    req(b, 1, KJ_OP_JOIN, 0, 0);
+    req(c3, 1, KJ_OP_JOIN, 0, 0);
+    kj_server_command(&s, KJ_CMD_START, 0, 0);
+    req_full(a, 2, KJ_OP_BUMP, 0, 0x1001, 0, 1000);
+    req_full(b, 2, KJ_OP_BUMP, 0, 0x1002, 500, 1520);   // 实际按下于 1020
+    CHECK_EQ(s.game.players[0].status, KJ_ST_BUMPING);
+    CHECK_EQ(s.game.players[1].since_ms, 1020);
+    kj_outbox_clear(&out);
+    kj_server_tick(&s, 1000 + KJ_BUMP_SETTLE_MS - 1, &out);
+    CHECK_EQ(s.game.players[0].status, KJ_ST_BUMPING);   // 还没到结算时间
+    kj_outbox_clear(&out);
+    kj_server_tick(&s, 1000 + KJ_BUMP_SETTLE_MS, &out);
+    CHECK_EQ(s.game.players[0].status, KJ_ST_MATCHED);
+    CHECK_EQ(s.game.players[1].status, KJ_ST_MATCHED);
+    CHECK(last_view_to(a, &v));
+    CHECK_EQ(v.status, KJ_ST_MATCHED);
+    CHECK_EQ(v.peer_no, 2);
+    CHECK_EQ(v.deadline_s, KJ_MATCH_COUNTDOWN_MS / 1000);
+    kj_event_t ev;
+    bool saw_match = false;
+    while (kj_rules_pop_event(&s.game, &ev)) {
+        if (ev.kind == KJ_EV_MATCH) {
+            saw_match = true;
+            CHECK_EQ(ev.aux, 20);   // 两人按下时刻相差 20 ms
+        }
+    }
+    CHECK(saw_match);
+    // 倒计时结束自动开打
+    uint32_t matched_at = 1000 + KJ_BUMP_SETTLE_MS;
+    kj_server_tick(&s, matched_at + KJ_MATCH_COUNTDOWN_MS - 1, &out);
+    CHECK_EQ(s.game.players[0].status, KJ_ST_MATCHED);
+    kj_server_tick(&s, matched_at + KJ_MATCH_COUNTDOWN_MS, &out);
+    CHECK_EQ(s.game.players[0].status, KJ_ST_DUEL);
+    CHECK_EQ(s.game.players[1].status, KJ_ST_DUEL);
+    CHECK_EQ(s.game.players[0].duel_id, s.game.players[1].duel_id);
+    // 落单：结算后回到空闲并收到通知；过旧的碰拳请求直接判落单
+    t = matched_at + KJ_MATCH_COUNTDOWN_MS;
+    req_full(c3, 2, KJ_OP_BUMP, 0, 0x1003, 0, t);
+    kj_server_tick(&s, t + KJ_BUMP_SETTLE_MS, &out);
+    CHECK_EQ(s.game.players[2].status, KJ_ST_IDLE);
+    CHECK_EQ(s.game.players[2].notice, KJ_N_BUMP_ALONE);
+    uint8_t before_seq = s.game.players[2].notice_seq;
+    req_full(c3, 3, KJ_OP_BUMP, 0, 0x1003, KJ_BUMP_MAX_AGE_MS + 1, t + 5000);
+    CHECK_EQ(s.game.players[2].status, KJ_ST_IDLE);
+    CHECK_EQ((uint8_t)(s.game.players[2].notice_seq - before_seq), 1);
+    CHECK_EQ(s.game.players[2].notice, KJ_N_BUMP_ALONE);
+
+    // 庄家从快照恢复后还不知道选手的开机号：第一个请求建立去重基准
+    s.game.players[2].boot = 0;
+    s.game.players[2].last_req_seq = 0;
+    req_full(c3, 40000, KJ_OP_BUMP, 0, 0x1003, 0, t + 6000);
+    CHECK_EQ(s.game.players[2].status, KJ_ST_BUMPING);
+    CHECK_EQ(s.game.players[2].boot, 0x1003);
+    CHECK_EQ(s.game.players[2].last_req_seq, 40000);
 
     // 选牌偏好：只剩一种牌时一定出那张
     kj_player_t p = { 0 };

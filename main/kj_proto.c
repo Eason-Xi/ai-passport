@@ -3,10 +3,10 @@
 
 #include <string.h>
 
-#define VIEW_PAYLOAD 32
+#define VIEW_PAYLOAD 34
 #define ROOM_PAYLOAD (1 + 2 + 2 + 1 + 1 + KJ_BITMAP_BYTES * 2)
 #define HELLO_PAYLOAD 4
-#define REQ_PAYLOAD 4
+#define REQ_PAYLOAD 8
 
 typedef struct {
     uint8_t *p;
@@ -82,6 +82,8 @@ size_t kj_proto_encode(const kj_frame_t *f, uint8_t *buf, size_t cap)
         put16(&w, f->u.req.seq);
         put8(&w, f->u.req.op);
         put8(&w, f->u.req.arg);
+        put16(&w, f->u.req.age_ms);
+        put16(&w, f->u.req.boot);
         break;
     case KJ_F_VIEW: {
         const kj_view_t *v = &f->u.view;
@@ -110,6 +112,7 @@ size_t kj_proto_encode(const kj_frame_t *f, uint8_t *buf, size_t cap)
         put8(&w, v->losses);
         put8(&w, v->draws);
         put8(&w, v->deadline_s);
+        put16(&w, v->epoch);
         break;
     }
     default:
@@ -162,6 +165,8 @@ bool kj_proto_decode(const uint8_t *buf, size_t len, kj_frame_t *out)
         out->u.req.seq = get16(&r);
         out->u.req.op = get8(&r);
         out->u.req.arg = get8(&r);
+        out->u.req.age_ms = get16(&r);
+        out->u.req.boot = get16(&r);
         if (out->u.req.op == 0 || out->u.req.op >= KJ_OP_COUNT) return false;
         break;
     case KJ_F_VIEW: {
@@ -191,6 +196,7 @@ bool kj_proto_decode(const uint8_t *buf, size_t len, kj_frame_t *out)
         v->losses = get8(&r);
         v->draws = get8(&r);
         v->deadline_s = get8(&r);
+        v->epoch = get16(&r);
         // 范围校验：越界值来自损坏或不兼容的帧，整帧丢弃。
         if (v->no > KJ_MAX_PLAYERS || v->peer_no > KJ_MAX_PLAYERS || v->res_opp_no > KJ_MAX_PLAYERS) return false;
         if (v->phase > KJ_PHASE_ENDED || v->status >= KJ_ST_COUNT || v->notice >= KJ_N_COUNT) return false;

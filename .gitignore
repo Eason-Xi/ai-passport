@@ -11,3 +11,7 @@ managed_components/
 /.agents/skills/passport-build
 /.agents/skills/passport-device-test
 /.agents/skills/passport-debug
+
+# Python 缓存与电脑服务的运行数据（含昵称等个人数据，不得提交）。
+__pycache__/
+kj-hub-data/

@@ -6,11 +6,16 @@
   big   KJ_BIG_* 宏里的字                      → kj_big48（大标题）
   num   0-9、A-F 与 "-"                        → kj_num56（选手编号、赌局号）
   hand  KJ_HAND_* 宏里的手势（U+270A/270B/270C）→ kj_hand36 / kj_hand64
+  name  tools/kj_charset.py 的昵称字符集（ASCII + GB2312 汉字 + 人名补充字）→ kj_name18a / kj_name18b
+        （按码点对半分成两个文件：LVGL 字形描述里的位图偏移只有 20 位，单个字体不能超过 1 MB；
+        界面用 kj_zh18 的副本依次回退到这两个；电脑 hub 用同一份字符集校验昵称）
 
   generate  用 lv_font_conv 1.5.3 生成 assets/fonts/kj_*.c、main/kj_font_glyphs.h 与 manifest。
             需要 Node 与源字体（均不入库）：
               python3 tools/gen_kj_fonts.py generate --lv-font-conv <lv_font_conv> \\
                   --font-dir <含 SourceHanSansSC-{Regular,Bold,Heavy}.otf 与 NotoEmoji[wght].ttf 的目录>
+            只重新生成字符集 / 参数有变化的字体（--force 全部重做），所以只需提供这些字体用到的源字体；
+            提供的源字体与 manifest 记录的 sha256 不同时，用到它的字体全部重做，保证同一来源只有一个版本。
             Noto Emoji 是可变字体：脚本用 fontTools 先切出 wght=700 的静态实例再转换。
             生成后立刻把 .c 的 cmap 解析回码点核对，源字体缺字直接报错。
   check     不需要 Node / 源字体：核对已提交字体的 cmap、manifest 与码点表是否和当前文字一致，
@@ -29,6 +34,8 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import kj_charset  # noqa: E402  同目录的昵称字符集（只用标准库）
 STRINGS = ROOT / "main" / "kj_strings.h"
 FONT_DIR = ROOT / "assets" / "fonts"
 GLYPH_HEADER = ROOT / "main" / "kj_font_glyphs.h"
@@ -60,6 +67,8 @@ SPECS = [
     ("kj_num56", 56, 4, "heavy", "num"),
     ("kj_hand36", 36, 4, "emoji", "hand"),
     ("kj_hand64", 64, 4, "emoji", "hand"),
+    ("kj_name18a", 18, 4, "bold", "name_a"),
+    ("kj_name18b", 18, 4, "bold", "name_b"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -154,8 +163,25 @@ def num_charset() -> list[int]:
     return sorted(ord(ch) for ch in NUM_CHARS)
 
 
+def name_charset() -> list[int]:
+    return list(kj_charset.name_charset())
+
+
+def name_sample() -> list[int]:
+    """开机自检用的昵称字库抽样：每 50 个取 1 个，再加上全部补充字。"""
+    points = name_charset()
+    return sorted(set(points[::50]) | set(kj_charset.extra_chars()))
+
+
+def name_half(part: int) -> list[int]:
+    points = name_charset()
+    mid = len(points) // 2
+    return points[:mid] if part == 0 else points[mid:]
+
+
 def charset_for(kind: str) -> list[int]:
-    return {"text": text_charset, "big": big_charset, "num": num_charset, "hand": hand_charset}[kind]()
+    return {"text": text_charset, "big": big_charset, "num": num_charset, "hand": hand_charset,
+            "name_a": lambda: name_half(0), "name_b": lambda: name_half(1)}[kind]()
 
 
 def to_ranges(points: list[int]) -> str:
@@ -195,12 +221,13 @@ def render_glyph_header() -> str:
         items = [f"0x{p:04X}" for p in points]
         return "\n".join("    " + ", ".join(items[i:i + 10]) + "," for i in range(0, len(items), 10))
 
-    sets = [("TEXT", text_charset()), ("BIG", big_charset()), ("NUM", num_charset()), ("HAND", hand_charset())]
+    sets = [("TEXT", text_charset()), ("BIG", big_charset()), ("NUM", num_charset()), ("HAND", hand_charset()),
+            ("NAME_SAMPLE", name_sample())]
     body = "".join(f"#define KJ_GLYPHS_{name}_COUNT {len(pts)}\n" for name, pts in sets)
     arrays = "".join(f"\nstatic const uint32_t KJ_GLYPHS_{name}[KJ_GLYPHS_{name}_COUNT] = {{\n{rows(pts)}\n}};\n"
                      for name, pts in sets)
     return ("// main/kj_font_glyphs.h —— 由 tools/gen_kj_fonts.py 生成，请勿手改。\n"
-            "// 字体启动自检用的码点表：正文（14/18/26）、大标题、数字、手势。\n"
+            "// 字体启动自检用的码点表：正文（14/18/26）、大标题、数字、手势、昵称字库抽样。\n"
             "#pragma once\n\n#include <stdint.h>\n\n" + body + arrays)
 
 
@@ -279,19 +306,53 @@ def instantiate_emoji(variable: Path, out: Path) -> None:
     static.save(str(out))
 
 
-def generate(converter: str, font_dir: Path) -> None:
+MANIFEST_KEYS = ("size", "bpp", "source", "glyph_count", "ranges", "command")
+
+
+def stale_fonts(manifest: dict, previous: dict, force: bool) -> set[str]:
+    """字符集 / 参数变了、文件缺失或被改动过的字体；没变的字体沿用原来的 sha256。"""
+    old = {f["name"]: f for f in previous.get("fonts", [])}
+    stale = set()
+    for entry in manifest["fonts"]:
+        prev = old.get(entry["name"])
+        path = FONT_DIR / entry["file"]
+        fresh = (not force and prev is not None and path.exists()
+                 and all(prev.get(k) == entry[k] for k in MANIFEST_KEYS)
+                 and prev.get("sha256") == sha256_file(path))
+        if fresh:
+            entry["sha256"] = prev["sha256"]
+        else:
+            stale.add(entry["name"])
+    return stale
+
+
+def generate(converter: str, font_dir: Path, force: bool = False) -> None:
     problems = stray_literals()
     if problems:
         raise SystemExit("\n".join(problems))
     FONT_DIR.mkdir(parents=True, exist_ok=True)
     manifest = manifest_expected()
+    previous = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else {}
+    stale = stale_fonts(manifest, previous, force)
+    source_of = {name: src for name, _size, _bpp, src, _kind in SPECS}
+    # 没变的字体沿用原来的源字体记录；要重做的字体所用的源字体必须提供。
+    for key in SOURCES:
+        manifest["sources"][key]["sha256"] = previous.get("sources", {}).get(key, {}).get("sha256", "")
+    for key in sorted({source_of[name] for name in stale}):
+        src = font_dir / SOURCES[key]["file"]
+        if not src.exists():
+            raise SystemExit(f"missing source font {src}")
+        sha = sha256_file(src)
+        if sha != manifest["sources"][key]["sha256"]:
+            # 换了源字体：用到它的字体全部重做，免得 manifest 里同一个来源对应两个版本。
+            stale.update(name for name, src_key in source_of.items() if src_key == key)
+            manifest["sources"][key]["sha256"] = sha
+    if not stale:
+        print("all fonts are up to date")
     with tempfile.TemporaryDirectory() as tmp:
         paths = {}
-        for key, meta in SOURCES.items():
-            src = font_dir / meta["file"]
-            if not src.exists():
-                raise SystemExit(f"missing source font {src}")
-            manifest["sources"][key]["sha256"] = sha256_file(src)
+        for key in sorted({source_of[name] for name in stale}):
+            src = font_dir / SOURCES[key]["file"]
             if key == "emoji":
                 inst = Path(tmp) / "NotoEmoji-Bold.ttf"
                 instantiate_emoji(src, inst)
@@ -299,6 +360,8 @@ def generate(converter: str, font_dir: Path) -> None:
             else:
                 paths[key] = src
         for entry, (name, size, bpp, src, kind) in zip(manifest["fonts"], SPECS):
+            if name not in stale:
+                continue
             out = FONT_DIR / f"{name}.c"
             cmd = [converter, *converter_args(name, size, bpp, charset_for(kind), str(paths[src]), str(out))]
             subprocess.run(cmd, check=True, capture_output=True)
@@ -362,10 +425,11 @@ def main(argv: list[str] | None = None) -> int:
     gen = sub.add_parser("generate")
     gen.add_argument("--lv-font-conv", required=True, help=f"lv_font_conv {CONVERTER_VERSION} executable")
     gen.add_argument("--font-dir", required=True, type=Path, help="directory with the source fonts")
+    gen.add_argument("--force", action="store_true", help="regenerate every font, not only the stale ones")
     sub.add_parser("check")
     args = parser.parse_args(argv)
     if args.cmd == "generate":
-        generate(args.lv_font_conv, args.font_dir.resolve())
+        generate(args.lv_font_conv, args.font_dir.resolve(), args.force)
         return 0
     problems = run_check()
     for p in problems:
@@ -373,7 +437,7 @@ def main(argv: list[str] | None = None) -> int:
     if problems:
         return 1
     print(f"Limited RPS fonts: PASS ({len(text_charset())} text glyphs x 3 sizes, {len(big_charset())} big, "
-          f"{len(num_charset())} digits, {len(hand_charset())} hands x 2)")
+          f"{len(num_charset())} digits, {len(hand_charset())} hands x 2, {len(name_charset())} name glyphs)")
     return 0
 
 

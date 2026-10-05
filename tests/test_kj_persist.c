@@ -1,4 +1,4 @@
-// tests/test_kj_persist.c —— 赌局状态保存 / 恢复：往返、进行中对决的回退、损坏数据拒收。
+// tests/test_kj_persist.c —— 赌局状态保存 / 恢复：往返、进行中对决 / 碰拳的回退、损坏数据拒收。
 #include "kj_persist.h"
 #include "kj_test.h"
 
@@ -25,6 +25,13 @@ int main(void)
     kj_rules_respond(&g, bot, true, 3);
     kj_rules_play(&g, c, KJ_PAPER, 4);          // c 已出暗牌，对决进行中
     kj_rules_remove(&g, b, 5);                  // 留一个空座位，测试稀疏编号
+    uint8_t m4[6] = { 4, 4, 4, 4, 4, 4 };
+    int d = kj_rules_join(&g, m4, 6);           // 新选手补进编号最小的空座位（就是 b 的）
+    CHECK_EQ(d, b);
+    kj_rules_seen(&g, d, -50, 6);
+    kj_rules_bump(&g, d, 6, 6);                 // 碰拳中
+    kj_rules_remove(&g, d, 7);                  // 再次移除，保持稀疏
+    kj_rules_bump(&g, a, 8, 8);                 // a 碰拳中被保存
 
     // 小缓冲区：失败且不越界
     CHECK_EQ(kj_persist_save(&g, buf, 10), 0);
@@ -39,6 +46,7 @@ int main(void)
     CHECK_EQ(kj_rules_player_count(&h), 3);
     CHECK(!h.players[b].used);
     CHECK_EQ(h.players[a].stars, 4);
+    CHECK_EQ(h.players[a].status, KJ_ST_IDLE);   // 碰拳中不恢复
     CHECK_EQ(h.players[a].cards[KJ_ROCK], 3);
     CHECK_EQ(h.players[a].wins, 1);
     CHECK(memcmp(h.players[a].mac, m1, 6) == 0);

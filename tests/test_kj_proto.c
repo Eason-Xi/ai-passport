@@ -1,4 +1,4 @@
-// tests/test_kj_proto.c —— 无线帧编解码：往返、长度、魔数 / 版本 / 越界字段拒收、位图。
+// tests/test_kj_proto.c —— 游戏帧编解码：往返、长度、魔数 / 版本 / 越界字段拒收、位图、v2 新增字段。
 #include "kj_proto.h"
 #include "kj_test.h"
 
@@ -57,11 +57,20 @@ static void test_roundtrip(void)
     in.u.req.seq = 0x1234;
     in.u.req.op = KJ_OP_PLAY;
     in.u.req.arg = KJ_PAPER;
+    in.u.req.age_ms = 750;
+    in.u.req.boot = 0xB007;
     n = kj_proto_encode(&in, buf, sizeof(buf));
+    CHECK_EQ(n, 14);
     CHECK(kj_proto_decode(buf, n, &out));
     CHECK_EQ(out.u.req.seq, 0x1234);
     CHECK_EQ(out.u.req.op, KJ_OP_PLAY);
     CHECK_EQ(out.u.req.arg, KJ_PAPER);
+    CHECK_EQ(out.u.req.age_ms, 750);
+    CHECK_EQ(out.u.req.boot, 0xB007);
+    in.u.req.op = KJ_OP_BUMP;
+    n = kj_proto_encode(&in, buf, sizeof(buf));
+    CHECK(kj_proto_decode(buf, n, &out));
+    CHECK_EQ(out.u.req.op, KJ_OP_BUMP);
 
     memset(&in, 0, sizeof(in));
     in.type = KJ_F_VIEW;
@@ -94,8 +103,9 @@ static void test_roundtrip(void)
     v->losses = 1;
     v->draws = 2;
     v->deadline_s = 17;
+    v->epoch = 0x5EED;
     n = kj_proto_encode(&in, buf, sizeof(buf));
-    CHECK_EQ(n, KJ_FRAME_HEADER + 32);
+    CHECK_EQ(n, KJ_FRAME_HEADER + 34);
     CHECK(n <= 250);   // ESP-NOW v1 单帧上限
     CHECK(kj_proto_decode(buf, n, &out));
     CHECK(memcmp(&out.u.view, v, sizeof(*v)) == 0);
@@ -129,6 +139,9 @@ static void test_rejects(void)
     bad[2] = KJ_PROTO_VERSION + 1;
     CHECK(!kj_proto_decode(bad, n, &out));
     memcpy(bad, buf, n);
+    bad[2] = 1;                                       // 旧版固件（v1）的帧不接受
+    CHECK(!kj_proto_decode(bad, n, &out));
+    memcpy(bad, buf, n);
     bad[3] = 99;
     CHECK(!kj_proto_decode(bad, n, &out));
     // 越界字段：编号、状态、手牌数、牌型
@@ -137,6 +150,12 @@ static void test_rejects(void)
     CHECK(!kj_proto_decode(bad, n, &out));
     memcpy(bad, buf, n);
     bad[KJ_FRAME_HEADER + 12] = KJ_ST_COUNT;          // status
+    CHECK(!kj_proto_decode(bad, n, &out));
+    memcpy(bad, buf, n);
+    bad[KJ_FRAME_HEADER + 12] = KJ_ST_MATCHED;        // 新状态是合法的
+    CHECK(kj_proto_decode(bad, n, &out));
+    memcpy(bad, buf, n);
+    bad[KJ_FRAME_HEADER + 21] = KJ_N_COUNT;           // notice
     CHECK(!kj_proto_decode(bad, n, &out));
     memcpy(bad, buf, n);
     bad[KJ_FRAME_HEADER + 13] = KJ_CARDS_PER_TYPE + 1; // cards[0]

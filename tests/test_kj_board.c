@@ -1,4 +1,4 @@
-// tests/test_kj_board.c —— 看板串口协议：各类行的格式、JSON 结构、命令解析的边界。
+// tests/test_kj_board.c —— 看板行协议：各类行的格式、JSON 结构、命令解析的边界。
 #include "kj_board.h"
 #include "kj_test.h"
 
@@ -39,11 +39,17 @@ static void test_lines(void)
     kj_rules_respond(&g, b, true, 300);
     kj_rules_play(&g, a, KJ_SCISSORS, 400);
 
-    size_t n = kj_board_hello_line(0xA3F2, "1.0.0", buf, sizeof(buf));
+    uint8_t host[6] = { 0x24, 0x6F, 0x28, 0x11, 0xA3, 0xF2 };
+    size_t n = kj_board_hello_line(0xA3F2, "1.0.0", host, "wifi", buf, sizeof(buf));
     CHECK(n > 0);
     CHECK(json_ok(buf));
     CHECK(strstr(buf, "\"room\":\"A3F2\"") != NULL);
     CHECK(strstr(buf, "\"max\":128") != NULL);
+    CHECK(strstr(buf, "\"proto\":2") != NULL);
+    CHECK(strstr(buf, "\"mac\":\"246f2811a3f2\"") != NULL);
+    CHECK(strstr(buf, "\"link\":\"wifi\"") != NULL);
+    CHECK(kj_board_hello_line(1, NULL, NULL, NULL, buf, sizeof(buf)) > 0);
+    CHECK(json_ok(buf));
 
     n = kj_board_player_line(&g, a, 400, buf, sizeof(buf));
     CHECK(n > 0 && n == strlen(buf));
@@ -54,6 +60,8 @@ static void test_lines(void)
     CHECK(strstr(buf, "\"peer\":2") != NULL);
     CHECK(strstr(buf, "\"rssi\":-42") != NULL);
     CHECK(strstr(buf, "\"id\":\"abcdef\"") != NULL);
+    CHECK(strstr(buf, "\"mac\":\"246f28abcdef\"") != NULL);   // hub 据此把座位对上登记的昵称
+    CHECK(n < KJ_BOARD_LINE_MAX - 40);                           // 留有余量
     CHECK(strstr(buf, "\"r\":4,\"s\":4,\"p\":4") != NULL);   // 未亮牌前不扣牌
 
     n = kj_board_player_line(&g, bot, 400, buf, sizeof(buf));
@@ -94,7 +102,15 @@ static void test_lines(void)
     CHECK(strstr(buf, "\"cmd\":\"kick\",\"arg\":7,\"ok\":0,\"err\":\"invalid\"") != NULL);
 
     for (int st = 0; st < KJ_ST_COUNT; st++) CHECK(strcmp(kj_board_status_name((uint8_t)st), "?") != 0);
-    for (int k = KJ_EV_JOIN; k <= KJ_EV_FAILED; k++) CHECK(strcmp(kj_board_event_name((uint8_t)k), "?") != 0);
+    for (int k = KJ_EV_JOIN; k <= KJ_EV_BUMP_FAIL; k++) CHECK(strcmp(kj_board_event_name((uint8_t)k), "?") != 0);
+    for (int k = 0; k < KJ_N_COUNT; k++) CHECK(strcmp(kj_board_notice_name((uint8_t)k), "?") != 0);
+    CHECK(strcmp(kj_board_status_name(KJ_ST_MATCHED), "matched") == 0);
+    // 事件的附加值（碰拳配对的时间差）
+    kj_event_t me = { .kind = KJ_EV_MATCH, .a = 3, .b = 9, .ca = KJ_CARD_NONE, .cb = KJ_CARD_NONE, .aux = 42 };
+    n = kj_board_event_line(&me, buf, sizeof(buf));
+    CHECK(json_ok(buf));
+    CHECK(strstr(buf, "\"k\":\"match\",\"a\":3,\"b\":9") != NULL);
+    CHECK(strstr(buf, "\"x\":42") != NULL);
     char rt[5];
     kj_board_room_text(0x00AF, rt);
     CHECK(strcmp(rt, "00AF") == 0);

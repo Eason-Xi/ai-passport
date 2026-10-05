@@ -109,8 +109,11 @@ bool kj_persist_load(kj_game_t *g, const uint8_t *buf, size_t len, uint32_t now_
         p->draws = q[15];
         p->final_reason = q[16];
         uint8_t st = q[8];
-        // 进行中的挑战 / 对决不恢复：暗牌未扣，双方回到空闲。
-        if (st == KJ_ST_CHALLENGING || st == KJ_ST_CHALLENGED || st == KJ_ST_DUEL) st = KJ_ST_IDLE;
+        // 进行中的碰拳 / 挑战 / 对决不恢复：暗牌未扣，双方回到空闲。
+        if (st == KJ_ST_CHALLENGING || st == KJ_ST_CHALLENGED || st == KJ_ST_DUEL || st == KJ_ST_BUMPING ||
+            st == KJ_ST_MATCHED) {
+            st = KJ_ST_IDLE;
+        }
         p->status = st;
         p->view_ver = (uint16_t)(r16(q + 18) + KJ_PERSIST_VER_BUMP);
         p->since_ms = now_ms;

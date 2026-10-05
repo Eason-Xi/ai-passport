@@ -42,8 +42,6 @@ lv_obj_t *kj_card(lv_obj_t *parent, int x, int y, int w, int h, uint8_t card, in
 lv_obj_t *kj_badge(lv_obj_t *parent, int cx, int cy, int d, unsigned no, uint32_t ring, bool big);
 lv_obj_t *kj_pill(lv_obj_t *parent, int x, int y, int w, int h, const char *s, bool filled, uint32_t color);
 void kj_stars(lv_obj_t *parent, int y, unsigned stars, const lv_font_t *font);
-void kj_signal(lv_obj_t *parent, int x, int y, uint8_t level, uint32_t color);
-const char *kj_signal_word(const kj_opponent_t *o);
 void kj_footer(lv_obj_t *scr, const char *s);
 void kj_top_bar(lv_obj_t *scr, const char *left, uint32_t left_color);
 void kj_pulse(lv_obj_t *obj, uint32_t period_ms);

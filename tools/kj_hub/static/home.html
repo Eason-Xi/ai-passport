@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>限定猜拳 · 电脑服务</title>
+<style>
+:root { --bg: #0d0b0a; --panel: #1c1512; --panel2: #211b17; --line: #3d332b; --text: #f3ebdd; --muted: #9c8f7e; --dim: #5e544a;
+  --red: #d0232c; --gold: #f2c230; --green: #3fb56b; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+header { display: flex; align-items: center; gap: 14px; padding: 14px 22px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+header h1 { font-size: 20px; margin: 0; }
+header h1 span { color: var(--red); }
+header .spacer { flex: 1; }
+a.btn, button { background: var(--red); color: #fff; border: 0; border-radius: 10px; padding: 7px 14px; font: inherit; text-decoration: none; cursor: pointer; }
+button.ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+main { padding: 18px 22px 40px; display: grid; gap: 18px; max-width: 1100px; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+h2 { font-size: 16px; margin: 0 0 10px; color: var(--muted); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #2a221d; white-space: nowrap; }
+th { color: var(--dim); font-weight: 500; }
+td.name input { background: transparent; border: 0; border-bottom: 1px dashed var(--dim); color: var(--text); font: inherit; width: 9em; }
+.on { color: var(--green); } .off { color: var(--dim); } .warn { color: var(--gold); }
+.empty { color: var(--muted); padding: 8px 0; }
+.mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+#msg { color: var(--gold); min-height: 1.4em; }
+a { color: var(--gold); }
+a.btn { color: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>限定猜拳 · <span>电脑服务</span></h1>
+  <span class="spacer"></span>
+  <a class="btn" href="board">打开看板</a>
+  <button class="ghost" id="clear" type="button">清空所有昵称</button>
+</header>
+<main>
+  <div id="msg"></div>
+  <section>
+    <h2>设备</h2>
+    <div id="devices" class="empty">还没有设备连上。确认设备和这台电脑连的是同一个 Wi-Fi，首次运行时允许 Python 接受传入连接。</div>
+  </section>
+  <section>
+    <h2>对局记录（CSV 用 Excel / WPS 直接打开）</h2>
+    <div id="sessions" class="empty">还没有对局记录。</div>
+    <p><a class="mono" href="export/registry.csv">导出昵称登记表 registry.csv</a></p>
+  </section>
+  <section>
+    <h2>在别的电脑或平板上打开看板</h2>
+    <p class="mono" id="share"></p>
+    <p class="off">看板上能看到所有人的暗牌，只把这个链接给庄家 / 主持人，别让选手看到。</p>
+  </section>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const ROLE = ["—", "选手", "庄家"];
+
+function el(tag, text, cls) {
+  const e = document.createElement(tag);
+  if (text !== undefined) e.textContent = text;
+  if (cls) e.className = cls;
+  return e;
+}
+
+async function post(path, body) {
+  const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", "X-KJ-Admin": "1" },
+    body: JSON.stringify(body) });
+  return r.json();
+}
+
+function renderDevices(list) {
+  const box = $("devices");
+  if (!list.length) return;
+  box.className = "";
+  const t = el("table");
+  const head = el("tr");
+  for (const h of ["设备", "昵称", "角色", "赌局", "IP", "Wi-Fi 信号", "固件", "状态"]) head.appendChild(el("th", h));
+  t.appendChild(head);
+  for (const d of list) {
+    const tr = el("tr");
+    tr.appendChild(el("td", d.id, "mono"));
+    const nameCell = el("td", undefined, "name");
+    const input = el("input");
+    input.value = d.name;
+    input.placeholder = "未登记";
+    input.maxLength = 16;
+    input.addEventListener("change", async () => {
+      const res = await post("api/name", { mac: d.mac, name: input.value });
+      $("msg").textContent = res.ok ? "" : res.err;
+      if (!res.ok) input.value = d.name;
+    });
+    nameCell.appendChild(input);
+    tr.appendChild(nameCell);
+    tr.appendChild(el("td", ROLE[d.role] || "—"));
+    tr.appendChild(el("td", d.room || "—", "mono"));
+    tr.appendChild(el("td", d.ip, "mono"));
+    tr.appendChild(el("td", d.rssi ? d.rssi + " dBm" : "—"));
+    tr.appendChild(el("td", d.fw || "—", d.proto_ok ? "" : "warn"));
+    tr.appendChild(el("td", d.online ? "在线" : `离线 ${Math.round(d.seen_s)} 秒`, d.online ? "on" : "off"));
+    t.appendChild(tr);
+  }
+  if (document.activeElement && document.activeElement.tagName === "INPUT") return;   // 正在改名时不重绘
+  box.textContent = "";
+  box.appendChild(t);
+}
+
+function renderSessions(list) {
+  const box = $("sessions");
+  if (!list.length) return;
+  box.className = "";
+  box.textContent = "";
+  const t = el("table");
+  for (const s of list) {
+    const tr = el("tr");
+    tr.appendChild(el("td", s.started.replace(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d)(\d\d)$/, "$1-$2-$3 $4:$5:$6"), "mono"));
+    tr.appendChild(el("td", `赌局 ${s.room} · 第 ${s.gid} 局`));
+    for (const [kind, label] of [["players", "选手结果"], ["events", "对局事件"]]) {
+      const td = el("td");
+      const a = el("a", label);
+      a.href = `export/${encodeURIComponent(s.file)}/${kind}.csv`;
+      td.appendChild(a);
+      tr.appendChild(td);
+    }
+    t.appendChild(tr);
+  }
+  box.appendChild(t);
+}
+
+async function refresh() {
+  try {
+    const r = await fetch("api/state", { cache: "no-store" });
+    const s = await r.json();
+    renderDevices(s.devices);
+    renderSessions(s.sessions);
+    $("share").textContent = `${location.protocol}//${location.host}/board?k=${s.admin_token}`;
+  } catch (e) { $("msg").textContent = "连不上电脑服务：它还在运行吗？"; }
+}
+
+$("clear").addEventListener("click", async () => {
+  if (!confirm("清空所有设备的昵称？设备上的昵称也会被清掉，需要重新扫码登记。")) return;
+  const res = await post("api/names/clear", {});
+  $("msg").textContent = `已清空 ${res.cleared} 个昵称`;
+  refresh();
+});
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

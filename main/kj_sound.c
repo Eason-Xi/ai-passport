@@ -36,12 +36,14 @@ static const note_t CUE_CLEARED[] = { { 523, 100 }, { 659, 100 }, { 784, 100 }, 
 static const note_t CUE_OUT[] = { { 330, 200 }, { 311, 200 }, { 294, 200 }, { 220, 420 }, END };
 static const note_t CUE_NOTICE[] = { { 1047, 60 }, { 0, 30 }, { 784, 80 }, END };
 static const note_t CUE_ERROR[] = { { 220, 120 }, { 0, 40 }, { 220, 120 }, END };
+static const note_t CUE_BUMP[] = { { 196, 50 }, { 0, 20 }, { 392, 70 }, END };
+static const note_t CUE_MATCH[] = { { 880, 70 }, { 1175, 70 }, { 1568, 140 }, END };
 
 static const note_t *const CUES[KJ_CUE_COUNT] = {
     [KJ_CUE_KEY] = CUE_KEY, [KJ_CUE_ALERT] = CUE_ALERT, [KJ_CUE_DUEL] = CUE_DUEL, [KJ_CUE_LOCK] = CUE_LOCK,
     [KJ_CUE_WIN] = CUE_WIN, [KJ_CUE_LOSE] = CUE_LOSE, [KJ_CUE_DRAW] = CUE_DRAW,
     [KJ_CUE_CLEARED] = CUE_CLEARED, [KJ_CUE_OUT] = CUE_OUT, [KJ_CUE_NOTICE] = CUE_NOTICE,
-    [KJ_CUE_ERROR] = CUE_ERROR,
+    [KJ_CUE_ERROR] = CUE_ERROR, [KJ_CUE_BUMP] = CUE_BUMP, [KJ_CUE_MATCH] = CUE_MATCH,
 };
 
 static QueueHandle_t s_queue;

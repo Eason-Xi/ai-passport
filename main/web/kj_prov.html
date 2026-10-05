@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>连接 Wi-Fi · 限定猜拳</title>
+<style>
+:root { --bg: #0d0b0a; --panel: #211b17; --line: #3d332b; --text: #f3ebdd; --muted: #9c8f7e; --red: #d0232c; --gold: #f2c230; --green: #3fb56b; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+main { max-width: 420px; margin: 0 auto; padding: 18px 16px 40px; }
+h1 { font-size: 22px; margin: 4px 0 2px; }
+h1 span { color: var(--red); }
+p { color: var(--muted); margin: 4px 0 14px; font-size: 14px; }
+.list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.ap { display: flex; justify-content: space-between; align-items: center; background: var(--panel); color: var(--text);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; text-align: left; width: 100%; }
+.ap.sel { border-color: var(--red); background: #3a1517; }
+.ap .meta { color: var(--muted); font-size: 12px; white-space: nowrap; margin-left: 8px; }
+label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0 4px; }
+input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: #151210; color: var(--text); font: inherit; }
+.row { display: flex; gap: 8px; }
+.row input { flex: 1; }
+button.small { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font: inherit; font-size: 14px; }
+details { margin-top: 10px; color: var(--muted); font-size: 14px; }
+#go { margin-top: 18px; width: 100%; padding: 12px; border: 0; border-radius: 12px; background: var(--red); color: #fff; font: inherit; font-size: 18px; font-weight: 700; }
+#go:disabled { opacity: .5; }
+#msg { margin-top: 14px; min-height: 24px; font-size: 15px; }
+#msg.ok { color: var(--green); } #msg.bad { color: #ff8a8a; } #msg.wait { color: var(--gold); }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>连接 Wi-Fi · <span>限定猜拳</span></h1>
+  <p>选择现场的 Wi-Fi（只支持 2.4 GHz），电脑和其他设备也要连这一个。</p>
+  <div class="list" id="list"><div class="empty">正在搜索 Wi-Fi…</div></div>
+  <button class="small" id="refresh" type="button">刷新列表</button>
+  <form id="form" autocomplete="off">
+    <label for="ssid">Wi-Fi 名称</label>
+    <input id="ssid" name="ssid" maxlength="32" required>
+    <label for="pass">密码（开放网络留空）</label>
+    <div class="row"><input id="pass" name="pass" type="password" maxlength="64"><button class="small" id="show" type="button">显示</button></div>
+    <details>
+      <summary>高级：电脑服务地址（一般不用填）</summary>
+      <label for="hub">路由器不转发广播时，填运行电脑服务那台电脑的 IP，例如 192.168.1.20</label>
+      <input id="hub" name="hub" inputmode="decimal" maxlength="15">
+    </details>
+    <button id="go" type="submit">连接</button>
+  </form>
+  <div id="msg"></div>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const ERR = { ssid: "Wi-Fi 名称为空或太长（最多 32 字节）", pass: "密码需要 8~63 个字符（开放网络留空）",
+  hub: "电脑地址格式不对，例如 192.168.1.20", form: "提交的内容不完整，请重试", busy: "正在连接，请稍等" };
+let selected = "";
+
+function say(text, cls) { const m = $("msg"); m.textContent = text; m.className = cls || ""; }
+function bars(rssi) { return rssi >= -55 ? "信号很好" : rssi >= -67 ? "信号好" : rssi >= -78 ? "信号一般" : "信号弱"; }
+
+function render(aps) {
+  const list = $("list");
+  list.textContent = "";
+  if (!aps.length) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = "没有找到 Wi-Fi，点「刷新列表」再试，或在下面手动填写";
+    list.appendChild(d);
+    return;
+  }
+  for (const ap of aps) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ap" + (ap.s === selected ? " sel" : "");
+    const name = document.createElement("span");
+    name.textContent = ap.s;                      // 只用 textContent：SSID 来自空中，不可信
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = bars(ap.r) + (ap.l ? " · 需要密码" : " · 开放");
+    b.append(name, meta);
+    b.addEventListener("click", () => { selected = ap.s; $("ssid").value = ap.s; render(aps); $("pass").focus(); });
+    list.appendChild(b);
+  }
+}
+
+async function scan(refresh) {
+  try {
+    const url = refresh ? "scan?refresh=1" : "scan";
+    const r = await fetch(url, { cache: "no-store" });
+    render(await r.json());
+    if (r.headers.get("X-KJ-Scanning") === "1") setTimeout(() => scan(false), 2500);
+  } catch (e) { /* 网页可能正在切换，稍后再试 */ setTimeout(() => scan(false), 3000); }
+}
+
+async function poll() {
+  try {
+    const r = await fetch("status", { cache: "no-store" });
+    const s = await r.json();
+    if (s.state === "trying") { say("正在连接，请稍等…", "wait"); setTimeout(poll, 1000); return; }
+    if (s.state === "ok") { say("连接成功！设备会自动重启。请把手机切回现场 Wi-Fi，再看设备屏幕。", "ok"); return; }
+    if (s.state === "fail") { say("连接失败：密码错误或找不到这个网络，请检查后重试。", "bad"); $("go").disabled = false; return; }
+    setTimeout(poll, 1000);
+  } catch (e) {
+    // 设备连上路由器时热点可能换信道，手机会短暂掉线：以设备屏幕上的结果为准。
+    say("手机和热点的连接断了。请看设备屏幕：显示「连接成功」就完成了。", "wait");
+  }
+}
+
+$("show").addEventListener("click", () => { const p = $("pass"); p.type = p.type === "password" ? "text" : "password"; });
+$("refresh").addEventListener("click", () => { say(""); scan(true); });
+$("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const body = new URLSearchParams({ ssid: $("ssid").value, pass: $("pass").value, hub: $("hub").value.trim() });
+  $("go").disabled = true;
+  say("正在提交…", "wait");
+  try {
+    const r = await fetch("connect", { method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded" } });
+    const res = await r.json();
+    if (!res.ok) { say(ERR[res.err] || "提交失败，请重试", "bad"); $("go").disabled = false; return; }
+    poll();
+  } catch (e) { say("提交失败，请重试", "bad"); $("go").disabled = false; }
+});
+scan(false);
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
-// tests/test_kj_sim.c —— 多设备联机仿真：1 台庄家 + 多台选手 + 电脑选手，经过有丢包的模拟无线信道
-// 打完整局。检查：星星守恒、手牌只减不增且与结算次数一致、挑战 / 对决关系对称、
-// 选手重启 / 庄家重启（NVS 恢复）后能续上、信道恢复后所有选手视图与庄家一致。
+// tests/test_kj_sim.c —— 多设备联机仿真：1 台庄家 + 多台选手 + 电脑选手，经过有丢包的模拟信道（直连，不经 hub）
+// 打完整局。检查：星星守恒、手牌只减不增且与结算次数一致、挑战 / 对决 / 碰拳配对关系对称、
+// 碰拳中的人很快得到结果、选手重启 / 庄家重启（NVS 恢复）后能续上、信道恢复后所有选手视图与庄家一致。
+#include "kj_bump.h"
 #include "kj_client.h"
 #include "kj_persist.h"
 #include "kj_server.h"
@@ -17,7 +18,20 @@ typedef struct {
     kj_client_t c;
     uint8_t mac[6];
     uint32_t next_action_ms;
+    uint32_t bump_at;        // 约好碰拳的时刻（0 = 没有）
+    int bump_group;          // 约好一起碰拳的那一组（下标进 groups）
 } sim_player_t;
+
+// 约好一起碰拳的一组人：统计"两人都真的按下了"的干净配对有多少成功。
+typedef struct {
+    int size, sent;
+    int member[3];
+    bool matched;
+} bump_group_t;
+
+#define MAX_GROUPS 512
+static bump_group_t groups[MAX_GROUPS];
+static int group_count;
 
 static kj_server_t server;
 static sim_player_t players[HUMANS];
@@ -27,6 +41,7 @@ static uint32_t rng = 0x12345678u;
 static int loss_pct = 25;
 static bool actions_enabled = true;
 static long delivered, dropped;
+static long bump_pairs, bump_sent, matches_seen, bump_fails_seen;
 
 static uint32_t rnd(void)
 {
@@ -38,22 +53,14 @@ static uint32_t rnd(void)
 
 static bool lose(void) { return (int)(rnd() % 100) < loss_pct; }
 
-static int8_t rssi_between(int a, int b)
-{
-    // 选手围成一圈：编号相邻的人信号更强。-1 代表庄家。
-    int d = a < 0 || b < 0 ? 3 : (a > b ? a - b : b - a);
-    if (d > HUMANS / 2) d = HUMANS - d;
-    return (int8_t)(-35 - d * 6 - (int)(rnd() % 5));
-}
-
-static void deliver_to_player(int i, const uint8_t *src, int src_idx, const kj_out_t *it)
+static void deliver_to_player(int i, const uint8_t *src, const kj_out_t *it)
 {
     if (lose()) {
         dropped++;
         return;
     }
     delivered++;
-    kj_client_on_frame(&players[i].c, src, rssi_between(src_idx, i), it->data, it->len, now_ms);
+    kj_client_on_frame(&players[i].c, src, it->data, it->len, now_ms);
 }
 
 static void route(const kj_outbox_t *o, const uint8_t *src, int src_idx)
@@ -68,13 +75,13 @@ static void route(const kj_outbox_t *o, const uint8_t *src, int src_idx)
                 delivered++;
                 kj_outbox_t reply;
                 kj_outbox_clear(&reply);
-                kj_server_on_frame(&server, src, rssi_between(src_idx, -1), it->data, it->len, now_ms, &reply);
+                kj_server_on_frame(&server, src, (int8_t)(-40 - (int)(rnd() % 30)), it->data, it->len, now_ms, &reply);
                 route(&reply, host_mac, -1);
             }
         }
         for (int i = 0; i < HUMANS; i++) {
             if (i == src_idx) continue;
-            if (it->broadcast || memcmp(it->mac, players[i].mac, 6) == 0) deliver_to_player(i, src, src_idx, it);
+            if (it->broadcast || memcmp(it->mac, players[i].mac, 6) == 0) deliver_to_player(i, src, it);
         }
     }
 }
@@ -83,6 +90,21 @@ static void act(int i)
 {
     sim_player_t *sp = &players[i];
     kj_client_t *c = &sp->c;
+    const kj_view_t *v = &c->view;
+    if (sp->bump_at && actions_enabled && (int32_t)(now_ms - sp->bump_at) >= 0) {
+        // 约好了碰拳：到点就长按（之前被别人挑战走了、或还有请求没确认，就作罢）
+        sp->bump_at = 0;
+#ifdef SIM_DEBUG
+        fprintf(stderr, "t=%u player %d (g%d) bump status=%u pending=%d\n", (unsigned)now_ms, i, sp->bump_group,
+                v->status, c->pending);
+#endif
+        if (c->link == KJ_LINK_JOINED && v->phase == KJ_PHASE_RUNNING && v->status == KJ_ST_IDLE &&
+            kj_client_request(c, KJ_OP_BUMP, 0, now_ms)) {
+            bump_sent++;
+            groups[sp->bump_group].sent++;
+        }
+        return;
+    }
     if ((int32_t)(now_ms - sp->next_action_ms) < 0) return;
     sp->next_action_ms = now_ms + 200 + rnd() % 1500;
     if (c->link == KJ_LINK_IDLE) {
@@ -90,14 +112,16 @@ static void act(int i)
         if (kj_client_rooms(c, now_ms, rooms, KJ_CLIENT_MAX_ROOMS) > 0) kj_client_join(c, rooms[0].room, now_ms);
         return;
     }
-    if (!actions_enabled || c->link != KJ_LINK_JOINED || c->pending) return;
-    const kj_view_t *v = &c->view;
+    if (!actions_enabled || c->link != KJ_LINK_JOINED || c->pending || sp->bump_at) return;
     if (v->phase != KJ_PHASE_RUNNING) return;
     uint32_t r = rnd() % 100;
     switch (v->status) {
+    case KJ_ST_MATCHED:
+        if (r < 4) kj_client_request(c, KJ_OP_CANCEL, 0, now_ms);   // 偶尔认错人
+        break;
     case KJ_ST_IDLE: {
         kj_opponent_t opp[8];
-        int n = kj_client_opponents(c, now_ms, opp, 8);
+        int n = kj_client_opponents(c, opp, 8);
         if (n > 0 && r < 60) kj_client_request(c, KJ_OP_CHALLENGE, opp[rnd() % (uint32_t)n].no, now_ms);
         break;
     }
@@ -128,10 +152,56 @@ static void act(int i)
 
 static long results_seen;
 
+static bool free_for_bump(int i)
+{
+    const sim_player_t *sp = &players[i];
+    return sp->bump_at == 0 && sp->c.link == KJ_LINK_JOINED && !sp->c.pending &&
+           sp->c.view.phase == KJ_PHASE_RUNNING && sp->c.view.status == KJ_ST_IDLE;
+}
+
+// 每 1.5 s 安排一次碰拳：多数是两人一组（按下时刻相差 0~240 ms），也有单人和三人同时。
+static void schedule_bumps(void)
+{
+    if (!actions_enabled || now_ms % 1500 >= STEP_MS) return;
+    uint32_t r = rnd() % 100;
+    int want = r < 50 ? 2 : r < 60 ? 3 : r < 70 ? 1 : 0;
+    if (want == 0 || group_count >= MAX_GROUPS) return;
+    bump_group_t *grp = &groups[group_count];
+    memset(grp, 0, sizeof(*grp));
+    for (int tries = 0; tries < 40 && grp->size < want; tries++) {
+        int i = (int)(rnd() % HUMANS);
+        if (!free_for_bump(i)) continue;
+        players[i].bump_at = now_ms + 1 + rnd() % 240;
+        players[i].bump_group = group_count;
+        grp->member[grp->size++] = i;
+    }
+    if (grp->size == 0) return;
+    if (grp->size == 2 && want == 2) bump_pairs++;
+    group_count++;
+}
+
+static int sim_index_of_no(uint8_t no)
+{
+    const kj_player_t *p = kj_rules_player_by_no(&server.game, no);
+    if (!p || p->is_bot) return -1;
+    for (int i = 0; i < HUMANS; i++) {
+        if (memcmp(players[i].mac, p->mac, 6) == 0) return i;
+    }
+    return -1;
+}
+
+static void note_match(uint8_t a_no, uint8_t b_no)
+{
+    int a = sim_index_of_no(a_no), b = sim_index_of_no(b_no);
+    if (a < 0 || b < 0 || players[a].bump_group != players[b].bump_group) return;
+    groups[players[a].bump_group].matched = true;
+}
+
 static void step(void)
 {
     kj_outbox_t o;
     kj_outbox_clear(&o);
+    schedule_bumps();
     kj_server_tick(&server, now_ms, &o);
     route(&o, host_mac, -1);
     for (int i = 0; i < HUMANS; i++) {
@@ -144,7 +214,19 @@ static void step(void)
         kj_client_take_kicked(&players[i].c, NULL);
     }
     kj_event_t e;
-    while (kj_rules_pop_event(&server.game, &e)) results_seen += e.kind == KJ_EV_RESULT;
+    while (kj_rules_pop_event(&server.game, &e)) {
+        results_seen += e.kind == KJ_EV_RESULT;
+        matches_seen += e.kind == KJ_EV_MATCH;
+        if (e.kind == KJ_EV_MATCH) note_match(e.a, e.b);
+#ifdef SIM_DEBUG
+        if (e.kind == KJ_EV_MATCH || e.kind == KJ_EV_BUMP_FAIL || e.kind == KJ_EV_CHALLENGE || e.kind == KJ_EV_MATCH_CANCEL) {
+            int ia = sim_index_of_no(e.a), ib = e.b ? sim_index_of_no(e.b) : -1;
+            fprintf(stderr, "t=%u ev=%d a=%d(g%d) b=%d(g%d) aux=%u\n", (unsigned)now_ms, e.kind, ia,
+                    ia >= 0 ? players[ia].bump_group : -1, ib, ib >= 0 ? players[ib].bump_group : -1, e.aux);
+        }
+#endif
+        bump_fails_seen += e.kind == KJ_EV_BUMP_FAIL;
+    }
     now_ms += STEP_MS;
 }
 
@@ -173,6 +255,19 @@ static void check_invariants(void)
                 if (p->status == KJ_ST_DUEL) CHECK_EQ(q->status, KJ_ST_DUEL);
             }
         }
+        if (p->status == KJ_ST_MATCHED) {
+            CHECK(p->peer < KJ_MAX_PLAYERS);
+            if (p->peer < KJ_MAX_PLAYERS) {
+                CHECK_EQ(g->players[p->peer].peer, i);
+                CHECK_EQ(g->players[p->peer].status, KJ_ST_MATCHED);
+            }
+            CHECK((uint32_t)(now_ms - p->since_ms) <= KJ_MATCH_COUNTDOWN_MS + STEP_MS);
+        }
+        if (p->status == KJ_ST_BUMPING) {
+            CHECK_EQ(p->peer, 0xFF);
+            CHECK((uint32_t)(now_ms - p->since_ms) <= KJ_BUMP_MAX_AGE_MS + KJ_BUMP_SETTLE_MS);
+        }
+        if (p->is_bot) CHECK(p->status != KJ_ST_BUMPING && p->status != KJ_ST_MATCHED);
         if (p->status == KJ_ST_ELIMINATED) CHECK_EQ(p->stars, 0);
         if (p->status == KJ_ST_CLEARED) CHECK(p->stars >= KJ_CLEAR_STARS && kj_rules_total_cards(p) == 0);
     }
@@ -217,6 +312,8 @@ static int run_sim(uint32_t seed)
     loss_pct = 25;
     actions_enabled = true;
     delivered = dropped = results_seen = 0;
+    bump_pairs = bump_sent = matches_seen = bump_fails_seen = 0;
+    group_count = 0;
     int failures_before = kj_test_failures;
     kj_server_init(&server, ROOM_ID, seed * 7 + 1);
     for (int i = 0; i < HUMANS; i++) {
@@ -224,6 +321,8 @@ static int run_sim(uint32_t seed)
         memcpy(players[i].mac, mac, 6);
         kj_client_init(&players[i].c, seed * 131u + 1000u + (uint32_t)i);
         players[i].next_action_ms = 0;
+        players[i].bump_at = 0;
+        players[i].bump_group = 0;
     }
     for (int b = 0; b < BOTS; b++) CHECK_EQ(kj_server_command(&server, KJ_CMD_BOT_ADD, 0, now_ms), KJ_N_NONE);
 
@@ -304,6 +403,18 @@ static int run_sim(uint32_t seed)
     printf("sim seed %u: %ld frames delivered, %ld dropped, %ld duels resolved, %u views, %u beacons\n",
            (unsigned)seed, delivered, dropped, results_seen, (unsigned)server.tx_views,
            (unsigned)server.tx_beacons);
+    int clean = 0, clean_ok = 0;
+    for (int k = 0; k < group_count; k++) {
+        if (groups[k].size == 2 && groups[k].sent == 2) {
+            clean++;
+            clean_ok += groups[k].matched;
+        }
+    }
+    printf("sim seed %u: %ld bump pairs scheduled, %ld bumps sent, %ld matched, %ld bump failures, "
+           "clean pairs %d/%d matched\n",
+           (unsigned)seed, bump_pairs, bump_sent, matches_seen, bump_fails_seen, clean_ok, clean);
+    CHECK(clean > 0);
+    CHECK(clean_ok * 10 >= clean * 8);   // 两人都按下了的配对，丢包 25% 下至少八成成功
     return kj_test_failures - failures_before;
 }
 

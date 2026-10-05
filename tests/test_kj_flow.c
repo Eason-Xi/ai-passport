@@ -1,5 +1,6 @@
 // tests/test_kj_flow.c —— 界面状态机：页面推导、按键→动作、亮牌只播一次、通知 toast、选牌跳过用完的牌、
-// 庄家菜单（不可用项跳过、危险操作二次确认）、界面模型的倒计时。
+// 庄家菜单（不可用项跳过、危险操作二次确认、选手名单翻页）、首页 / 设置 / 登记 / 配网的按键、
+// 界面模型（倒计时、昵称、联网信息、名单）、碰拳页与配对页。
 #include "kj_flow.h"
 #include "kj_model.h"
 #include "kj_test.h"
@@ -51,10 +52,38 @@ static void test_title(void)
     CHECK_EQ(f.title_sel, 1);
     kj_action_t a = kj_flow_title_key(&f, KJ_KEY_DOWN);
     CHECK_EQ(a.kind, KJ_ACT_NONE);
+    CHECK_EQ(f.title_sel, 2);
+    a = kj_flow_title_key(&f, KJ_KEY_OK);
+    CHECK_EQ(a.kind, KJ_ACT_SETTINGS);
+    kj_flow_title_key(&f, KJ_KEY_DOWN);     // 循环回第一项
     CHECK_EQ(f.title_sel, 0);
     a = kj_flow_title_key(&f, KJ_KEY_OK);
     CHECK_EQ(a.kind, KJ_ACT_ROLE);
     CHECK_EQ(a.arg, 0);
+    kj_flow_title_key(&f, KJ_KEY_UP);
+    CHECK_EQ(f.title_sel, 2);
+    kj_flow_init(&f, 9);                    // NVS 里的旧值越界：回到第一项
+    CHECK_EQ(f.title_sel, 0);
+
+    // 设置：▲▼ 选择，OK 选定，"返回"或长按回首页
+    kj_flow_init(&f, 0);
+    a = kj_flow_settings_key(&f, KJ_KEY_OK);
+    CHECK_EQ(a.kind, KJ_ACT_SET_ITEM);
+    CHECK_EQ(a.arg, KJ_SET_NAME);
+    kj_flow_settings_key(&f, KJ_KEY_DOWN);
+    a = kj_flow_settings_key(&f, KJ_KEY_OK);
+    CHECK_EQ(a.arg, KJ_SET_WIFI);
+    kj_flow_settings_key(&f, KJ_KEY_DOWN);
+    CHECK_EQ(kj_flow_settings_key(&f, KJ_KEY_OK).kind, KJ_ACT_BACK);
+    kj_flow_settings_key(&f, KJ_KEY_DOWN);
+    CHECK_EQ(f.settings_sel, KJ_SET_NAME);
+    CHECK_EQ(kj_flow_settings_key(&f, KJ_KEY_OK_LONG).kind, KJ_ACT_BACK);
+    // 登记：OK 换二维码、长按返回；配网：只有长按（跳过）
+    CHECK_EQ(kj_flow_register_key(&f, KJ_KEY_OK).kind, KJ_ACT_REG_REFRESH);
+    CHECK_EQ(kj_flow_register_key(&f, KJ_KEY_OK_LONG).kind, KJ_ACT_BACK);
+    CHECK_EQ(kj_flow_register_key(&f, KJ_KEY_UP).kind, KJ_ACT_NONE);
+    CHECK_EQ(kj_flow_provision_key(&f, KJ_KEY_OK).kind, KJ_ACT_NONE);
+    CHECK_EQ(kj_flow_provision_key(&f, KJ_KEY_OK_LONG).kind, KJ_ACT_PROV_SKIP);
 }
 
 static void test_player_pages(void)
@@ -191,6 +220,70 @@ static void test_player_pages(void)
     CHECK_EQ(kj_flow_active_toast(&f, 11), KJ_TOAST_NONE);
 }
 
+static void test_bump_pages(void)
+{
+    memset(&c, 0, sizeof(c));
+    kj_flow_init(&f, 0);
+    joined_view(KJ_PHASE_RUNNING, KJ_ST_IDLE);
+    kj_cue_t cue;
+    CHECK_EQ(update(100, 1, &cue), KJ_PAGE_HAND);
+    // 手牌页长按 = 碰拳：立刻显示碰拳页
+    kj_action_t a = key(KJ_KEY_OK_LONG, 110, 1);
+    CHECK_EQ(a.kind, KJ_ACT_REQUEST);
+    CHECK_EQ(a.op, KJ_OP_BUMP);
+    CHECK_EQ(update(120, 1, &cue), KJ_PAGE_BUMP);
+    // 庄家接手（BUMPING），随后配对成功
+    c.view.status = KJ_ST_BUMPING;
+    CHECK_EQ(update(300, 1, &cue), KJ_PAGE_BUMP);
+    CHECK(!f.bump_pending);
+    c.view.status = KJ_ST_MATCHED;
+    c.view.peer_no = 7;
+    CHECK_EQ(update(900, 1, &cue), KJ_PAGE_MATCHED);
+    CHECK_EQ(cue, KJ_CUE_MATCH);
+    CHECK_EQ(key(KJ_KEY_OK, 910, 1).kind, KJ_ACT_NONE);   // 单击不做事，避免误触
+    a = key(KJ_KEY_OK_LONG, 920, 1);
+    CHECK_EQ(a.kind, KJ_ACT_REQUEST);
+    CHECK_EQ(a.op, KJ_OP_CANCEL);
+    // 倒计时结束进入出牌
+    c.view.status = KJ_ST_DUEL;
+    CHECK_EQ(update(4000, 1, &cue), KJ_PAGE_CHOOSE);
+    CHECK_EQ(cue, KJ_CUE_DUEL);
+
+    // 没碰到：通知到达时结束碰拳页并弹出提示
+    c.view.status = KJ_ST_IDLE;
+    update(5000, 1, NULL);
+    key(KJ_KEY_OK_LONG, 5010, 1);
+    CHECK_EQ(update(5020, 1, NULL), KJ_PAGE_BUMP);
+    c.view.notice = KJ_N_BUMP_ALONE;
+    c.view.notice_seq++;
+    CHECK_EQ(update(6000, 1, &cue), KJ_PAGE_HAND);
+    CHECK_EQ(cue, KJ_CUE_NOTICE);
+    CHECK_EQ(kj_flow_active_toast(&f, 6001), KJ_TOAST_BUMP_ALONE);
+    CHECK_EQ(kj_flow_toast_for_notice(KJ_N_BUMP_CROWD), KJ_TOAST_BUMP_CROWD);
+    CHECK_EQ(kj_flow_toast_for_notice(KJ_N_MATCH_CANCELLED), KJ_TOAST_MATCH_CANCELLED);
+
+    // 迟迟没有结果：本地碰拳页自动收起
+    key(KJ_KEY_OK_LONG, 7000, 1);
+    CHECK_EQ(update(7000 + KJ_BUMP_LOCAL_MS - 1, 1, NULL), KJ_PAGE_BUMP);
+    CHECK_EQ(update(7000 + KJ_BUMP_LOCAL_MS, 1, NULL), KJ_PAGE_HAND);
+
+    // 请求没能发出：立即撤销
+    key(KJ_KEY_OK_LONG, 9000, 1);
+    kj_flow_bump_rejected(&f);
+    CHECK_EQ(update(9001, 1, NULL), KJ_PAGE_HAND);
+
+    // 配对页的倒计时进入界面模型
+    c.view.status = KJ_ST_MATCHED;
+    c.view.deadline_s = 3;
+    c.view_rx_ms = 10000;
+    kj_player_ctx_t x = ctx(11200, 1);
+    kj_page_t page = kj_flow_player_update(&f, &x, NULL);
+    CHECK_EQ(page, KJ_PAGE_MATCHED);
+    kj_ui_model_t m;
+    kj_model_player(&m, &f, &x, page, NULL, NULL, 80);
+    CHECK_EQ(m.deadline_s, 2);
+}
+
 static void test_valid_card(void)
 {
     kj_view_t v = { 0 };
@@ -261,35 +354,164 @@ static void test_model(void)
     kj_player_ctx_t x = ctx(4500, 0);
     kj_page_t page = kj_flow_player_update(&f, &x, NULL);
     kj_ui_model_t m;
-    kj_model_player(&m, &f, &x, page, 150);
+    kj_model_player(&m, &f, &x, page, NULL, NULL, 150);
     CHECK_EQ(m.page, KJ_PAGE_CHALLENGED);
     CHECK_EQ(m.deadline_s, 15);   // 收到视图后过了 3.5 s
     CHECK_EQ(m.battery, 100);
     CHECK_EQ(m.seated, 7);
     CHECK(!m.disconnected);
     x.now_ms = 60000;
-    kj_model_player(&m, &f, &x, page, -5);
+    kj_model_player(&m, &f, &x, page, NULL, NULL, -5);
     CHECK_EQ(m.deadline_s, 0);
     CHECK_EQ(m.battery, -1);
 
     static kj_server_t s;
     kj_server_init(&s, 0xBEEF, 1);
     kj_server_command(&s, KJ_CMD_BOT_ADD, 0, 0);
-    kj_model_host(&m, &f, &s, 65000, 50, true);
+    kj_model_host(&m, &f, &s, 65000, 50, KJ_BOARD_USB, NULL, NULL);
     CHECK_EQ(m.page, KJ_PAGE_HOST);
     CHECK_EQ(m.host_room, 0xBEEF);
     CHECK_EQ(m.host_sum.seated, 1);
     CHECK_EQ(m.host_phase_s, 65);
+    CHECK_EQ(m.board, KJ_BOARD_USB);
     CHECK(m.host_enabled & (1u << KJ_HM_BOT_DEL));
+    CHECK(m.host_enabled & (1u << KJ_HM_ROSTER));
     CHECK(!(m.host_enabled & (1u << KJ_HM_START)));
+}
+
+// 测试用的昵称表：编号 n 叫 "P<n>"，编号 13 没登记，其余（> 50）还不知道
+static int lookups;
+static bool fake_names(void *ctx, uint16_t room, uint8_t no, const char **name)
+{
+    (void)ctx;
+    lookups++;
+    static char buf[8];
+    if (room != 0x1234 || no > 50) return false;
+    if (no == 13) {
+        *name = "";
+        return true;
+    }
+    snprintf(buf, sizeof(buf), "P%u", no);
+    *name = buf;
+    return true;
+}
+
+static void test_names_and_env(void)
+{
+    const kj_names_if_t names = { .lookup = fake_names };
+    uint8_t ipb[4] = { 192, 168, 1, 10 };
+    uint32_t ip;
+    memcpy(&ip, ipb, 4);
+    char text[16];
+    kj_ip_text(ip, text);
+    CHECK(strcmp(text, "192.168.1.10") == 0);
+    const kj_model_env_t env = { .net = KJ_NET_OK, .hub_ip = ip, .ssid = "Cafe", .my_name = "Amy", .fw = "1.1.0",
+                                 .dev_id = 0xA3F2 };
+    kj_ui_model_t m;
+    kj_flow_init(&f, 0);
+    kj_model_title(&m, &f, &env, 50, 0);
+    CHECK_EQ(m.net, KJ_NET_OK);
+    CHECK(strcmp(m.my_name, "Amy") == 0);
+    CHECK(strcmp(m.ssid, "Cafe") == 0);
+    CHECK_EQ(m.dev_id, 0xA3F2);
+    kj_model_settings(&m, &f, &env, 50, 0);
+    CHECK_EQ(m.page, KJ_PAGE_SETTINGS);
+    // 登记页：没连上电脑服务时不给二维码；连上后屏幕上的网址去掉 http://
+    kj_model_register(&m, &f, &env, KH_REG_INVALID, "http://192.168.1.10:47180/j/ABCDEFG2", 50, 0);
+    CHECK_EQ(m.qr[0], '\0');
+    kj_model_register(&m, &f, &env, KH_REG_WAITING, "http://192.168.1.10:47180/j/ABCDEFG2", 50, 0);
+    CHECK(strcmp(m.qr, "http://192.168.1.10:47180/j/ABCDEFG2") == 0);
+    CHECK(strcmp(m.line1, "192.168.1.10:47180") == 0);
+    CHECK(strcmp(m.line2, "/j/ABCDEFG2") == 0);
+    kj_model_provision(&m, &f, &env, KJ_PROV_TRYING, "WIFI:T:WPA;S:KJ-A3F2;P:1;;", "KJ-A3F2", "Home", 50, 0);
+    CHECK_EQ(m.page, KJ_PAGE_PROVISION);
+    CHECK_EQ(m.prov_state, KJ_PROV_TRYING);
+    CHECK(strcmp(m.line2, "Home") == 0);
+
+    // 选对手页：只给屏幕上看得见的几行查昵称
+    memset(&c, 0, sizeof(c));
+    kj_flow_init(&f, 0);
+    joined_view(KJ_PHASE_RUNNING, KJ_ST_IDLE);
+    for (int i = 0; i < 4; i++) opps[i].no = (uint8_t)(10 + i);   // 10、11、12、13
+    opps[3].no = 13;
+    key(KJ_KEY_OK, 100, 4);                  // 进入选对手
+    kj_player_ctx_t x = ctx(110, 4);
+    kj_page_t page = kj_flow_player_update(&f, &x, NULL);
+    CHECK_EQ(page, KJ_PAGE_OPPONENTS);
+    lookups = 0;
+    kj_model_player(&m, &f, &x, page, &env, &names, 50);
+    CHECK_EQ(m.opp_first, 0);
+    CHECK(strcmp(m.opp_names[0], "P10") == 0);
+    CHECK_EQ(m.opp_names[3][0], '\0');      // 13 号没登记
+    CHECK(lookups <= KJ_UI_OPP_ROWS + 1);
+    CHECK_EQ(kj_model_opp_first(5, 8), 3);
+    CHECK_EQ(kj_model_opp_first(7, 8), 4);   // 到底了不再往下滚
+    CHECK_EQ(kj_model_opp_first(1, 2), 0);
+    // 对决中：对手昵称；亮牌页用结算里的对手
+    c.view.status = KJ_ST_DUEL;
+    c.view.peer_no = 7;
+    x = ctx(200, 0);
+    page = kj_flow_player_update(&f, &x, NULL);
+    kj_model_player(&m, &f, &x, page, &env, &names, 50);
+    CHECK(strcmp(m.peer_name, "P7") == 0);
+    c.view.peer_no = 99;                     // 不知道的昵称：留空（界面显示编号）
+    kj_model_player(&m, &f, &x, page, &env, &names, 50);
+    CHECK_EQ(m.peer_name[0], '\0');
+
+    // 庄家名单：从第 roster_first 位开始最多 5 行，带昵称；电脑选手不查昵称
+    static kj_server_t s;
+    kj_server_init(&s, 0x1234, 1);
+    uint8_t mac[6] = { 2, 0, 0, 0, 0, 0 };
+    for (int i = 0; i < 6; i++) {
+        mac[5] = (uint8_t)(i + 1);
+        kj_rules_join(&s.game, mac, 0);
+    }
+    kj_server_command(&s, KJ_CMD_BOT_ADD, 0, 0);
+    kj_flow_init(&f, 1);
+    f.host_sel = KJ_HM_ROSTER;
+    kj_flow_host_sync(&f, &s.game);
+    CHECK_EQ(f.host_sel, KJ_HM_ROSTER);
+    kj_flow_host_key(&f, &s.game, KJ_KEY_OK, 0);
+    CHECK(f.host_roster);
+    kj_model_host(&m, &f, &s, 0, 50, KJ_BOARD_WIFI, &env, &names);
+    CHECK_EQ(m.page, KJ_PAGE_HOST_ROSTER);
+    CHECK_EQ(m.roster_total, 7);
+    CHECK_EQ(m.roster_count, KJ_ROSTER_ROWS);
+    CHECK_EQ(m.roster[0].no, 1);
+    CHECK(strcmp(m.roster[0].name, "P1") == 0);
+    kj_flow_host_key(&f, &s.game, KJ_KEY_DOWN, 0);
+    kj_flow_host_key(&f, &s.game, KJ_KEY_DOWN, 0);
+    kj_flow_host_key(&f, &s.game, KJ_KEY_DOWN, 0);   // 最多滚到 7 - 5 = 2
+    CHECK_EQ(f.roster_first, 2);
+    kj_model_host(&m, &f, &s, 0, 50, KJ_BOARD_WIFI, &env, &names);
+    CHECK_EQ(m.roster[0].no, 3);
+    CHECK_EQ(m.roster[4].no, 7);
+    CHECK(m.roster[4].is_bot);
+    CHECK_EQ(m.roster[4].name[0], '\0');
+    CHECK_EQ(m.roster[0].cards, 0);   // 还没开局
+    kj_flow_host_key(&f, &s.game, KJ_KEY_UP, 0);
+    CHECK_EQ(f.roster_first, 1);
+    kj_flow_host_key(&f, &s.game, KJ_KEY_OK_LONG, 0);
+    CHECK(!f.host_roster);
+    kj_model_host(&m, &f, &s, 0, 50, KJ_BOARD_WIFI, &env, &names);
+    CHECK_EQ(m.page, KJ_PAGE_HOST);
+    // 人都移走了：名单自动关上，滚动位置收敛
+    f.host_roster = true;
+    f.roster_first = 9;
+    kj_server_command(&s, KJ_CMD_RESET, 0, 0);
+    kj_flow_host_sync(&f, &s.game);
+    CHECK(!f.host_roster);
+    CHECK_EQ(f.roster_first, 0);
 }
 
 int main(void)
 {
     test_title();
     test_player_pages();
+    test_bump_pages();
     test_valid_card();
     test_host_menu();
     test_model();
+    test_names_and_env();
     KJ_TEST_DONE("test_kj_flow");
 }

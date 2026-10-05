@@ -1,11 +1,13 @@
 // main/main.c —— 限定猜拳（《赌博默示录》）多人联机固件入口。
 //
 // 同一份固件，开机选择角色：
-//   * 选手：通过 ESP-NOW 找到附近的庄家入座，用自己的设备暗中出牌；
-//   * 庄家：裁判兼网关，持有唯一可信的赌局状态，并通过 USB 串口把全场手牌实时推给电脑看板
-//     （tools/kj_board/index.html），看板只给庄家 / 观众看。
+//   * 选手：连上现场 Wi-Fi，经电脑 hub（tools/kj_hub）找到庄家入座，用自己的设备暗中出牌；
+//     手牌页长按 OK 可以和面前的人"碰拳"直接开打，也可以从名单里挑人挑战。
+//   * 庄家：裁判，持有唯一可信的赌局状态；把全场手牌实时推给电脑看板（经 Wi-Fi 的 TCP，USB 串口作兜底）。
+// 第一次开机（或在设置里选"重新配网"）进入配网模式：设备开热点，手机网页里选现场 Wi-Fi。
+// 昵称在设置里扫码登记：手机打开电脑 hub 的网页填写，hub 保存并下发给设备。
 //
-// 线程模型：按键回调（esp_timer 任务）与 ESP-NOW 接收回调（Wi-Fi 任务）只把事件拷贝进队列；
+// 线程模型：按键回调（esp_timer 任务）、网络收包任务（kj_net）、配网的 HTTP / 事件回调都只把事件拷贝进队列；
 // 唯一的应用任务 kj_app 串行处理协议、规则、界面状态机，并在持锁时刷新 LVGL。
 #include "bsp_audio.h"
 #include "bsp_battery.h"
@@ -18,9 +20,12 @@
 #include "kj_client.h"
 #include "kj_flow.h"
 #include "kj_fonts.h"
+#include "kj_hubc.h"
+#include "kj_hubproto.h"
 #include "kj_model.h"
+#include "kj_net.h"
 #include "kj_persist.h"
-#include "kj_radio.h"
+#include "kj_prov.h"
 #include "kj_server.h"
 #include "kj_sound.h"
 #include "kj_store.h"
@@ -29,13 +34,14 @@
 #include "driver/usb_serial_jtag.h"
 #include "driver/usb_serial_jtag_vfs.h"
 #include "esp_heap_caps.h"
-#include "sdkconfig.h"
 #include "esp_log.h"
 #include "esp_random.h"
+#include "esp_system.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
+#include "sdkconfig.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,8 +49,10 @@
 
 static const char *TAG = "kj_app";
 
-#define KJ_FW_VERSION       "1.0.0"
+#define KJ_FW_VERSION       "1.1.0"
 #define APP_QUEUE_DEPTH     32
+#define HUB_QUEUE_DEPTH     6
+#define HUB_MSG_MAX         (KH_HDR + 200)   // 最大的控制消息（NAMES）约 190 字节
 #define APP_LOOP_MS         20
 #define RENDER_MIN_MS       30
 #define BATTERY_POLL_MS     15000
@@ -55,26 +63,37 @@ static const char *TAG = "kj_app";
 #define BOARD_FULL_SYNC_MS  15000
 #define BOARD_LINES_PER_LOOP 6
 #define PERSIST_DEBOUNCE_MS 1500
+#define REG_DONE_SHOW_MS    2500
+#define PROV_RESTART_MS     2500
+#define HEAP_LOG_MS         60000
 
-typedef enum { MSG_KEY = 1, MSG_RX } msg_kind_t;
+typedef enum { MSG_KEY = 1, MSG_RX, MSG_NET, MSG_LINE, MSG_PROV } msg_kind_t;
 
 typedef struct {
     uint8_t kind;
-    uint8_t key;
+    uint8_t key;          // MSG_KEY：按键；MSG_NET / MSG_PROV：事件
     int8_t rssi;
     uint8_t len;
     uint8_t mac[6];
-    uint8_t data[KJ_FRAME_MAX];
+    uint8_t data[KJ_FRAME_MAX];   // MSG_RX：游戏帧；MSG_LINE：命令行；MSG_NET / MSG_PROV：int 参数
 } app_msg_t;
 
-typedef enum { MODE_TITLE = 0, MODE_PLAYER, MODE_HOST } app_mode_t;
+typedef struct {
+    uint16_t len;
+    uint32_t src_ip;
+    uint8_t data[HUB_MSG_MAX];
+} hub_msg_t;
 
-static QueueHandle_t s_queue;
+typedef enum { MODE_TITLE = 0, MODE_PLAYER, MODE_HOST, MODE_SETTINGS, MODE_REGISTER, MODE_PROVISION } app_mode_t;
+
+static QueueHandle_t s_queue, s_hubq;
 static app_mode_t s_mode;
 static kj_flow_t s_flow;
 static kj_client_t s_client;
 static kj_server_t *s_server;           // 只有庄家才分配（约 8 KB）
+static kj_hubc_t s_hubc;
 static kj_ui_model_t s_model;
+static uint8_t s_mac[6];
 static int s_battery = -1;
 static bool s_battery_ok;
 static uint32_t s_battery_ms;
@@ -82,15 +101,35 @@ static uint32_t s_last_activity;
 static bool s_dimmed;
 static uint32_t s_last_render;
 static bool s_dirty = true;
+static uint32_t s_heap_ms;
+
+// 联网
+static bool s_have_cred;
+static char s_ssid[KJ_WIFI_SSID_MAX + 1];
+static uint32_t s_hub_ip_set;
+static uint16_t s_hub_tcp_set;
+static uint32_t s_hint_saved;
+static uint8_t s_last_net;
+
+// 选手
 static uint16_t s_auto_room;
 static bool s_auto_tried;
 static uint16_t s_saved_room;
-
-// 选手侧列表缓冲
 static kj_room_entry_t s_rooms[KJ_CLIENT_MAX_ROOMS];
 static kj_opponent_t s_opps[KJ_UI_OPP_MAX];
 
-// 庄家侧串口与持久化
+// 登记昵称
+static app_mode_t s_after_reg;
+static char s_reg_token[KJ_REG_TOKEN_LEN + 1];
+static char s_reg_url[KJ_UI_TEXT_LEN];
+static uint32_t s_reg_done_ms;
+
+// 配网
+static uint8_t s_prov_state;
+static char s_prov_ssid[16], s_prov_pass[12], s_prov_qr[64], s_prov_target[33];
+static uint32_t s_prov_ok_ms;
+
+// 庄家看板与持久化
 static char s_cmd_line[64];
 static size_t s_cmd_len;
 static uint32_t s_board_game_ms, s_board_hello_ms, s_board_sync_ms;
@@ -101,6 +140,14 @@ static uint8_t s_persist_buf[KJ_PERSIST_MAX];
 static uint32_t now_ms(void)
 {
     return (uint32_t)(esp_timer_get_time() / 1000);
+}
+
+static void log_heap(const char *when)
+{
+    ESP_LOGI(TAG, "heap %s: free=%u min=%u largest=%u", when,
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+             (unsigned)heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL),
+             (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
 }
 
 // ---------------------------------------------------------------------------
@@ -120,22 +167,55 @@ static void on_key(bsp_btn_t btn, bsp_btn_ev_t ev, void *user)
     (void)xQueueSend(s_queue, &m, 0);
 }
 
-static void on_radio(const uint8_t mac[6], int8_t rssi, const uint8_t *data, int len)
+static void on_net_frame(const uint8_t src[6], int8_t rssi, const uint8_t *data, int len)
 {
     if (!s_queue || len <= 0 || len > KJ_FRAME_MAX) return;
     app_msg_t m = { .kind = MSG_RX, .rssi = rssi, .len = (uint8_t)len };
-    memcpy(m.mac, mac, 6);
+    memcpy(m.mac, src, 6);
     memcpy(m.data, data, (size_t)len);
     (void)xQueueSend(s_queue, &m, 0);   // 满了丢弃：协议层会重发
 }
 
+static void on_net_ctl(const uint8_t *dgram, int len, uint32_t src_ip)
+{
+    if (!s_hubq || len <= 0 || len > HUB_MSG_MAX) return;
+    hub_msg_t m = { .len = (uint16_t)len, .src_ip = src_ip };
+    memcpy(m.data, dgram, (size_t)len);
+    (void)xQueueSend(s_hubq, &m, 0);
+}
+
+static void on_net_event(uint8_t ev, int arg)
+{
+    if (!s_queue) return;
+    app_msg_t m = { .kind = MSG_NET, .key = ev };
+    memcpy(m.data, &arg, sizeof(arg));
+    (void)xQueueSend(s_queue, &m, 0);
+}
+
+static void on_board_line(const char *line, int len)
+{
+    if (!s_queue || len <= 0 || len >= KJ_FRAME_MAX) return;
+    app_msg_t m = { .kind = MSG_LINE, .len = (uint8_t)len };
+    memcpy(m.data, line, (size_t)len);
+    m.data[len] = '\0';
+    (void)xQueueSend(s_queue, &m, 0);
+}
+
+static void on_prov_event(uint8_t ev, int arg)
+{
+    if (!s_queue) return;
+    app_msg_t m = { .kind = MSG_PROV, .key = ev };
+    memcpy(m.data, &arg, sizeof(arg));
+    (void)xQueueSend(s_queue, &m, 0);
+}
+
 // ---------------------------------------------------------------------------
-// 发送、提示音、背光
+// 发送、提示音、背光、联网状态
 // ---------------------------------------------------------------------------
 
 static void flush_outbox(kj_outbox_t *o)
 {
-    for (int i = 0; i < o->count; i++) kj_radio_send(&o->items[i]);
+    for (int i = 0; i < o->count; i++) kj_net_send_frame(&o->items[i]);
     kj_outbox_clear(o);
 }
 
@@ -157,6 +237,7 @@ static void wake_screen(void)
 
 static void update_backlight(uint32_t now)
 {
+    if (s_mode == MODE_REGISTER || s_mode == MODE_PROVISION) s_last_activity = now;   // 二维码页保持常亮
     if (!s_dimmed && (uint32_t)(now - s_last_activity) >= DIM_AFTER_MS) {
         s_dimmed = true;
         bsp_display_backlight(DIM_PERCENT);
@@ -166,31 +247,83 @@ static void update_backlight(uint32_t now)
     }
 }
 
-// ---------------------------------------------------------------------------
-// 角色切换
-// ---------------------------------------------------------------------------
-
-static void log_heap(const char *when)
+static uint8_t net_status(uint32_t now)
 {
-    ESP_LOGI(TAG, "heap %s: free=%u min=%u largest=%u", when,
-             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
-             (unsigned)heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL),
-             (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
+    if (!s_have_cred) return KJ_NET_NO_WIFI;
+    if (!kj_net_has_ip()) return KJ_NET_CONNECTING;
+    if (kj_hubc_state(&s_hubc, now) != KJ_HUB_OK) return KJ_NET_SEARCHING;
+    return s_hubc.incompatible ? KJ_NET_OLD : KJ_NET_OK;
 }
 
-static bool start_radio(void)
+static void model_env(kj_model_env_t *env, uint32_t now)
 {
-    if (kj_radio_started()) return true;
-    log_heap("before radio");
-    esp_err_t err = kj_radio_start(on_radio);
-    log_heap("after radio");
-    if (err != ESP_OK) {
-        kj_flow_toast(&s_flow, KJ_TOAST_RADIO_FAIL, now_ms());
-        cue(KJ_CUE_ERROR);
-        return false;
+    env->net = net_status(now);
+    env->ip = kj_net_ip();
+    env->hub_ip = s_hubc.hub_ip;
+    env->ssid = s_ssid;
+    env->my_name = s_hubc.my_name;
+    env->fw = KJ_FW_VERSION;
+    env->dev_id = (uint16_t)((s_mac[4] << 8) | s_mac[5]);
+}
+
+static bool name_lookup(void *ctx, uint16_t room, uint8_t no, const char **name)
+{
+    (void)ctx;
+    uint8_t flags;
+    return kj_hubc_name(&s_hubc, room, no, now_ms(), name, &flags);
+}
+
+static const kj_names_if_t s_names = { .lookup = name_lookup, .ctx = NULL };
+
+// ---------------------------------------------------------------------------
+// 电脑 hub：发现、保活、昵称、登记
+// ---------------------------------------------------------------------------
+
+static void hub_rx(uint32_t now)
+{
+    hub_msg_t hm;
+    while (xQueueReceive(s_hubq, &hm, 0) == pdTRUE) {
+        kh_env_t e;
+        if (!kh_env_decode(hm.data, hm.len, &e)) continue;
+        kj_hubc_on_msg(&s_hubc, &e, hm.src_ip, now);
+        kj_hubc_note_rx(&s_hubc, now);
+        s_dirty = true;
     }
-    return true;
 }
+
+static void hub_tick(uint32_t now)
+{
+    if (!kj_net_started()) return;
+    kj_hubc_out_t out[KJ_HUBC_OUT_MAX];
+    int n = kj_hubc_tick(&s_hubc, now, out, KJ_HUBC_OUT_MAX);
+    for (int i = 0; i < n; i++) kj_net_send_ctl(out[i].kind, out[i].ip, out[i].room, out[i].data, out[i].len);
+    if (kj_hubc_state(&s_hubc, now) == KJ_HUB_OK &&
+        (s_hubc.hub_ip != s_hub_ip_set || s_hubc.tcp_port != s_hub_tcp_set)) {
+        s_hub_ip_set = s_hubc.hub_ip;
+        s_hub_tcp_set = s_hubc.tcp_port;
+        kj_net_set_hub(s_hub_ip_set, s_hub_tcp_set);
+        if (s_hub_ip_set != s_hint_saved) {   // 下次开机先试这个地址
+            s_hint_saved = s_hub_ip_set;
+            kj_store_set_hub_hint(s_hint_saved);
+        }
+        log_heap("hub found");
+    }
+    if (kj_hubc_take_my_name_changed(&s_hubc)) {
+        kj_store_set_name(s_hubc.my_name, s_hubc.my_rev);
+        if (s_mode != MODE_REGISTER) kj_flow_toast(&s_flow, KJ_TOAST_NAME_UPDATED, now);
+        s_dirty = true;
+    }
+    uint8_t net = net_status(now);
+    if (net != s_last_net) {
+        if (net == KJ_NET_OLD) kj_flow_toast(&s_flow, KJ_TOAST_OLD_FW, now);
+        s_last_net = net;
+        s_dirty = true;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 选手
+// ---------------------------------------------------------------------------
 
 static void enter_player(void)
 {
@@ -199,61 +332,10 @@ static void enter_player(void)
     s_saved_room = s_auto_room;
     s_auto_tried = false;
     s_mode = MODE_PLAYER;
+    kj_net_set_host(false);
+    kj_hubc_set_role(&s_hubc, KH_ROLE_PLAYER, 0);
     ESP_LOGI(TAG, "role: player (last room %04X)", s_auto_room);
 }
-
-static void board_write(const char *line, size_t n)
-{
-    if (!n) return;
-    fwrite(line, 1, n, stdout);
-    clearerr(stdout);   // 电脑未连接时写入会失败；清掉错误标志，连上后继续输出
-}
-
-static void enter_host(void)
-{
-    s_server = calloc(1, sizeof(kj_server_t));
-    if (!s_server) {
-        ESP_LOGE(TAG, "no memory for host state");
-        kj_flow_toast(&s_flow, KJ_TOAST_RADIO_FAIL, now_ms());
-        return;
-    }
-    uint8_t mac[6];
-    kj_radio_get_mac(mac);
-    uint16_t room = (uint16_t)((mac[4] << 8) | mac[5]);
-    if (room == 0) room = 1;
-    kj_server_init(s_server, room, esp_random());
-    size_t n = kj_store_load_game(s_persist_buf, sizeof(s_persist_buf));
-    if (n && kj_persist_load(&s_server->game, s_persist_buf, n, now_ms())) {
-        kj_flow_toast(&s_flow, KJ_TOAST_RESTORED, now_ms());
-        ESP_LOGI(TAG, "restored game: %d players, phase %d", kj_rules_player_count(&s_server->game),
-                 s_server->game.phase);
-    }
-    s_saved_rev = s_seen_rev = s_server->game.rev;
-
-#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG || CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG
-    // 安装 USB Serial/JTAG 驱动：日志改走驱动缓冲，并能非阻塞地读取看板命令。
-    usb_serial_jtag_driver_config_t cfg = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
-    cfg.rx_buffer_size = 512;
-    cfg.tx_buffer_size = 2048;
-    if (usb_serial_jtag_driver_install(&cfg) == ESP_OK) {
-        usb_serial_jtag_vfs_use_driver();
-    } else {
-        ESP_LOGW(TAG, "usb serial driver install failed; board commands unavailable");
-    }
-#else
-    ESP_LOGW(TAG, "console is not USB Serial/JTAG; board commands unavailable");
-#endif
-    setvbuf(stdout, NULL, _IOLBF, 0);
-    s_mode = MODE_HOST;
-    char line[KJ_BOARD_LINE_MAX];
-    board_write(line, kj_board_hello_line(room, KJ_FW_VERSION, line, sizeof(line)));
-    ESP_LOGI(TAG, "role: host, room %04X", room);
-    log_heap("host ready");
-}
-
-// ---------------------------------------------------------------------------
-// 选手
-// ---------------------------------------------------------------------------
 
 static void player_ctx(kj_player_ctx_t *ctx, uint32_t now)
 {
@@ -261,7 +343,7 @@ static void player_ctx(kj_player_ctx_t *ctx, uint32_t now)
     ctx->rooms = s_rooms;
     ctx->room_count = kj_client_rooms(&s_client, now, s_rooms, KJ_CLIENT_MAX_ROOMS);
     ctx->opps = s_opps;
-    ctx->opp_count = kj_client_opponents(&s_client, now, s_opps, KJ_UI_OPP_MAX);
+    ctx->opp_count = kj_client_opponents(&s_client, s_opps, KJ_UI_OPP_MAX);
     ctx->connected = kj_client_connected(&s_client, now);
     ctx->now_ms = now;
 }
@@ -289,11 +371,18 @@ static void player_key(kj_key_t key, uint32_t now)
         break;
     case KJ_ACT_TO_TITLE:
         kj_client_leave(&s_client);
+        kj_hubc_set_role(&s_hubc, KH_ROLE_NONE, 0);
         s_mode = MODE_TITLE;
         break;
     case KJ_ACT_REQUEST:
-        if (!kj_client_request(&s_client, a.op, a.arg, now)) c = KJ_CUE_ERROR;
-        else if (a.op == KJ_OP_PLAY) c = KJ_CUE_LOCK;
+        if (!kj_client_request(&s_client, a.op, a.arg, now)) {
+            c = KJ_CUE_ERROR;
+            if (a.op == KJ_OP_BUMP) kj_flow_bump_rejected(&s_flow);
+        } else if (a.op == KJ_OP_PLAY) {
+            c = KJ_CUE_LOCK;
+        } else if (a.op == KJ_OP_BUMP) {
+            c = KJ_CUE_BUMP;
+        }
         break;
     default:
         break;
@@ -337,15 +426,73 @@ static void player_tick(uint32_t now)
         s_saved_room = s_client.room;
         kj_store_set_room(s_saved_room);
     }
+    kj_hubc_set_role(&s_hubc, KH_ROLE_PLAYER, s_client.link == KJ_LINK_JOINED ? s_client.room : 0);
     kj_cue_t c = KJ_CUE_NONE;
     kj_page_t page = kj_flow_player_update(&s_flow, &ctx, &c);
     cue(c);
-    kj_model_player(&s_model, &s_flow, &ctx, page, s_battery);
+    kj_model_env_t env;
+    model_env(&env, now);
+    kj_model_player(&s_model, &s_flow, &ctx, page, &env, &s_names, s_battery);
 }
 
 // ---------------------------------------------------------------------------
 // 庄家
 // ---------------------------------------------------------------------------
+
+static void board_write(const char *line, size_t n)
+{
+    if (!n) return;
+    fwrite(line, 1, n, stdout);
+    clearerr(stdout);   // 电脑未连接时写入会失败；清掉错误标志，连上后继续输出
+    kj_net_board_write(line, n);
+}
+
+static void board_resync(void)
+{
+    s_board_hello_ms = 0;   // 立刻补发身份行与汇总，并全量输出选手行
+    s_board_game_ms = 0;
+    if (s_server) kj_rules_mark_all_dirty(&s_server->game);
+}
+
+static void enter_host(void)
+{
+    s_server = calloc(1, sizeof(kj_server_t));
+    if (!s_server) {
+        ESP_LOGE(TAG, "no memory for host state");
+        kj_flow_toast(&s_flow, KJ_TOAST_RADIO_FAIL, now_ms());
+        return;
+    }
+    uint16_t room = (uint16_t)((s_mac[4] << 8) | s_mac[5]);
+    if (room == 0) room = 1;
+    kj_server_init(s_server, room, esp_random());
+    size_t n = kj_store_load_game(s_persist_buf, sizeof(s_persist_buf));
+    if (n && kj_persist_load(&s_server->game, s_persist_buf, n, now_ms())) {
+        kj_flow_toast(&s_flow, KJ_TOAST_RESTORED, now_ms());
+        ESP_LOGI(TAG, "restored game: %d players, phase %d", kj_rules_player_count(&s_server->game),
+                 s_server->game.phase);
+    }
+    s_saved_rev = s_seen_rev = s_server->game.rev;
+
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG || CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG
+    // USB 串口看板作兜底：安装驱动后日志改走驱动缓冲，并能非阻塞地读取看板命令。
+    usb_serial_jtag_driver_config_t cfg = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
+    cfg.rx_buffer_size = 512;
+    cfg.tx_buffer_size = 2048;
+    if (usb_serial_jtag_driver_install(&cfg) == ESP_OK) {
+        usb_serial_jtag_vfs_use_driver();
+    } else {
+        ESP_LOGW(TAG, "usb serial driver install failed; usb board commands unavailable");
+    }
+#endif
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    s_mode = MODE_HOST;
+    kj_net_set_host(true);
+    kj_net_board_enable(true);
+    kj_hubc_set_role(&s_hubc, KH_ROLE_HOST, room);
+    board_resync();
+    ESP_LOGI(TAG, "role: host, room %04X", room);
+    log_heap("host ready");
+}
 
 static void host_command(kj_cmd_t cmd, int arg, bool from_board, uint32_t now)
 {
@@ -354,15 +501,19 @@ static void host_command(kj_cmd_t cmd, int arg, bool from_board, uint32_t now)
         char line[KJ_BOARD_LINE_MAX];
         board_write(line, kj_board_ack_line(cmd, arg, r, line, sizeof(line)));
     }
-    if (cmd == KJ_CMD_SYNC) {
-        s_board_hello_ms = 0;   // 立刻补发身份行与汇总
-        s_board_game_ms = 0;
-    }
+    if (cmd == KJ_CMD_SYNC) board_resync();
     if (r != KJ_N_NONE && !from_board) {
         kj_flow_toast(&s_flow, cmd == KJ_CMD_START ? KJ_TOAST_NEED_TWO : KJ_TOAST_INVALID, now);
         cue(KJ_CUE_ERROR);
     }
     s_dirty = true;
+}
+
+static void host_board_line(const char *line, uint32_t now)
+{
+    kj_cmd_t cmd;
+    int arg;
+    if (s_server && kj_board_parse_command(line, &cmd, &arg)) host_command(cmd, arg, true, now);
 }
 
 static void host_poll_serial(uint32_t now)
@@ -376,9 +527,7 @@ static void host_poll_serial(uint32_t now)
             if (ch == '\n' || ch == '\r') {
                 if (s_cmd_len) {
                     s_cmd_line[s_cmd_len] = '\0';
-                    kj_cmd_t cmd;
-                    int arg;
-                    if (kj_board_parse_command(s_cmd_line, &cmd, &arg)) host_command(cmd, arg, true, now);
+                    host_board_line(s_cmd_line, now);
                 }
                 s_cmd_len = 0;
             } else if (s_cmd_len < sizeof(s_cmd_line) - 1) {
@@ -394,13 +543,21 @@ static void host_board(uint32_t now)
 {
     kj_game_t *g = &s_server->game;
     char line[KJ_BOARD_LINE_MAX];
-    if ((uint32_t)(now - s_board_hello_ms) >= BOARD_HELLO_MS || s_board_hello_ms == 0) {
+    if (kj_net_board_take_overflow()) board_resync();   // TCP 缓冲放不下丢过行：补发全量
+    if (s_board_hello_ms == 0 || (uint32_t)(now - s_board_hello_ms) >= BOARD_HELLO_MS) {
         s_board_hello_ms = now ? now : 1;
-        board_write(line, kj_board_hello_line(s_server->room, KJ_FW_VERSION, line, sizeof(line)));
+        board_write(line, kj_board_hello_line(s_server->room, KJ_FW_VERSION, s_mac, "wifi", line, sizeof(line)));
     }
     if ((uint32_t)(now - s_board_sync_ms) >= BOARD_FULL_SYNC_MS) {
         s_board_sync_ms = now;
         kj_rules_mark_all_dirty(g);   // 新打开的看板最多等 15 s 就能拿到全量
+    }
+    // 汇总行在前：电脑服务据此知道局号，再记录后面的选手行与事件
+    if (s_board_game_ms == 0 || (uint32_t)(now - s_board_game_ms) >= BOARD_GAME_MS ||
+        g->phase_ver != s_board_phase_ver) {
+        s_board_game_ms = now ? now : 1;
+        s_board_phase_ver = g->phase_ver;
+        board_write(line, kj_board_game_line(g, s_server->room, now, line, sizeof(line)));
     }
     kj_event_t e;
     while (kj_rules_pop_event(g, &e)) board_write(line, kj_board_event_line(&e, line, sizeof(line)));
@@ -411,11 +568,6 @@ static void host_board(uint32_t now)
         if (!g->players[i].used && g->players[i].view_ver == 0) continue;
         board_write(line, kj_board_player_line(g, i, now, line, sizeof(line)));
         lines++;
-    }
-    if ((uint32_t)(now - s_board_game_ms) >= BOARD_GAME_MS || g->phase_ver != s_board_phase_ver) {
-        s_board_game_ms = now;
-        s_board_phase_ver = g->phase_ver;
-        board_write(line, kj_board_game_line(g, s_server->room, now, line, sizeof(line)));
     }
 }
 
@@ -449,6 +601,13 @@ static void host_key(kj_key_t key, uint32_t now)
     }
 }
 
+static uint8_t board_link(void)
+{
+    if (kj_net_board_connected()) return KJ_BOARD_WIFI;
+    if (usb_serial_jtag_is_driver_installed() && usb_serial_jtag_is_connected()) return KJ_BOARD_USB;
+    return KJ_BOARD_NONE;
+}
+
 static void host_tick(uint32_t now)
 {
     host_poll_serial(now);
@@ -459,7 +618,9 @@ static void host_tick(uint32_t now)
     host_board(now);
     host_persist(now);
     kj_flow_host_sync(&s_flow, &s_server->game);
-    kj_model_host(&s_model, &s_flow, s_server, now, s_battery, usb_serial_jtag_is_connected());
+    kj_model_env_t env;
+    model_env(&env, now);
+    kj_model_host(&s_model, &s_flow, s_server, now, s_battery, board_link(), &env, &s_names);
 }
 
 static void host_rx(const app_msg_t *m, uint32_t now)
@@ -471,8 +632,161 @@ static void host_rx(const app_msg_t *m, uint32_t now)
 }
 
 // ---------------------------------------------------------------------------
+// 登记昵称
+// ---------------------------------------------------------------------------
+
+static void new_reg_token(uint32_t now)
+{
+    kj_reg_token(esp_random(), esp_random(), s_reg_token);
+    kj_hubc_reg_start(&s_hubc, s_reg_token, now);
+    s_reg_done_ms = 0;
+}
+
+static void enter_register(app_mode_t after, uint32_t now)
+{
+    s_after_reg = after;
+    s_mode = MODE_REGISTER;
+    new_reg_token(now);
+}
+
+static void leave_register(void)
+{
+    kj_hubc_reg_stop(&s_hubc);
+    if (s_after_reg == MODE_PLAYER) {
+        enter_player();
+    } else {
+        s_mode = s_after_reg;
+    }
+}
+
+static void register_tick(uint32_t now)
+{
+    bool hub = kj_hubc_state(&s_hubc, now) == KJ_HUB_OK;
+    uint8_t state = hub ? s_hubc.reg_state : KH_REG_INVALID;
+    if (hub && s_hubc.reg_state == KH_REG_INVALID) new_reg_token(now);   // 过期：自动换一个
+    if (state == KH_REG_DONE && s_reg_done_ms == 0) {
+        s_reg_done_ms = now ? now : 1;
+        cue(KJ_CUE_CLEARED);
+    }
+    if (s_reg_done_ms && (uint32_t)(now - s_reg_done_ms) >= REG_DONE_SHOW_MS) {
+        leave_register();
+        return;
+    }
+    s_reg_url[0] = '\0';
+    if (hub) {
+        char ip[16];
+        kj_ip_text(s_hubc.hub_ip, ip);
+        snprintf(s_reg_url, sizeof(s_reg_url), "http://%s:%u/j/%s", ip, (unsigned)s_hubc.http_port, s_reg_token);
+    }
+    kj_model_env_t env;
+    model_env(&env, now);
+    kj_model_register(&s_model, &s_flow, &env, state, s_reg_url, s_battery, now);
+}
+
+// ---------------------------------------------------------------------------
+// 配网
+// ---------------------------------------------------------------------------
+
+static void start_audio(void)
+{
+    static bool started;
+    if (started) return;
+    started = true;
+    if (bsp_audio_init() != ESP_OK) {
+        ESP_LOGW(TAG, "audio init failed; running silent");
+        return;
+    }
+    if (kj_sound_init() != ESP_OK) ESP_LOGW(TAG, "sound unavailable");
+}
+
+static void start_provision(void)
+{
+    s_mode = MODE_PROVISION;
+    s_prov_state = KJ_PROV_WAIT_PHONE;
+    log_heap("before prov");
+    esp_err_t err = kj_prov_start(on_prov_event);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "provisioning start failed: %s", esp_err_to_name(err));
+        kj_flow_toast(&s_flow, KJ_TOAST_RADIO_FAIL, now_ms());
+    }
+    kj_prov_get_ap(s_prov_ssid, s_prov_pass, s_prov_qr);
+    log_heap("prov started");
+}
+
+static void prov_event(uint8_t ev, uint32_t now)
+{
+    switch (ev) {
+    case KJ_PROV_EV_PHONE_IN:
+        if (s_prov_state == KJ_PROV_WAIT_PHONE) s_prov_state = KJ_PROV_PHONE_IN;
+        break;
+    case KJ_PROV_EV_PHONE_OUT:
+        if (s_prov_state == KJ_PROV_PHONE_IN) s_prov_state = KJ_PROV_WAIT_PHONE;
+        break;
+    case KJ_PROV_EV_TRYING:
+        kj_prov_get_target(s_prov_target);
+        s_prov_state = KJ_PROV_TRYING;
+        break;
+    case KJ_PROV_EV_OK: {
+        kj_wifi_cred_t cred;
+        uint32_t hub = 0;
+        if (kj_prov_take_result(&cred, &hub) && kj_store_set_wifi(&cred) == ESP_OK) {
+            if (hub) kj_store_set_hub_hint(hub);
+            s_prov_state = KJ_PROV_OK;
+            s_prov_ok_ms = now ? now : 1;
+        } else {
+            s_prov_state = KJ_PROV_FAILED;
+        }
+        memset(&cred, 0, sizeof(cred));
+        break;
+    }
+    case KJ_PROV_EV_FAILED: s_prov_state = KJ_PROV_FAILED; break;
+    default: break;
+    }
+    s_dirty = true;
+}
+
+static void provision_tick(uint32_t now)
+{
+    if (s_prov_ok_ms && (uint32_t)(now - s_prov_ok_ms) >= PROV_RESTART_MS) {
+        ESP_LOGI(TAG, "wifi saved; restarting");
+        esp_restart();   // 重启进入游戏模式（配网与游戏的内存峰值隔开）
+    }
+    kj_model_env_t env;
+    model_env(&env, now);
+    kj_model_provision(&s_model, &s_flow, &env, s_prov_state, s_prov_qr, s_prov_ssid,
+                       s_prov_state == KJ_PROV_TRYING ? s_prov_target : s_prov_pass, s_battery, now);
+}
+
+static void provision_skip(void)
+{
+    if (s_have_cred) esp_restart();   // 还有原来的凭据：直接按原来的 Wi-Fi 重启
+    kj_prov_stop();                   // 没有凭据：留在首页（界面会提示未配置 Wi-Fi）
+    start_audio();
+    s_mode = MODE_TITLE;
+}
+
+// ---------------------------------------------------------------------------
 // 应用任务
 // ---------------------------------------------------------------------------
+
+static void choose_role(uint8_t role, uint32_t now)
+{
+    if (!s_have_cred) {   // 没有 Wi-Fi 就玩不了：先去设置里配网
+        kj_flow_toast(&s_flow, KJ_TOAST_NO_WIFI, now);
+        s_flow.settings_sel = KJ_SET_WIFI;
+        s_mode = MODE_SETTINGS;
+        cue(KJ_CUE_ERROR);
+        return;
+    }
+    kj_store_set_role(role);
+    if (role) {
+        enter_host();
+    } else if (!s_hubc.my_name[0]) {
+        enter_register(MODE_PLAYER, now);   // 选手还没有昵称：先扫码登记（长按可跳过）
+    } else {
+        enter_player();
+    }
+}
 
 static void handle_key(kj_key_t key, uint32_t now)
 {
@@ -483,22 +797,78 @@ static void handle_key(kj_key_t key, uint32_t now)
     }
     wake_screen();
     s_dirty = true;
+    kj_action_t a;
     switch (s_mode) {
-    case MODE_TITLE: {
-        kj_action_t a = kj_flow_title_key(&s_flow, key);
+    case MODE_TITLE:
+        a = kj_flow_title_key(&s_flow, key);
         cue(KJ_CUE_KEY);
-        if (a.kind == KJ_ACT_ROLE && start_radio()) {
-            kj_store_set_role(a.arg);
-            if (a.arg) {
-                enter_host();
+        if (a.kind == KJ_ACT_ROLE) choose_role(a.arg, now);
+        if (a.kind == KJ_ACT_SETTINGS) s_mode = MODE_SETTINGS;
+        break;
+    case MODE_SETTINGS:
+        a = kj_flow_settings_key(&s_flow, key);
+        cue(KJ_CUE_KEY);
+        if (a.kind == KJ_ACT_BACK) s_mode = MODE_TITLE;
+        if (a.kind == KJ_ACT_SET_ITEM && a.arg == KJ_SET_NAME) {
+            if (s_have_cred) {
+                enter_register(MODE_SETTINGS, now);
             } else {
-                enter_player();
+                kj_flow_toast(&s_flow, KJ_TOAST_NO_WIFI, now);
             }
         }
+        if (a.kind == KJ_ACT_SET_ITEM && a.arg == KJ_SET_WIFI) {
+            kj_store_request_prov(true);
+            esp_restart();
+        }
         break;
-    }
+    case MODE_REGISTER:
+        a = kj_flow_register_key(&s_flow, key);
+        cue(KJ_CUE_KEY);
+        if (a.kind == KJ_ACT_REG_REFRESH) new_reg_token(now);
+        if (a.kind == KJ_ACT_BACK) leave_register();
+        break;
+    case MODE_PROVISION:
+        a = kj_flow_provision_key(&s_flow, key);
+        if (a.kind == KJ_ACT_PROV_SKIP) provision_skip();
+        break;
     case MODE_PLAYER: player_key(key, now); break;
     case MODE_HOST: if (s_server) host_key(key, now); break;
+    }
+}
+
+static void handle_msg(const app_msg_t *msg, uint32_t now)
+{
+    int arg = 0;
+    switch (msg->kind) {
+    case MSG_KEY:
+        handle_key((kj_key_t)msg->key, now);
+        break;
+    case MSG_RX:
+        kj_hubc_note_rx(&s_hubc, now);   // 中继来的帧也说明 hub 还在
+        if (s_mode == MODE_PLAYER) {
+            kj_client_on_frame(&s_client, msg->mac, msg->data, msg->len, now);
+        } else if (s_mode == MODE_HOST && s_server) {
+            host_rx(msg, now);
+        }
+        break;
+    case MSG_NET:
+        memcpy(&arg, msg->data, sizeof(arg));
+        if (msg->key == KJ_NET_EV_GOT_IP) log_heap("got ip");
+        if (msg->key == KJ_NET_EV_DISCONNECTED) ESP_LOGW(TAG, "wifi disconnected (reason %d)", arg);
+        if (msg->key == KJ_NET_EV_BOARD_UP) {
+            ESP_LOGI(TAG, "board link up");
+            board_resync();
+        }
+        s_dirty = true;
+        break;
+    case MSG_LINE:
+        if (s_mode == MODE_HOST) host_board_line((const char *)msg->data, now);
+        break;
+    case MSG_PROV:
+        prov_event(msg->key, now);
+        break;
+    default:
+        break;
     }
 }
 
@@ -511,24 +881,27 @@ static void app_task(void *arg)
         TickType_t wait = pdMS_TO_TICKS(APP_LOOP_MS);
         while (xQueueReceive(s_queue, &msg, wait) == pdTRUE) {
             wait = 0;
-            uint32_t now = now_ms();
-            if (msg.kind == MSG_KEY) {
-                handle_key((kj_key_t)msg.key, now);
-            } else if (msg.kind == MSG_RX) {
-                if (s_mode == MODE_PLAYER) {
-                    kj_client_on_frame(&s_client, msg.mac, msg.rssi, msg.data, msg.len, now);
-                } else if (s_mode == MODE_HOST && s_server) {
-                    host_rx(&msg, now);
-                }
-            }
+            handle_msg(&msg, now_ms());
         }
         uint32_t now = now_ms();
+        hub_rx(now);
+        hub_tick(now);
         if (s_battery_ok && (s_battery_ms == 0 || (uint32_t)(now - s_battery_ms) >= BATTERY_POLL_MS)) {
             s_battery_ms = now ? now : 1;
             s_battery = bsp_battery_soc();
         }
+        kj_model_env_t env;
         switch (s_mode) {
-        case MODE_TITLE: kj_model_title(&s_model, &s_flow, s_battery, now); break;
+        case MODE_TITLE:
+            model_env(&env, now);
+            kj_model_title(&s_model, &s_flow, &env, s_battery, now);
+            break;
+        case MODE_SETTINGS:
+            model_env(&env, now);
+            kj_model_settings(&s_model, &s_flow, &env, s_battery, now);
+            break;
+        case MODE_REGISTER: register_tick(now); break;
+        case MODE_PROVISION: provision_tick(now); break;
         case MODE_PLAYER: player_tick(now); break;
         case MODE_HOST:
             if (s_server) {
@@ -547,12 +920,30 @@ static void app_task(void *arg)
                 s_dirty = false;
             }
         }
+        if ((uint32_t)(now - s_heap_ms) >= HEAP_LOG_MS) {
+            s_heap_ms = now;
+            log_heap("periodic");
+        }
     }
 }
 
 static void font_missing(const char *font, uint32_t cp)
 {
     ESP_LOGE(TAG, "font %s lacks U+%04X", font, (unsigned)cp);
+}
+
+static void start_net(const kj_wifi_cred_t *cred)
+{
+    const kj_net_cbs_t cbs = {
+        .on_frame = on_net_frame, .on_ctl = on_net_ctl, .on_event = on_net_event, .on_line = on_board_line,
+    };
+    log_heap("before wifi");
+    esp_err_t err = kj_net_start(cred, &cbs);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "wifi start failed: %s", esp_err_to_name(err));
+        kj_flow_toast(&s_flow, KJ_TOAST_RADIO_FAIL, now_ms());
+    }
+    log_heap("after wifi");
 }
 
 void app_main(void)
@@ -567,20 +958,50 @@ void app_main(void)
         return;
     }
     s_queue = xQueueCreate(APP_QUEUE_DEPTH, sizeof(app_msg_t));
-    if (!s_queue) {
-        ESP_LOGE(TAG, "no memory for event queue");
+    s_hubq = xQueueCreate(HUB_QUEUE_DEPTH, sizeof(hub_msg_t));
+    if (!s_queue || !s_hubq) {
+        ESP_LOGE(TAG, "no memory for event queues");
         return;
     }
     if (bsp_button_init(on_key, NULL) != ESP_OK) ESP_LOGE(TAG, "button init failed");
-    if (bsp_audio_init() == ESP_OK) {
-        if (kj_sound_init() != ESP_OK) ESP_LOGW(TAG, "sound unavailable");
-    } else {
-        ESP_LOGW(TAG, "audio init failed; running silent");
+    kj_fonts_init();
+
+    // Wi-Fi 凭据：NVS 里配网保存的优先；开发时可以在本地 sdkconfig 里写 CONFIG_KJ_DEV_WIFI_*（不进仓库）。
+    kj_wifi_cred_t cred;
+    s_have_cred = kj_store_get_wifi(&cred);
+    if (!s_have_cred && sizeof(CONFIG_KJ_DEV_WIFI_SSID) > 1) {
+        memset(&cred, 0, sizeof(cred));
+        snprintf(cred.ssid, sizeof(cred.ssid), "%s", CONFIG_KJ_DEV_WIFI_SSID);
+        snprintf(cred.pass, sizeof(cred.pass), "%s", CONFIG_KJ_DEV_WIFI_PASSWORD);
+        s_have_cred = true;
     }
+    if (s_have_cred) snprintf(s_ssid, sizeof(s_ssid), "%s", cred.ssid);
+    bool provision = kj_store_take_prov_request() || !s_have_cred;
+    if (!provision) start_audio();   // 配网模式不初始化音频：把内存让给热点与网页服务
     s_battery_ok = bsp_battery_init() == ESP_OK;
 
+    kj_net_get_mac(s_mac);
+    char name[KJ_NAME_MAX + 1];
+    uint32_t name_rev = 0;
+    kj_store_get_name(name, &name_rev);
+    s_hint_saved = kj_store_get_hub_hint();
+    kj_hubc_init(&s_hubc, s_mac, (uint16_t)(esp_random() | 1u), KJ_FW_VERSION, name, name_rev, s_hint_saved);
     kj_flow_init(&s_flow, kj_store_get_role());
-    kj_model_title(&s_model, &s_flow, -1, now_ms());
+    if (provision) {
+        start_provision();
+    } else {
+        start_net(&cred);
+        s_mode = MODE_TITLE;
+    }
+    memset(&cred, 0, sizeof(cred));   // 密码只留在 Wi-Fi 驱动里
+
+    kj_model_env_t env;
+    model_env(&env, now_ms());
+    if (s_mode == MODE_PROVISION) {
+        kj_model_provision(&s_model, &s_flow, &env, s_prov_state, s_prov_qr, s_prov_ssid, s_prov_pass, -1, now_ms());
+    } else {
+        kj_model_title(&s_model, &s_flow, &env, -1, now_ms());
+    }
     if (bsp_lvgl_lock(1000)) {
         int missing = kj_fonts_selfcheck(font_missing);
         if (missing) ESP_LOGE(TAG, "font self-check: %d missing glyph(s)", missing);

@@ -12,6 +12,12 @@ LV_FONT_DECLARE(kj_big48)   // 思源黑体 Heavy 48：只含 KJ_BIG_* 的大字
 LV_FONT_DECLARE(kj_num56)   // 思源黑体 Heavy 56：0-9 A-F -
 LV_FONT_DECLARE(kj_hand36)  // Noto Emoji Bold 36：✊✌✋
 LV_FONT_DECLARE(kj_hand64)  // Noto Emoji Bold 64：✊✌✋
+LV_FONT_DECLARE(kj_name18a) // 思源黑体 Bold 18：昵称字库前半（ASCII + GB2312 汉字 + 人名补充字，见 tools/kj_charset.py）
+LV_FONT_DECLARE(kj_name18b) // 思源黑体 Bold 18：昵称字库后半（单个字体的位图不能超过 1 MB，所以分成两个）
+
+// 显示昵称用的字体：kj_zh18 的可写副本，缺字时依次回退到 kj_name18a、kj_name18b。kj_fonts_init() 之后可用。
+extern lv_font_t kj_font_name;
+void kj_fonts_init(void);
 
 // 配色：赌场暗底 + 原作红 + 星星金。
 #define KJ_C_BG        0x0D0B0A

@@ -1,4 +1,6 @@
-// tests/test_kj_rules.c —— 限定猜拳规则引擎：发牌、对决、星星转移、过关 / 出局 / 失败、超时与庄家命令。
+// tests/test_kj_rules.c —— 限定猜拳规则引擎：发牌、对决、星星转移、过关 / 出局 / 失败、超时与庄家命令、
+// 碰拳配对（成对、落单、拥挤、倒计时开打、取消、结束 / 断线 / 移除时的收尾）。
+#include "kj_bump.h"
 #include "kj_rules.h"
 #include "kj_test.h"
 
@@ -363,6 +365,147 @@ static void test_capacity_and_events(void)
     CHECK_EQ(s.cards[KJ_ROCK] + s.cards[KJ_SCISSORS] + s.cards[KJ_PAPER], KJ_MAX_PLAYERS * 12 - KJ_MAX_PLAYERS);
 }
 
+static int count_events(uint8_t kind, kj_event_t *last)
+{
+    kj_event_t e;
+    int n = 0;
+    while (kj_rules_pop_event(&g, &e)) {
+        if (e.kind == kind) {
+            n++;
+            if (last) *last = e;
+        }
+    }
+    return n;
+}
+
+static void test_bump(void)
+{
+    kj_rules_init(&g);
+    int a = join(1, 0), b = join(2, 0), c = join(3, 0), d = join(4, 0);
+    int bot = kj_rules_add_bot(&g, 0);
+    // 未开局不能碰拳
+    CHECK_EQ(kj_rules_bump(&g, a, 0, 0), KJ_N_NOT_RUNNING);
+    kj_rules_start(&g, 0);
+    uint32_t t = 10000;
+    keep_online(t);
+    // 电脑选手不碰拳；不在空闲状态不能碰拳
+    CHECK_EQ(kj_rules_bump(&g, bot, t, t), KJ_N_INVALID);
+    kj_rules_challenge(&g, c, kj_no_of(d), t);
+    CHECK_EQ(kj_rules_bump(&g, c, t, t), KJ_N_INVALID);
+    kj_rules_cancel(&g, c, t);
+
+    // 成对：a 先按，b 晚 80 ms（请求晚到 300 ms，由 press_ms 还原）
+    count_events(0, NULL);
+    CHECK_EQ(kj_rules_bump(&g, a, t, t + 10), KJ_N_NONE);
+    CHECK_EQ(kj_rules_bump(&g, b, t + 80, t + 380), KJ_N_NONE);
+    CHECK_EQ(g.players[a].status, KJ_ST_BUMPING);
+    CHECK(!kj_rules_available(&g, a, t + 400));   // 碰拳中不在空闲名单
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS - 1);
+    CHECK_EQ(g.players[a].status, KJ_ST_BUMPING);
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS);
+    CHECK_EQ(g.players[a].status, KJ_ST_MATCHED);
+    CHECK_EQ(g.players[b].status, KJ_ST_MATCHED);
+    CHECK_EQ(g.players[a].peer, b);
+    CHECK_EQ(g.players[b].peer, a);
+    kj_event_t e;
+    CHECK_EQ(count_events(KJ_EV_MATCH, &e), 1);
+    CHECK_EQ(e.a, kj_no_of(a));
+    CHECK_EQ(e.b, kj_no_of(b));
+    CHECK_EQ(e.aux, 80);
+    // 视图：对手编号与倒计时
+    kj_view_t v;
+    uint32_t m0 = t + KJ_BUMP_SETTLE_MS;
+    kj_rules_view(&g, a, m0, &v);
+    CHECK_EQ(v.status, KJ_ST_MATCHED);
+    CHECK_EQ(v.peer_no, kj_no_of(b));
+    CHECK_EQ(v.deadline_s, KJ_MATCH_COUNTDOWN_MS / 1000);
+    kj_rules_view(&g, a, m0 + KJ_MATCH_COUNTDOWN_MS - 999, &v);
+    CHECK_EQ(v.deadline_s, 1);
+    // 倒计时结束自动开打，之后照常出牌结算
+    kj_rules_tick(&g, m0 + KJ_MATCH_COUNTDOWN_MS - 1);
+    CHECK_EQ(g.players[a].status, KJ_ST_MATCHED);
+    kj_rules_tick(&g, m0 + KJ_MATCH_COUNTDOWN_MS);
+    CHECK_EQ(g.players[a].status, KJ_ST_DUEL);
+    CHECK_EQ(g.players[b].status, KJ_ST_DUEL);
+    CHECK_EQ(g.players[a].duel_id, g.players[b].duel_id);
+    CHECK_EQ(kj_rules_play(&g, a, KJ_ROCK, m0 + 4000), KJ_N_NONE);
+    CHECK_EQ(kj_rules_play(&g, b, KJ_SCISSORS, m0 + 4000), KJ_N_NONE);
+    CHECK_EQ(g.players[a].stars, 4);
+    CHECK_EQ(total_stars(), 5 * KJ_START_STARS);
+
+    // 取消配对：双方回到空闲，对方收到通知
+    t = 30000;
+    keep_online(t);
+    kj_rules_bump(&g, c, t, t);
+    kj_rules_bump(&g, d, t + 30, t + 30);
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS);
+    CHECK_EQ(g.players[c].status, KJ_ST_MATCHED);
+    count_events(0, NULL);
+    CHECK_EQ(kj_rules_cancel(&g, d, t + 1500), KJ_N_NONE);
+    CHECK_EQ(g.players[c].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[d].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[c].notice, KJ_N_MATCH_CANCELLED);
+    CHECK_EQ(count_events(KJ_EV_MATCH_CANCEL, &e), 1);
+    CHECK_EQ(e.a, kj_no_of(d));
+    CHECK_EQ(e.b, kj_no_of(c));
+    CHECK_EQ(kj_rules_cancel(&g, d, t + 1600), KJ_N_INVALID);   // 已经不在配对中
+
+    // 落单
+    t = 40000;
+    keep_online(t);
+    kj_rules_bump(&g, a, t, t);
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS);
+    CHECK_EQ(g.players[a].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[a].notice, KJ_N_BUMP_ALONE);
+    CHECK_EQ(count_events(KJ_EV_BUMP_FAIL, &e), 1);
+    CHECK_EQ(e.aux, KJ_BUMP_FAIL_ALONE);
+    // 请求在路上太久：直接判落单，不进入碰拳中
+    CHECK_EQ(kj_rules_bump(&g, a, t, t + KJ_BUMP_MAX_AGE_MS + 1), KJ_N_BUMP_ALONE);
+    CHECK_EQ(g.players[a].status, KJ_ST_IDLE);
+
+    // 三人同时：人太多
+    t = 50000;
+    keep_online(t);
+    kj_rules_bump(&g, a, t, t);
+    kj_rules_bump(&g, b, t + 50, t + 50);
+    kj_rules_bump(&g, c, t + 100, t + 100);
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS);
+    CHECK_EQ(g.players[a].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[b].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[c].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[b].notice, KJ_N_BUMP_CROWD);
+    CHECK_EQ(count_events(KJ_EV_BUMP_FAIL, &e), 3);
+    CHECK_EQ(e.aux, KJ_BUMP_FAIL_CROWD);
+
+    // 碰拳中 / 配对中宣布结束：撤销，按时间到判负
+    t = 60000;
+    keep_online(t);
+    kj_rules_bump(&g, a, t, t);
+    kj_rules_bump(&g, b, t + 10, t + 10);
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS);
+    kj_rules_bump(&g, c, t + 1000, t + 1000);
+    CHECK_EQ(g.players[a].status, KJ_ST_MATCHED);
+    CHECK_EQ(g.players[c].status, KJ_ST_BUMPING);
+    CHECK_EQ(kj_rules_end(&g, t + 1100), KJ_N_NONE);
+    CHECK_EQ(g.players[a].status, KJ_ST_FAILED);
+    CHECK_EQ(g.players[c].status, KJ_ST_FAILED);
+    CHECK_EQ(g.players[a].peer, 0xFF);
+    CHECK_EQ(total_stars(), 5 * KJ_START_STARS);
+
+    // 配对中对方被移除：自己回到空闲并收到"对方断线"
+    kj_rules_new_game(&g, 70000);
+    kj_rules_start(&g, 70000);
+    t = 71000;
+    keep_online(t);
+    kj_rules_bump(&g, a, t, t);
+    kj_rules_bump(&g, b, t, t);
+    kj_rules_tick(&g, t + KJ_BUMP_SETTLE_MS);
+    CHECK_EQ(g.players[a].status, KJ_ST_MATCHED);
+    kj_rules_remove(&g, b, t + 1000);
+    CHECK_EQ(g.players[a].status, KJ_ST_IDLE);
+    CHECK_EQ(g.players[a].notice, KJ_N_ABORTED);
+}
+
 int main(void)
 {
     test_compare();
@@ -374,5 +517,6 @@ int main(void)
     test_timeouts_and_offline();
     test_end_new_reset_bots();
     test_capacity_and_events();
+    test_bump();
     KJ_TEST_DONE("test_kj_rules");
 }

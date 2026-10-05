@@ -1,6 +1,6 @@
 // main/kj_server.h —— 庄家（主机）侧的协议逻辑：把收到的帧交给规则引擎，
 // 决定何时广播信标、何时给哪位选手推送 / 重发视图，并驱动电脑选手。
-// 纯 C：平台层（main/kj_host_app.c）只负责收发字节与串口。主机测试见 tests/test_kj_server.c。
+// 纯 C：平台层（main/main.c）只负责收发字节与看板链路。主机测试见 tests/test_kj_server.c。
 #pragma once
 
 #include "kj_proto.h"
@@ -38,6 +38,7 @@ typedef enum {
 typedef struct {
     kj_game_t game;
     uint16_t room;
+    uint16_t epoch;          // 本次开机的随机数（非 0），写进每个视图
     uint32_t last_beacon_ms;
     uint16_t beacon_phase_ver;
     bool beacon_sent;

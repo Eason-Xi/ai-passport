@@ -6,6 +6,9 @@
 //   * 星星归零立即出局；手牌全部出完且星星 ≥ 3 颗即过关，出完但不足 3 颗即失败；
 //   * 庄家宣布赌局结束（原作的时限）时，仍有手牌的人判负。
 //
+// 开始对决有两种方式：从名单里挑人发起挑战、对方应战；或两人面对面同时长按"碰拳"，
+// 庄家按按下时刻配对（见 kj_bump.h），双方看到对手后倒计时自动开打，期间任一方可取消。
+//
 // 引擎只由主机（庄家设备）持有，是唯一可信状态；选手设备只拿到投影出来的视图（kj_view_t）。
 // 所有时间参数都是单调毫秒（uint32 回绕安全：只做差值比较）。
 #pragma once
@@ -25,6 +28,7 @@
 #define KJ_ONLINE_TIMEOUT_MS     6000   // 超过这么久没收到选手任何帧视为离线
 #define KJ_CHALLENGE_TIMEOUT_MS 20000   // 挑战等待应战的时限
 #define KJ_DUEL_OFFLINE_ABORT_MS 15000  // 对决中一方离线这么久，对决作废（不消耗手牌）
+#define KJ_MATCH_COUNTDOWN_MS    3000   // 碰拳配对成功后自动开打前的倒计时
 
 typedef enum {
     KJ_ROCK = 0,
@@ -49,6 +53,9 @@ typedef enum {
     KJ_ST_CLEARED,         // 过关：手牌出完且星星 ≥ 3
     KJ_ST_ELIMINATED,      // 出局：星星归零
     KJ_ST_FAILED,          // 失败：手牌出完但星星不足，或时间到仍有手牌
+    // 以下为后加的状态（追加在末尾，旧快照里的数值保持不变）
+    KJ_ST_BUMPING,         // 已碰拳，等庄家配对（不到 1 秒）
+    KJ_ST_MATCHED,         // 碰拳配对成功，倒计时后自动进入对决；任一方可取消
     KJ_ST_COUNT,
 } kj_status_t;
 
@@ -65,6 +72,9 @@ typedef enum {
     KJ_N_NO_CARD,       // 没有这张牌
     KJ_N_INVALID,       // 当前状态不能这样操作
     KJ_N_FULL,          // 赌局已满
+    KJ_N_BUMP_ALONE,    // 碰拳没碰到对手
+    KJ_N_BUMP_CROWD,    // 同时碰拳的人太多，没能配对
+    KJ_N_MATCH_CANCELLED, // 对方取消了碰拳配对
     KJ_N_COUNT,
 } kj_notice_t;
 
@@ -96,6 +106,7 @@ typedef struct {
     uint8_t wins, losses, draws;
     uint16_t duel_id;          // 当前对决编号
     uint16_t last_req_seq;     // 已处理的最后一个请求序号（去重）
+    uint16_t boot;             // 选手设备本次开机的随机数（去重基准随它重置；不持久化，0 = 未知）
     uint16_t view_ver;         // 视图版本：任何影响该选手视图的变化都 +1
     uint32_t since_ms;         // 进入当前状态的时间
     uint32_t last_seen_ms;     // 最后一次收到该选手的帧
@@ -112,7 +123,11 @@ typedef enum {
     KJ_EV_CHALLENGE, KJ_EV_CANCEL, KJ_EV_DECLINE, KJ_EV_TIMEOUT, KJ_EV_ACCEPT,
     KJ_EV_LOCK, KJ_EV_RESULT, KJ_EV_WITHDRAW, KJ_EV_ABORT,
     KJ_EV_CLEARED, KJ_EV_ELIMINATED, KJ_EV_FAILED,
+    KJ_EV_MATCH, KJ_EV_MATCH_CANCEL, KJ_EV_BUMP_FAIL,
 } kj_event_kind_t;
+
+#define KJ_BUMP_FAIL_ALONE 1   // KJ_EV_BUMP_FAIL 的 aux：没碰到对手
+#define KJ_BUMP_FAIL_CROWD 2   // KJ_EV_BUMP_FAIL 的 aux：人太多
 
 typedef struct {
     uint8_t kind;      // kj_event_kind_t
@@ -120,6 +135,7 @@ typedef struct {
     uint8_t ca, cb;    // a / b 出的牌（RESULT / LOCK），否则 KJ_CARD_NONE
     uint8_t winner;    // RESULT：胜者编号，平局为 0
     uint16_t duel_id;
+    uint16_t aux;      // MATCH：两人按下时刻之差（ms）；BUMP_FAIL：KJ_BUMP_FAIL_*
     uint32_t t_ms;
 } kj_event_t;
 
@@ -157,7 +173,8 @@ typedef struct {
     uint8_t res_my, res_opp, res_outcome, res_opp_no;
     uint8_t final_reason;
     uint8_t wins, losses, draws;
-    uint8_t deadline_s;        // 挑战剩余秒数（CHALLENGING / CHALLENGED），否则 0
+    uint8_t deadline_s;        // 剩余秒数：挑战（CHALLENGING / CHALLENGED）或碰拳倒计时（MATCHED），否则 0
+    uint16_t epoch;            // 庄家本次开机的随机数（由 kj_server 填写）：选手据此判断视图新旧
 } kj_view_t;
 
 // ---------------------------------------------------------------------------
@@ -198,6 +215,8 @@ kj_notice_t kj_rules_cancel(kj_game_t *g, int idx, uint32_t now_ms);
 kj_notice_t kj_rules_respond(kj_game_t *g, int idx, bool accept, uint32_t now_ms);
 kj_notice_t kj_rules_play(kj_game_t *g, int idx, uint8_t card, uint32_t now_ms);
 kj_notice_t kj_rules_withdraw(kj_game_t *g, int idx, uint32_t now_ms);
+// 碰拳：press_ms 为还原后的按下时刻。配对在 kj_rules_tick 里结算；取消配对用 kj_rules_cancel。
+kj_notice_t kj_rules_bump(kj_game_t *g, int idx, uint32_t press_ms, uint32_t now_ms);
 
 // 记录收到选手的帧（在线判定）。
 void kj_rules_seen(kj_game_t *g, int idx, int8_t rssi, uint32_t now_ms);

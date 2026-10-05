@@ -1,0 +1,29 @@
+menu "Limited RPS"
+
+    config KJ_DEV_WIFI_SSID
+        string "Development Wi-Fi SSID (local sdkconfig only)"
+        default ""
+        help
+            Used only when no Wi-Fi credentials have been provisioned on the device.
+            Set it in your local, git-ignored sdkconfig while developing; never in
+            sdkconfig.defaults. Leave empty to require SoftAP provisioning.
+
+    config KJ_DEV_WIFI_PASSWORD
+        string "Development Wi-Fi password (local sdkconfig only)"
+        default ""
+
+    choice KJ_WIFI_PS
+        prompt "Wi-Fi power save while playing"
+        default KJ_WIFI_PS_NONE
+        help
+            NONE keeps the radio awake: lowest latency, highest current.
+            MIN_MODEM sleeps between DTIM beacons: saves battery but adds
+            latency to every packet; measure before using it at an event.
+
+        config KJ_WIFI_PS_NONE
+            bool "None (lowest latency)"
+        config KJ_WIFI_PS_MIN_MODEM
+            bool "Minimum modem sleep"
+    endchoice
+
+endmenu

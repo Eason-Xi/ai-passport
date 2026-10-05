@@ -1,9 +1,9 @@
 // tools/kj_preview/preview_main.c —— 在电脑上用真实 LVGL 渲染限定猜拳的各个页面。
 //
 // 由 tools/render_kj_preview.py 编译运行。它链接固件里的规则引擎、协议、界面状态机、模型组装与
-// 界面代码，用一台内存里的"庄家"和两台"选手"（A、B）通过无丢包的模拟信道真实走完一局：
-// 找赌局 → 入座 → 开局 → 挑战 → 应战 → 出牌 → 亮牌 → 终局，并逐页输出 PPM，
-// 同时报告 LVGL 内存池峰值与字形自检结果。
+// 界面代码，用一台内存里的"庄家"和两台"选手"（A、B）通过无丢包的模拟信道（代替电脑 hub 中继）真实走完一局：
+// 配网 → 首页 → 登记昵称 → 找赌局 → 入座 → 开局 → 名单挑战 → 应战 → 出牌 → 亮牌 → 碰拳 → 配对 → 终局，
+// 并逐页输出 PPM，同时报告 LVGL 内存池峰值与字形自检结果。昵称由一张假的登记表提供。
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +51,25 @@ static void flush_cb(lv_display_t *d, const lv_area_t *area, uint8_t *px)
 
 static void route(const kj_outbox_t *o, const uint8_t *src);
 
+// 假的昵称登记表：A = 小明，B = 林小雨；电脑选手没有昵称
+static bool fake_names(void *ctx, uint16_t room, uint8_t no, const char **name)
+{
+    (void)ctx;
+    (void)room;
+    const kj_player_t *p = kj_rules_player_by_no(&srv.game, no);
+    if (!p) return false;
+    if (memcmp(p->mac, MAC_A, 6) == 0) *name = "\xE5\xB0\x8F\xE6\x98\x8E";
+    else if (memcmp(p->mac, MAC_B, 6) == 0) *name = "\xE6\x9E\x97\xE5\xB0\x8F\xE9\x9B\xA8";
+    else *name = "";
+    return true;
+}
+
+static const kj_names_if_t s_names = { .lookup = fake_names };
+static kj_model_env_t s_env_a = { .net = KJ_NET_OK, .ssid = "Cafe-2.4G", .my_name = "\xE5\xB0\x8F\xE6\x98\x8E",
+                                  .fw = "1.1.0", .dev_id = 0x2207 };
+static kj_model_env_t s_env_b = { .net = KJ_NET_OK, .ssid = "Cafe-2.4G",
+                                  .my_name = "\xE6\x9E\x97\xE5\xB0\x8F\xE9\x9B\xA8", .fw = "1.1.0", .dev_id = 0x220C };
+
 static void to_server(const uint8_t *src, const kj_out_t *it, int8_t rssi)
 {
     kj_outbox_t reply;
@@ -68,11 +87,10 @@ static void route(const kj_outbox_t *o, const uint8_t *src)
             if (!(from_a && s_mute_a)) to_server(src, it, -48);
         }
         if (memcmp(src, MAC_A, 6) != 0 && (it->broadcast || memcmp(it->mac, MAC_A, 6) == 0)) {
-            if (!(s_mute_a && memcmp(src, MAC_H, 6) == 0)) kj_client_on_frame(&ca, src, -46,
-                                                                              it->data, it->len, s_ms);
+            if (!(s_mute_a && memcmp(src, MAC_H, 6) == 0)) kj_client_on_frame(&ca, src, it->data, it->len, s_ms);
         }
         if (memcmp(src, MAC_B, 6) != 0 && (it->broadcast || memcmp(it->mac, MAC_B, 6) == 0)) {
-            kj_client_on_frame(&cb, src, -52, it->data, it->len, s_ms);
+            kj_client_on_frame(&cb, src, it->data, it->len, s_ms);
         }
     }
 }
@@ -115,7 +133,7 @@ static const kj_player_ctx_t *make_ctx(ctx_buf_t *b, const kj_client_t *c)
     b->ctx.rooms = b->rooms;
     b->ctx.room_count = kj_client_rooms(c, s_ms, b->rooms, KJ_CLIENT_MAX_ROOMS);
     b->ctx.opps = b->opps;
-    b->ctx.opp_count = kj_client_opponents(c, s_ms, b->opps, KJ_UI_OPP_MAX);
+    b->ctx.opp_count = kj_client_opponents(c, b->opps, KJ_UI_OPP_MAX);
     b->ctx.connected = kj_client_connected(c, s_ms);
     b->ctx.now_ms = s_ms;
     return &b->ctx;
@@ -158,7 +176,7 @@ static kj_page_t player_page(kj_flow_t *f, const kj_client_t *c, kj_ui_model_t *
     ctx_buf_t b;
     const kj_player_ctx_t *ctx = make_ctx(&b, c);
     kj_page_t page = kj_flow_player_update(f, ctx, NULL);
-    kj_model_player(m, f, ctx, page, 76);
+    kj_model_player(m, f, ctx, page, f == &fa ? &s_env_a : &s_env_b, &s_names, 76);
     return page;
 }
 
@@ -190,7 +208,9 @@ static void shot_host(const char *name)
 {
     kj_ui_model_t m;
     if (fa.host_confirm < 0) kj_flow_host_sync(&fa, &srv.game);
-    kj_model_host(&m, &fa, &srv, s_ms, 76, true);
+    kj_model_env_t env = s_env_a;
+    env.my_name = "";
+    kj_model_host(&m, &fa, &srv, s_ms, 76, KJ_BOARD_WIFI, &env, &s_names);
     show(&m, name);
 }
 
@@ -219,8 +239,12 @@ int main(int argc, char **argv)
     lv_display_set_buffers(d, s_render_buf, NULL, sizeof(s_render_buf), LV_DISPLAY_RENDER_MODE_FULL);
     lv_display_set_flush_cb(d, flush_cb);
 
+    kj_fonts_init();
     int missing = kj_fonts_selfcheck(missing_cb);
     printf("FONT missing=%d\n", missing);
+    uint8_t hub_ip_b[4] = { 192, 168, 1, 20 };
+    memcpy(&s_env_a.hub_ip, hub_ip_b, 4);
+    s_env_b.hub_ip = s_env_a.hub_ip;
 
     kj_ui_init();
     kj_server_init(&srv, 0xA3F2, 7);
@@ -230,12 +254,37 @@ int main(int argc, char **argv)
     kj_flow_init(&fb, 0);
 
     kj_ui_model_t m;
-    kj_model_title(&m, &fa, 76, s_ms);
+    // 配网：等手机 → 正在连接 → 失败
+    kj_model_env_t env0 = { .net = KJ_NET_NO_WIFI, .fw = "1.1.0", .dev_id = 0x2207 };
+    const char *qr = "WIFI:T:WPA;S:KJ-2207;P:58204716;;";
+    kj_model_provision(&m, &fa, &env0, KJ_PROV_WAIT_PHONE, qr, "KJ-2207", "58204716", 76, s_ms);
+    show(&m, "00a_provision");
+    kj_model_provision(&m, &fa, &env0, KJ_PROV_TRYING, qr, "KJ-2207", "Cafe-2.4G", 76, s_ms);
+    show(&m, "00b_provision_trying");
+    kj_model_provision(&m, &fa, &env0, KJ_PROV_FAILED, qr, "KJ-2207", "58204716", 76, s_ms);
+    show(&m, "00c_provision_failed");
+    // 首页（已连上电脑服务、已有昵称）、设置
+    kj_model_title(&m, &fa, &s_env_a, 76, s_ms);
     show(&m, "01_title");
     fa.title_sel = 1;
-    kj_model_title(&m, &fa, 76, s_ms);
-    show(&m, "02_title_host");
+    kj_model_env_t env_search = s_env_b;
+    env_search.net = KJ_NET_SEARCHING;
+    env_search.my_name = "";
+    kj_model_title(&m, &fa, &env_search, 76, s_ms);
+    show(&m, "02_title_host_searching");
     fa.title_sel = 0;
+    kj_model_settings(&m, &fa, &s_env_a, 76, s_ms);
+    show(&m, "02b_settings");
+    // 登记昵称：没连上电脑服务 → 等扫码 → 已扫码 → 完成
+    const char *url = "http://192.168.1.20:47180/j/K7QD2M5X";
+    kj_model_register(&m, &fa, &env_search, KH_REG_INVALID, url, 76, s_ms);
+    show(&m, "02c_register_no_hub");
+    kj_model_register(&m, &fa, &s_env_a, KH_REG_WAITING, url, 76, s_ms);
+    show(&m, "02d_register_qr");
+    kj_model_register(&m, &fa, &s_env_a, KH_REG_OPENED, url, 76, s_ms);
+    show(&m, "02e_register_opened");
+    kj_model_register(&m, &fa, &s_env_a, KH_REG_DONE, url, 76, s_ms);
+    show(&m, "02f_register_done");
 
     shot_player(&fa, &ca, "03_rooms_searching", KJ_PAGE_ROOMS);
     run(1200);
@@ -256,7 +305,7 @@ int main(int argc, char **argv)
     shot_player(&fa, &ca, "08_hand", KJ_PAGE_HAND);
     press(&fa, &ca, KJ_KEY_OK);
     shot_player(&fa, &ca, "09_opponents", KJ_PAGE_OPPONENTS);
-    // 选中 B（附近信号最强，排在第一）发起挑战
+    // 选中 B（真人排在电脑选手前面）发起挑战
     press(&fa, &ca, KJ_KEY_OK);
     run(3000);
     shot_player(&fa, &ca, "10_wait", KJ_PAGE_WAIT);
@@ -282,7 +331,7 @@ int main(int argc, char **argv)
 
     // 平局：B 挑战 A，双方都出剪刀；A 拒绝的提示也顺便截一张
     press(&fb, &cb, KJ_KEY_OK);
-    press(&fb, &cb, KJ_KEY_OK);   // 列表第一位是 A（附近）
+    press(&fb, &cb, KJ_KEY_OK);   // 列表第一位是 A（真人在前）
     run(200);
     press(&fa, &ca, KJ_KEY_OK_LONG);   // 拒绝
     run(200);
@@ -304,7 +353,22 @@ int main(int argc, char **argv)
     fa.host_confirm = KJ_HM_END;
     shot_host("21_host_confirm");
     fa.host_confirm = -1;
+    fa.host_sel = KJ_HM_ROSTER;
+    fa.host_roster = true;
+    shot_host("21b_host_roster");
+    fa.host_roster = false;
     fa.host_sel = 0;
+
+    // 碰拳：A、B 面对面同时长按 → 碰拳中 → 配对成功倒计时 → 自动开打
+    press(&fa, &ca, KJ_KEY_OK_LONG);
+    press(&fb, &cb, KJ_KEY_OK_LONG);
+    shot_player(&fa, &ca, "21c_bump", KJ_PAGE_BUMP);
+    run(1000);
+    shot_player(&fa, &ca, "21d_matched", KJ_PAGE_MATCHED);
+    run(3200);
+    shot_player(&fb, &cb, "21e_matched_duel", KJ_PAGE_CHOOSE);
+    press(&fa, &ca, KJ_KEY_OK_LONG);   // 放弃，双方回到手牌
+    run(300);
 
     // 终局三种
     int ia = kj_rules_find_mac(&srv.game, MAC_A);
