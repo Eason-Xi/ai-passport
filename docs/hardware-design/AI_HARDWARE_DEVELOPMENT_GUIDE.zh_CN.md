@@ -178,7 +178,8 @@ LVGL 非线程安全：
 - ADC 衰减为 `ADC_ATTEN_DB_12`，每轮轮询三个按键复用一次平均采样，半开窗口避免边界同时命中两个键。
 - 校准创建失败会中止初始化并回滚；读取或换算失败视为未按下，而不是把无效电压作为 0 mV 触发 UP。BSP 不使用依赖的 ADC 索引注册表，避免部分分配失败后遗留占用索引、阻止重试。
 - 回调来自 button 组件使用的共享 `esp_timer` 任务，只能入队或执行同等级的有界操作，不能阻塞、录音、播放或访问 UI。
-- 事件包括 PRESS、CLICK、DOUBLE、LONG。应用菜单主要消费 CLICK；页面中的 OK LONG 被全局拦截用于返回。
+- 事件包括 PRESS、CLICK、DOUBLE、LONG、RELEASE。RELEASE 在每次松开时触发，便于应用立即停止"按住连调"类操作。CLICK 要在松开约 180 ms 后才到达（组件需排除双击），对延迟敏感的输入应使用 PRESS。基线菜单主要消费 CLICK；页面中的 OK LONG 被全局拦截用于返回。
+- 终端 deep sleep 需要按键唤醒时，先调用 `bsp_button_prepare_deep_sleep()`：停止轮询、释放共享 ADC unit，把按键节点（`BSP_BTN_GPIO`，即 GPIO0）改为带上拉的数字输入。ADC 占用该脚时数字电平恒读 0，不释放会入睡即醒。它回填当前电平，有键按住时调用方应推迟入睡；随后以引脚位掩码 `1ULL << BSP_BTN_GPIO` 和 `ESP_GPIO_WAKEUP_GPIO_LOW` 配置唤醒。分压使任意键按下时节点电压约 ≤ 0.7 V（已计入 ESP-IDF 深睡时打开的内部上拉）；OK 键余量最小，唤醒可靠性仍待真机确认。放弃入睡时再次调用 `bsp_button_init()` 即可恢复按键。
 - 按键判定时序由 BSP 显式下发（`BSP_BTN_SHORT_PRESS_MS` = 180 ms、`BSP_BTN_LONG_PRESS_MS` = 500 ms，见 `bsp_pins.h`），不依赖组件 Kconfig 默认的 180 / 1500 ms：三个小按键上按住 1.5 s 才触发长按偏迟钝。组件对 `BUTTON_LONG_PRESS_TIME_MS` 的 Kconfig 下限同样是 500 ms，更短的长按只能在代码里下发。
 
 重标阈值时，在 Button 页逐个长按按键记录稳定电压，采集多块板、不同电量和合理温度范围的数据，再把相邻分布之间留裕量设置为边界。不要只用理论分压值。
@@ -237,7 +238,7 @@ Audio demo 的工作任务在 PCM 分块之间检查取消状态，并在页面�
 
 将音调 demo 扩展为持续 BGM、界面刷新和 NVS 存档并行的应用时，按键后出现的杂音可能来自 PCM 供给中断，即使该按键没有播放音效。修改音效或音量之前，先分别检查以下两条路径：
 
-- **任务供给不及时：** 同时测量 PCM 最大供给间隔、重绘和保存耗时。6 个 DMA descriptor、每个 240 frame，在 16 kHz 且缓冲填满时最多容纳 `6 * 240 / 16000 = 90 ms`；实际剩余余量可能更小。按键回调和 LVGL 锁内不做阻塞操作，纯焦点移动不写 Flash，音频工作任务相对刷屏任务应有足够优先级。任务仍须阻塞或让出 CPU；不要忙循环，也不要未检查应用任务就照抄优先级数值。仍在有意义的状态变化时保存。
+- **任务供给不及时：** 同时测量 PCM 最大供给间隔、重绘和保存耗时。6 个 DMA descriptor、每个 240 frame（`bsp_audio.h` 中的 `BSP_AUDIO_DMA_DESC_NUM` × `BSP_AUDIO_DMA_FRAME_NUM`），在 16 kHz 且缓冲填满时最多容纳 `6 * 240 / 16000 = 90 ms`；实际剩余余量可能更小。按键回调和 LVGL 锁内不做阻塞操作，纯焦点移动不写 Flash，音频工作任务相对刷屏任务应有足够优先级。任务仍须阻塞或让出 CPU；不要忙循环，也不要未检查应用任务就照抄优先级数值。仍在有意义的状态变化时保存。
 - **Flash/cache 停顿：** Flash 写入或擦除可能关闭缓存，延后默认 I2S 中断。播放与保存并行时，启用 `CONFIG_I2S_ISR_IRAM_SAFE=y`，并核对生成的 `sdkconfig`（只改 defaults 不会覆盖已有配置）。注册的 I2S 回调及其调用链必须满足 IRAM 安全要求，访问的数据放在内部 DRAM；只给回调加 `IRAM_ATTR` 不够。回调中不要打印日志、分配内存或读取 Flash 素材。参见 [ESP-IDF 5.5.3 I2S IRAM 安全说明](https://docs.espressif.com/projects/esp-idf/en/v5.5.3/esp32c3/api-reference/peripherals/i2s.html#iram-safe)。
 
 中断放入 IRAM 并不能让位于 Flash 的音频生产任务持续运行，也不代表缓冲无限。应根据实测停顿和内部 RAM 预算准备排队的 PCM，或在安全的播放边界保存。在最终应用固件上，持续播放 BGM，反复切换选项并确认会实际写入 NVS 的操作，再验证保存和重新载入。对照供给间隔并实机试听：日志无告警或单独播放音调成功，都不能证明并发播放没有杂音。

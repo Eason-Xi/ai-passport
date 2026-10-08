@@ -54,13 +54,32 @@ run_static_checks() {
         tests/test_bsp_audio_recovery.c components/bsp/src/bsp_es8311_sleep_check.c \
         -o "${test_dir}/test_bsp_audio_recovery"
     "${test_dir}/test_bsp_audio_recovery"
+    # 去除未用段：GNU ld 用 --gc-sections，macOS ld64 用 -dead_strip。
+    local gc_flag="-Wl,--gc-sections"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        gc_flag="-Wl,-dead_strip"
+    fi
     for demo in audio low_power ble wifi; do
         "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
             -ffunction-sections -fdata-sections -Itests/demo_stubs -Imain \
-            "tests/test_demo_${demo}_runtime.c" -Wl,--gc-sections \
+            "tests/test_demo_${demo}_runtime.c" "${gc_flag}" \
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
+    # ASMR 声景播放器：纯逻辑模块（定点 DSP 与声景、混音器、设置 / 呼吸 / 省电、状态机）逐个测试；
+    # 字体子集覆盖与 UI 字面量约束；自动关机路径的静态约束。
+    local as_sources=(main/as_dsp.c main/as_sounds.c main/as_mixer.c main/as_cfg.c main/as_crc32.c
+        main/as_breath.c main/as_power.c main/as_model.c)
+    local as_test
+    for as_test in dsp mixer logic model; do
+        "${CC:-cc}" -std=c11 -D_DEFAULT_SOURCE -O1 -Wall -Wextra -Werror -Imain -Itests \
+            "tests/test_as_${as_test}.c" "${as_sources[@]}" -lm \
+            -o "${test_dir}/test_as_${as_test}"
+        "${test_dir}/test_as_${as_test}"
+    done
+    python3 tools/gen_asmr_fonts.py check
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_asmr_fonts.py
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_asmr_power_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py
